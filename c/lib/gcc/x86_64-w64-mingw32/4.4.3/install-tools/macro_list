@@ -1,0 +1,6 @@
+WIN32
+WIN64
+WINNT
+_cdecl
+_fastcall
+_stdcall
