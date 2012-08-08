@@ -22,6 +22,7 @@ LWP::Online - Does your process have access to the web
   # "real" access to the internet. Scripts will automatically
   # skip if connection fails.
   use LWP::Online ':skip_all';
+  use Test::More tests => 4; #after LWP::Online
 
 =head1 DESCRIPTION
 
@@ -123,12 +124,13 @@ The :skip_all special import flag can be mixed with regular imports.
 
 use 5.005;
 use strict;
-use Carp 'croak';
-use LWP::Simple qw{ get $ua };
+use Carp              ();
+use URI         1.35  ();
+use LWP::Simple 5.805 qw{ get $ua };
 
 use vars qw{$VERSION @ISA @EXPORT_OK};
 BEGIN {
-	$VERSION = '1.07';
+	$VERSION = '1.08';
 
 	# We are an Exporter
 	require Exporter;
@@ -150,10 +152,11 @@ BEGIN {
 		# These are some initial trivial checks.
 		# The regex are case-sensitive to at least
 		# deal with the "couldn't get site.com case".
-		'http://google.com/' => sub { /About Google/      },
-		'http://yahoo.com/'  => sub { /Yahoo!/            },
-		'http://amazon.com/' => sub { /Amazon/ and /Cart/ },
-		'http://cnn.com/'    => sub { /CNN/               },
+		'http://www.msftncsi.com/ncsi.txt' => sub { $_ eq 'Microsoft NCSI' },
+		'http://google.com/'               => sub { /About Google/         },
+		'http://yahoo.com/'                => sub { /Yahoo!/               },
+		'http://amazon.com/'               => sub { /Amazon/ and /Cart/    },
+		'http://cnn.com/'                  => sub { /CNN/                  },
 	);
 }
 
@@ -361,7 +364,7 @@ L<LWP::Simple>
 
 =head1 COPYRIGHT
 
-Copyright 2006 - 2008 Adam Kennedy.
+Copyright 2006 - 2011 Adam Kennedy.
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

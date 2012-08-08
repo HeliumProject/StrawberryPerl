@@ -4,7 +4,7 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: LOCAL.pm 374 2010-05-14 08:12:25Z kutterma $
+# $Id: LOCAL.pm 386 2011-08-18 19:48:31Z kutterma $
 #
 # ======================================================================
 
@@ -13,7 +13,7 @@ package SOAP::Transport::LOCAL;
 use strict;
 
 
-our $VERSION = 0.712;
+our $VERSION = 0.714;
 
 # ======================================================================
 
@@ -24,7 +24,7 @@ use SOAP::Lite;
 use vars qw(@ISA);
 @ISA = qw(SOAP::Client SOAP::Server);
 
-sub new { 
+sub new {
     my $class = shift;
     return $class if ref $class;
     my(@arg_from, @method_from);
@@ -40,14 +40,14 @@ sub new {
         my($method, $param_ref) = splice(@method_from,0,2);
         $self->$method(ref $param_ref eq 'ARRAY'
             ? @$param_ref
-            : $param_ref) 
+            : $param_ref)
     }
     return $self;
 }
 
 sub send_receive {
     my($self, %parameters) = @_;
-    my($envelope, $endpoint, $action) = 
+    my($envelope, $endpoint, $action) =
         @parameters{qw(envelope endpoint action)};
 
     SOAP::Trace::debug($envelope);

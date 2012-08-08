@@ -1,17 +1,13 @@
 package YAML::Error;
+use YAML::Mo;
 
-use strict;
-use warnings;
-use YAML::Base;
+our $VERSION = '0.81';
 
-our $VERSION = '0.72';
-our @ISA     = 'YAML::Base';
-
-field 'code';
-field 'type' => 'Error';
-field 'line';
-field 'document';
-field 'arguments' => [];
+has 'code';
+has 'type' => default => sub {'Error'};
+has 'line';
+has 'document';
+has 'arguments' => default => sub {[]};
 
 my ($error_messages, %line_adjust);
 
@@ -216,7 +212,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006. Ingy döt Net. All rights reserved.
+Copyright (c) 2006, 2011-2012. Ingy döt Net. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

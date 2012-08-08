@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef SCARD_S_SUCCESS
 #define SCARD_S_SUCCESS NO_ERROR
@@ -74,4 +74,8 @@
 #define SCARD_W_CANCELLED_BY_USER ((DWORD)0x8010006EL)
 #define SCARD_W_CARD_NOT_AUTHENTICATED ((DWORD)0x8010006FL)
 
+#define SCARD_W_CACHE_ITEM_NOT_FOUND ((DWORD)0x80100070L)
+#define SCARD_W_CACHE_ITEM_STALE ((DWORD)0x80100071L)
+
 #endif
+

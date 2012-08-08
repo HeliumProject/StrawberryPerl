@@ -4,14 +4,14 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Test.pm 366 2010-04-27 19:02:05Z kutterma $
+# $Id: Test.pm 386 2011-08-18 19:48:31Z kutterma $
 #
 # ======================================================================
 
 package SOAP::Test;
 
 use 5.006;
-our $VERSION = 0.712;
+our $VERSION = 0.714;
 
 our $TIMEOUT = 5;
 

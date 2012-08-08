@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
 #ifndef _IADS_H_
@@ -742,7 +742,7 @@ extern "C"{
 
   typedef struct _adsvalue {
     ADSTYPE dwType;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       ADS_DN_STRING DNString;
       ADS_CASE_EXACT_STRING CaseExactString;
       ADS_CASE_IGNORE_STRING CaseIgnoreString;
@@ -789,7 +789,9 @@ extern "C"{
   typedef enum __MIDL___MIDL_itf_ads_0000_0018 {
     ADS_SECURE_AUTHENTICATION = 0x1,ADS_USE_ENCRYPTION = 0x2,ADS_USE_SSL = 0x2,ADS_READONLY_SERVER = 0x4,ADS_PROMPT_CREDENTIALS = 0x8,
     ADS_NO_AUTHENTICATION = 0x10,ADS_FAST_BIND = 0x20,ADS_USE_SIGNING = 0x40,ADS_USE_SEALING = 0x80,ADS_USE_DELEGATION = 0x100,
-    ADS_SERVER_BIND = 0x200,ADS_AUTH_RESERVED = 0x80000000
+    ADS_SERVER_BIND = 0x200,
+    ADS_NO_REFERRAL_CHASING = 0x400,
+    ADS_AUTH_RESERVED = 0x80000000
   } ADS_AUTHENTICATION_ENUM;
 
 #define ADS_ATTR_CLEAR (1)

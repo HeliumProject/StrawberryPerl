@@ -4,17 +4,10 @@ use Imager;
 use vars qw($VERSION @ISA);
 
 BEGIN {
-  $VERSION = "0.01";
+  $VERSION = "0.03";
   
-  eval {
-    require XSLoader;
-    XSLoader::load('Imager::File::SGI', $VERSION);
-    1;
-  } or do {
-    require DynaLoader;
-    push @ISA, 'DynaLoader';
-    bootstrap Imager::File::SGI $VERSION;
-  };
+  require XSLoader;
+  XSLoader::load('Imager::File::SGI', $VERSION);
 }
 
 Imager->register_reader
@@ -80,7 +73,7 @@ Imager's MS Icon support is documented in L<Imager::Files>.
 
 =head1 AUTHOR
 
-Tony Cook <tony@imager.perl.org>
+Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

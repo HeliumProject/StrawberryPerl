@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __ROUTING_MPRADMIN_H__
 #define __ROUTING_MPRADMIN_H__
@@ -11,6 +11,10 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef CALLBACK
+#define CALLBACK WINAPI
 #endif
 
 #define RRAS_SERVICE_NAME TEXT("RemoteAccess")
@@ -187,6 +191,52 @@ extern "C" {
     DWORD dwVpnStrategy;
   } MPR_INTERFACE_2,*PMPR_INTERFACE_2;
 
+#if (_WIN32_WINNT >= 0x0600)
+  typedef struct _MPR_INTERFACE_3 {
+    WCHAR                   wszInterfaceName[MAX_INTERFACE_NAME_LEN+1];
+    HANDLE                  hInterface;
+    WINBOOL                 fEnabled;
+    ROUTER_INTERFACE_TYPE   dwIfType;
+    ROUTER_CONNECTION_STATE dwConnectionState;
+    DWORD                   fUnReachabilityReasons;
+    DWORD                   dwLastError;
+    DWORD                   dwfOptions;
+    WCHAR                   szLocalPhoneNumber[RAS_MaxPhoneNumber + 1];
+    PWCHAR                  szAlternates;
+    DWORD                   ipaddr;
+    DWORD                   ipaddrDns;
+    DWORD                   ipaddrDnsAlt;
+    DWORD                   ipaddrWins;
+    DWORD                   ipaddrWinsAlt;
+    DWORD                   dwfNetProtocols;
+    WCHAR                   szDeviceType[MPR_MaxDeviceType + 1];
+    WCHAR                   szDeviceName[MPR_MaxDeviceName + 1];
+    WCHAR                   szX25PadType[MPR_MaxPadType + 1];
+    WCHAR                   szX25Address[MPR_MaxX25Address + 1];
+    WCHAR                   szX25Facilities[MPR_MaxFacilities + 1];
+    WCHAR                   szX25UserData[MPR_MaxUserData + 1];
+    DWORD                   dwChannels;
+    DWORD                   dwSubEntries;
+    DWORD                   dwDialMode;
+    DWORD                   dwDialExtraPercent;
+    DWORD                   dwDialExtraSampleSeconds;
+    DWORD                   dwHangUpExtraPercent;
+    DWORD                   dwHangUpExtraSampleSeconds;
+    DWORD                   dwIdleDisconnectSeconds;
+    DWORD                   dwType;
+    DWORD                   dwEncryptionType;
+    DWORD                   dwCustomAuthKey;
+    DWORD                   dwCustomAuthDataSize;
+    LPBYTE                  lpbCustomAuthData;
+    GUID                    guidId;
+    DWORD                   dwVpnStrategy;
+    ULONG                   AddressCount;
+    IN6_ADDR                ipv6addrDns;
+    IN6_ADDR                ipv6addrDnsAlt;
+    IN6_ADDR *              ipv6addr;
+  } MPR_INTERFACE_3, *PMPR_INTERFACE_3;
+#endif
+
   typedef struct _MPR_DEVICE_0 {
     WCHAR szDeviceType[MPR_MaxDeviceType + 1 ];
     WCHAR szDeviceName[MPR_MaxDeviceName + 1 ];
@@ -287,6 +337,7 @@ extern "C" {
 #define IPADDRESSLEN 15
 #define IPXADDRESSLEN 22
 #define ATADDRESSLEN 32
+#define MAXIPADRESSLEN 64
 
   typedef struct _PPP_NBFCP_INFO {
     DWORD dwError;
@@ -566,7 +617,301 @@ extern "C" {
 
 #define MprInfoBlockExists(h,t) (MprInfoBlockFind((h),(t),NULL,NULL,NULL)==NO_ERROR)
 
+#if (_WIN32_WINNT >= 0x0600)
+typedef enum _RAS_QUARANTINE_STATE {
+  RAS_QUAR_STATE_NORMAL,
+  RAS_QUAR_STATE_QUARANTINE,
+  RAS_QUAR_STATE_PROBATION,
+  RAS_QUAR_STATE_NOT_CAPABLE
+} RAS_QUARANTINE_STATE;
+
+typedef struct _MPR_FILTER_0 {
+  WINBOOL fEnabled;
+} MPR_FILTER_0, *PMPR_FILTER_0;
+
+typedef struct _MPR_SERVER_2 {
+  DWORD dwNumPptpPorts;
+  DWORD dwPptpPortFlags;
+  DWORD dwNumL2tpPorts;
+  DWORD dwL2tpPortFlags;
+  DWORD dwNumSstpPorts;
+  DWORD dwSstpPortFlags;
+} MPR_SERVER_2, *PMPR_SERVER_2;
+
+typedef struct _PPP_IPV6CP_INFO {
+  DWORD dwVersion;
+  DWORD dwSize;
+  DWORD dwError;
+  BYTE  bInterfaceIdentifier[8];
+  BYTE  bRemoteInterfaceIdentifier[8];
+  DWORD dwOptions;
+  DWORD dwRemoteOptions;
+  BYTE  bPrefix[8];
+  DWORD dwPrefixLength;
+} PPP_IPV6_CP_INFO, *PPPP_IPV6_CP_INFO;
+
+typedef struct _PPP_INFO_3 {
+  PPP_NBFCP_INFO   nbf;
+  PPP_IPCP_INFO2   ip;
+  PPP_IPV6_CP_INFO ipv6;
+  PPP_CCP_INFO     ccp;
+  PPP_LCP_INFO     lcp;
+} PPP_INFO_3;
+
+typedef struct _RAS_CONNECTION_3 {
+  DWORD                 dwVersion;
+  DWORD                 dwSize;
+  HANDLE                hConnection;
+  WCHAR                 wszUserName[UNLEN + 1];
+  ROUTER_INTERFACE_TYPE dwInterfaceType;
+  GUID                  guid;
+  PPP_INFO_3            PppInfo3;
+  RAS_QUARANTINE_STATE  rasQuarState;
+  FILETIME              timer;
+} RAS_CONNECTION_3, *PRAS_CONNECTION_3;
+
+WINBOOL CALLBACK MprAdminAcceptNewConnection3(
+  RAS_CONNECTION_0 *pRasConnection0,
+  RAS_CONNECTION_1 *pRasConnection1,
+  RAS_CONNECTION_2 *pRasConnection2,
+  RAS_CONNECTION_3 *pRasConnection3
+);
+
+WINBOOL CALLBACK MprAdminAcceptReauthentication(
+  RAS_CONNECTION_0 *pRasConnection0,
+  RAS_CONNECTION_1 *pRasConnection1,
+  RAS_CONNECTION_2 *pRasConnection2,
+  RAS_CONNECTION_3 *pRasConnection3
+);
+
+void CALLBACK MprAdminConnectionHangupNotification3(
+  RAS_CONNECTION_0 *pRasConnection0,
+  RAS_CONNECTION_1 *pRasConnection1,
+  RAS_CONNECTION_2 *pRasConnection2,
+  RAS_CONNECTION_3 *pRasConnection3
+);
+
+DWORD CALLBACK MprAdminGetIpv6AddressForUser(
+  WCHAR *lpwszUserName,
+  WCHAR *lpwszPortName,
+  IN6_ADDR *lpdwIpv6Address,
+  WINBOOL *bNotifyRelease
+);
+
+DWORD CALLBACK MprAdminReleaseIpv6AddressForUser(
+  WCHAR *lpwszUserName,
+  WCHAR *lpwszPortName,
+  IN6_ADDR *lpdwIpv6Address
+);
+
+DWORD WINAPI MprConfigFilterGetInfo(
+  HANDLE hMprConfig,
+  DWORD dwLevel,
+  DWORD dwTransportId,
+  LPBYTE lpBuffer
+);
+
+DWORD WINAPI MprConfigFilterSetInfo(
+  HANDLE hMprConfig,
+  DWORD dwLevel,
+  DWORD dwTransportId,
+  LPBYTE lpBuffer
+);
+
+#endif /*(_WIN32_WINNT >= 0x0600)*/
+
+#if (_WIN32_WINNT >= 0x0601)
+#define MPRAPI_RAS_CONNECTION_OBJECT_REVISION_1 0x01
+#define MPRAPI_MPR_SERVER_OBJECT_REVISION_1 0x01
+#define MPRAPI_MPR_SERVER_SET_CONFIG_OBJECT_REVISION_1 0x01
+
+typedef enum  {
+  MPRAPI_OBJECT_TYPE_RAS_CONNECTION_OBJECT          = 0x1,
+  MPRAPI_OBJECT_TYPE_MPR_SERVER_OBJECT              = 0x2,
+  MPRAPI_OBJECT_TYPE_MPR_SERVER_SET_CONFIG_OBJECT   = 0x3,
+  MPRAPI_OBJECT_TYPE_AUTH_VALIDATION_OBJECT         = 0x4,
+  MPRAPI_OBJECT_TYPE_UPDATE_CONNECTION_OBJECT       = 0x5 
+} MPRAPI_OBJECT_TYPE;
+
+typedef struct _MPRAPI_OBJECT_HEADER {
+  UCHAR revision;
+} MPRAPI_OBJECT_HEADER, *PMPRAPI_OBJECT_HEADER;
+
+typedef struct _AUTH_VALIDATION_EX {
+  MPRAPI_OBJECT_HEADER         Header;
+  HANDLE                       hRasConnection;
+  WCHAR                        wszUserName[UNLEN + 1 ];
+  WCHAR                        wszLogonDomain[DNLEN + 1 ];
+  DWORD                        AuthInfoSize;
+  BYTE                         AuthInfo[1];
+} AUTH_VALIDATION_EX, *PAUTH_VALIDATION_EX;
+
+#define RAS_FLAGS_PPP_CONNECTION 0x00000001
+#define RAS_FLAGS_MESSENGER_PRESENT 0x00000002
+#define RAS_FLAGS_QUARANTINE_PRESENT 0x00000008
+#define RAS_FLAGS_ARAP_CONNECTION 0x00000010
+#define RAS_FLAGS_IKEV2_CONNECTION 0x00000010
+#define RAS_FLAGS_DORMANT 0x00000020
+
+#define IPADDRESSLEN 15
+
+typedef struct _PPP_PROJECTION_INFO {
+  DWORD   dwIPv4NegotiationError;
+  WCHAR   wszAddress[IPADDRESSLEN + 1];
+  WCHAR   wszRemoteAddress[IPADDRESSLEN + 1];
+  DWORD   dwIPv4Options;
+  DWORD   dwIPv4RemoteOptions;
+  ULONG64 IPv4SubInterfaceIndex;
+  DWORD   dwIPv6NegotiationError;
+  BYTE    bInterfaceIdentifier[8];
+  BYTE    bRemoteInterfaceIdentifier[8];
+  BYTE    bPrefix[8];
+  DWORD   dwPrefixLength;
+  ULONG64 IPv6SubInterfaceIndex;
+  DWORD   dwLcpError;
+  DWORD   dwAuthenticationProtocol;
+  DWORD   dwAuthenticationData;
+  DWORD   dwRemoteAuthenticationProtocol;
+  DWORD   dwRemoteAuthenticationData;
+  DWORD   dwLcpTerminateReason;
+  DWORD   dwLcpRemoteTerminateReason;
+  DWORD   dwLcpOptions;
+  DWORD   dwLcpRemoteOptions;
+  DWORD   dwEapTypeId;
+  DWORD   dwRemoteEapTypeId;
+  DWORD   dwCcpError;
+  DWORD   dwCompressionAlgorithm;
+  DWORD   dwCcpOptions;
+  DWORD   dwRemoteCompressionAlgorithm;
+  DWORD   dwCcpRemoteOptions;
+} PPP_PROJECTION_INFO, *PPPP_PROJECTION_INFO;
+
+typedef struct _IKEV2_PROJECTION_INFO {
+  DWORD   dwIPv4NegotiationError;
+  WCHAR   wszAddress[IPADDRESSLEN  + 1];
+  WCHAR   wszRemoteAddress[IPADDRESSLEN  + 1];
+  ULONG64 IPv4SubInterfaceIndex;
+  DWORD   dwIPv6NegotiationError;
+  BYTE    bInterfaceIdentifier[8];
+  BYTE    bRemoteInterfaceIdentifier[8];
+  BYTE    bPrefix[8];
+  DWORD   dwPrefixLength;
+  ULONG64 IPv6SubInterfaceIndex;
+  DWORD   dwOptions;
+  DWORD   dwAuthenticationProtocol;
+  DWORD   dwEapTypeId;
+  DWORD   dwCompressionAlgorithm;
+  DWORD   dwEncryptionMethod;
+} IKEV2_PROJECTION_INFO, *PIKEV2_PROJECTION_INFO;
+
+typedef struct _PROJECTION_INFO {
+  UCHAR projectionInfoType;
+  __C89_NAMELESS union {
+    IKEV2_PROJECTION_INFO Ikev2ProjectionInfo;
+    PPP_PROJECTION_INFO   PppProjectionInfo;
+  } DUMMYUNIONNAME;
+} PROJECTION_INFO, *PPROJECTION_INFO;
+
+typedef struct _RAS_CONNECTION_EX {
+  MPRAPI_OBJECT_HEADER  Header;
+  DWORD                 dwConnectDuration;
+  ROUTER_INTERFACE_TYPE dwInterfaceType;
+  DWORD                 dwConnectionFlags;
+  WCHAR                 wszInterfaceName[MAX_INTERFACE_NAME_LEN + 1];
+  WCHAR                 wszUserName[UNLEN + 1];
+  WCHAR                 wszLogonDomain[DNLEN + 1];
+  WCHAR                 wszRemoteComputer[NETBIOS_NAME_LEN + 1];
+  GUID                  guid;
+  RAS_QUARANTINE_STATE  rasQuarState;
+  FILETIME              probationTime;
+  DWORD                 dwBytesXmited;
+  DWORD                 dwBytesRcved;
+  DWORD                 dwFramesXmited;
+  DWORD                 dwFramesRcved;
+  DWORD                 dwCrcErr;
+  DWORD                 dwTimeoutErr;
+  DWORD                 dwAlignmentErr;
+  DWORD                 dwHardwareOverrunErr;
+  DWORD                 dwFramingErr;
+  DWORD                 dwBufferOverrunErr;
+  DWORD                 dwCompressionRatioIn;
+  DWORD                 dwCompressionRatioOut;
+  DWORD                 dwNumSwitchOvers;
+  WCHAR                 wszRemoteEndpointAddress[MAXIPADRESSLEN+1];
+  WCHAR                 wszLocalEndpointAddress[MAXIPADRESSLEN+1];
+  PROJECTION_INFO       ProjectionInfo;
+  HANDLE                hConnection;
+  HANDLE                hInterface;
+} RAS_CONNECTION_EX, *PRAS_CONNECTION_EX;
+
+typedef struct _RAS_UPDATE_CONNECTION {
+  MPRAPI_OBJECT_HEADER Header;
+  DWORD                dwIfIndex;
+  WCHAR                wszLocalEndpointAddress[MAXIPADRESSLEN+1];
+  WCHAR                wszRemoteEndpointAddress[MAXIPADRESSLEN+1];
+} RAS_UPDATE_CONNECTION, *PRAS_UPDATE_CONNECTION;
+
+#define MPRAPI_IKEV2_SET_TUNNEL_CONFIG_PARAMS 0x01
+
+typedef struct _IKEV2_TUNNEL_CONFIG_PARAMS {
+  DWORD          dwIdleTimeout;
+  DWORD          dwNetworkBlackoutTime;
+  DWORD          dwSaLifeTime;
+  DWORD          dwSaDataSizeForRenegotiation;
+  DWORD          dwConfigOptions;
+  DWORD          dwTotalCertificates;
+  CERT_NAME_BLOB *certificateNames;
+} IKEV2_TUNNEL_CONFIG_PARAMS, *PIKEV2_TUNNEL_CONFIG_PARAMS;
+
+typedef struct _IKEV2_CONFIG_PARAMS {
+  DWORD                      dwNumPorts;
+  DWORD                      dwPortFlags;
+  DWORD                      dwTunnelConfigParamFlags;
+  IKEV2_TUNNEL_CONFIG_PARAMS TunnelConfigParams;
+} IKEV2_CONFIG_PARAMS, *PIKEV2_CONFIG_PARAMS;
+
+typedef struct _PPTP_CONFIG_PARAMS {
+  DWORD dwNumPorts;
+  DWORD dwPortFlags;
+} PPTP_CONFIG_PARAMS, *PPPTP_CONFIG_PARAMS;
+
+typedef struct _L2TP_CONFIG_PARAMS {
+  DWORD dwNumPorts;
+  DWORD dwPortFlags;
+} L2TP_CONFIG_PARAMS, *PL2TP_CONFIG_PARAMS;
+
+typedef struct _SSTP_CERT_INFO {
+  BOOL            isDefault;
+  CRYPT_HASH_BLOB certBlob;
+} SSTP_CERT_INFO, *PSSTP_CERT_INFO;
+
+typedef struct _SSTP_CONFIG_PARAMS {
+  DWORD          dwNumPorts;
+  DWORD          dwPortFlags;
+  BOOL           isUseHttps;
+  DWORD          certAlgorithm;
+  SSTP_CERT_INFO sstpCertDetails;
+} SSTP_CONFIG_PARAMS, *PSSTP_CONFIG_PARAMS;
+
+typedef struct _MPRAPI_TUNNEL_CONFIG_PARAMS {
+  IKEV2_CONFIG_PARAMS IkeConfigParams;
+  PPTP_CONFIG_PARAMS  PptpConfigParams;
+  L2TP_CONFIG_PARAMS  L2tpConfigParams;
+  SSTP_CONFIG_PARAMS  SstpConfigParams;
+} MPRAPI_TUNNEL_CONFIG_PARAMS, *PMPRAPI_TUNNEL_CONFIG_PARAMS;
+
+typedef struct _MPR_SERVER_SET_CONFIG_EX {
+  MPRAPI_OBJECT_HEADER        Header;
+  DWORD                       setConfigForProtocols;
+  MPRAPI_TUNNEL_CONFIG_PARAMS ConfigParams;
+} MPR_SERVER_SET_CONFIG_EX, *PMPR_SERVER_SET_CONFIG_EX;
+
+DWORD APIENTRY MprConfigServerSetInfoEx(HANDLE hMprConfig,MPR_SERVER_SET_CONFIG_EX *pSetServerConfig);
+
+#endif /*(_WIN32_WINNT >= 0x0601)*/
+
 #ifdef __cplusplus
 }
 #endif
-#endif
+
+#endif /* __ROUTING_MPRADMIN_H__ */

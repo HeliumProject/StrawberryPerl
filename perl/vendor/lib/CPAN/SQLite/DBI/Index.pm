@@ -1,10 +1,12 @@
+# $Id: Index.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::DBI::Index;
 use CPAN::SQLite::DBI qw($dbh);
 use base qw(CPAN::SQLite::DBI);
 
 use strict;
 use warnings;
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 
 package CPAN::SQLite::DBI::Index::chaps;
 use base qw(CPAN::SQLite::DBI::Index);
@@ -84,7 +86,6 @@ sub schema {
 
 sub create_index {
   my ($self, $data) = @_;
-  my $sql = '';
   my $key = $data->{key};
   my $table = $self->{table};
   return 1 unless (defined $key and ref($key) eq 'ARRAY');
@@ -152,8 +153,8 @@ sub create_tables {
 
 sub sth_insert {
   my ($self, $fields) = @_;
-  my $flds = join ',', @$fields;
-  my $vals = join ',', map '?', @$fields;
+  my $flds = join ',', @{$fields};
+  my $vals = join ',', map { '?' } @{$fields};
   my $sql = sprintf(qq{INSERT INTO %s (%s) VALUES (%s)},
                     $self->{table}, $flds, $vals);
 
@@ -166,7 +167,7 @@ sub sth_insert {
 
 sub sth_update {
   my ($self, $fields, $id, $rep_id) = @_;
-  my $set = join ',', map "$_=?", @$fields;
+  my $set = join ',', map { "$_=?" } @{$fields};
   my $sql = sprintf(qq{UPDATE %s SET %s WHERE %s = %s},
                     $self->{table}, $set, $self->{id}, $id);
   $sql .= qq { AND rep_id = $rep_id } if ($rep_id);

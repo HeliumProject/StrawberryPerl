@@ -9,9 +9,8 @@ package Data::Random;
 ################################################################################
 # - Modules and Libraries
 ################################################################################
-#require 5.005_62;
+use 5.005_62;
 
-use lib qw(..);
 use Carp qw(cluck);
 
 #use Data::Random::WordList;
@@ -48,7 +47,7 @@ use vars qw(
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT    = qw();
 
-$Data::Random::VERSION = '0.05';
+$Data::Random::VERSION = '0.06';
 
 ################################################################################
 # - Subroutines
@@ -65,7 +64,7 @@ sub rand_words {
     # Initialize max and min vars
     $options{'min'} ||= 1;
     $options{'max'} ||= 1;
-    
+
     # Initialize the wordlist param
     $options{'wordlist'} ||= '';
 
@@ -100,7 +99,7 @@ sub rand_words {
     else {
         require Data::Random::WordList;
 
-        # Create a new wordlist object    
+        # Create a new wordlist object
         $wl = new Data::Random::WordList( wordlist => $options{'wordlist'} );
     }
 
@@ -111,7 +110,7 @@ sub rand_words {
     $wl->close() if $close_wl;
 
     # Shuffle the words around
-    shuffle($rand_words) if $options{'shuffle'};
+    _shuffle($rand_words) if $options{'shuffle'};
 
 # Return an array or an array reference, depending on the context in which the sub was called
     if ( wantarray() ) {
@@ -224,7 +223,7 @@ sub rand_set {
     my @results = sort { $a <=> $b } keys %results;
 
     # Shuffle the items
-    shuffle( \@results ) if $options{'shuffle'};
+    _shuffle( \@results ) if $options{'shuffle'};
 
 # Return an array or an array reference, depending on the context in which the sub was called
     if ( wantarray() ) {
@@ -521,9 +520,9 @@ sub rand_image {
 }
 
 ################################################################################
-# shuffle()
+# _shuffle()
 ################################################################################
-sub shuffle {
+sub _shuffle {
     my $array = shift;
 
     for ( my $i = @$array - 1 ; $i >= 0 ; $i-- ) {
@@ -535,6 +534,8 @@ sub shuffle {
 
 1;
 
+
+
 =head1 NAME
 
 Data::Random - Perl module to generate random data
@@ -543,26 +544,26 @@ Data::Random - Perl module to generate random data
 =head1 SYNOPSIS
 
   use Data::Random qw(:all);
-  
+
   my @random_words = rand_words( size => 10 );
-    
+
   my @random_chars = rand_chars( set => 'all', min => 5, max => 8 );
-  
+
   my @random_set = rand_set( set => \@set, size => 5 );
-  
+
   my $random_enum = rand_enum( set => \@set );
-  
+
   my $random_date = rand_date();
-  
+
   my $random_time = rand_time();
-    
+
   my $random_datetime = rand_datetime();
-  
+
   open(FILE, ">rand_image.png") or die $!;
   binmode(FILE);
   print FILE rand_image( bgcolor => [0, 0, 0] );
   close(FILE);
-  
+
 
 =head1 DESCRIPTION
 
@@ -597,7 +598,7 @@ size - the number of words to return.  The default is 1.  If you supply a value 
 
 shuffle - whether or not the words should be randomly shuffled.  Set this to 0 if you don't want the words shuffled.  The default is 1.  Random::Data::WordList returns words in the order that they're viewed in the word list file, so shuffling will make sure that the results are a little more random.
 
-=back 4
+=back
 
 
 =head2 rand_chars()
@@ -617,9 +618,9 @@ set - the set of characters to be used.  This value can be either a reference to
     alphanumeric - alphanumeric characters: a-z, A-Z, 0-9
     char         - non-alphanumeric characters: # ~ ! @ $ % ^ & * ( ) _ + = - { } | : " < > ? / . ' ; ] [ \ `
     all          - all of the above
-    
+
 =item *
-    
+
 min - the minimum number of characters to return.  The default is 0.
 
 =item *
@@ -634,7 +635,7 @@ size - the number of characters to return.  The default is 1.  If you supply a v
 
 shuffle - whether or not the characters should be randomly shuffled.  Set this to 0 if you want the characters to stay in the order received.  The default is 1.
 
-=back 4
+=back
 
 
 =head2 rand_set()
@@ -663,7 +664,7 @@ size - the number of strings to return.  The default is 1.  If you supply a valu
 
 shuffle - whether or not the strings should be randomly shuffled.  Set this to 0 if you want the strings to stay in the order received.  The default is 1.
 
-=back 4
+=back
 
 
 =head2 rand_enum()
@@ -676,7 +677,7 @@ This returns a random element given an initial set.  See below for possible para
 
 set - the set of strings to be used.  This should be a reference to an array of strings.
 
-=back 4
+=back
 
 
 =head2 rand_date()
@@ -684,17 +685,17 @@ set - the set of strings to be used.  This should be a reference to an array of 
 This returns a random date in the form "YYYY-MM-DD".  2-digit years are not currently supported.  Efforts are made to make sure you're returned a truly valid date--ie, you'll never be returned the date February 31st.  See the options below to find out how to control the date range.  Here are a few examples:
 
     # returns a date somewhere in between the current date, and one year from the current date
-    $date = rand_date();    
-    
+    $date = rand_date();
+
     # returns a date somewhere in between September 21, 1978 and September 21, 1979
     $date = rand_date( min => '1978-9-21' );
-    
+
     # returns a date somewhere in between September 21, 1978 and the current date
     $date = rand_date( min => '1978-9-21', max => 'now' );
-    
+
     # returns a date somewhere in between the current date and September 21, 2008
     $date = rand_date( min => 'now', max => '2008-9-21' );
-    
+
 See below for possible parameters.
 
 =over 4
@@ -707,7 +708,7 @@ min - the minimum date to be returned. It should be in the form "YYYY-MM-DD" or 
 
 max - the maximum date to be returned. It should be in the form "YYYY-MM-DD" or you can alternatively use the string "now" to represent the current date.  The default is one year from the minimum date;
 
-=back 4
+=back
 
 
 =head2 rand_time()
@@ -715,18 +716,18 @@ max - the maximum date to be returned. It should be in the form "YYYY-MM-DD" or 
 This returns a random time in the form "HH:MM:SS".  24 hour times are supported.  See the options below to find out how to control the time range.  Here are a few examples:
 
     # returns a random 24-hr time (between 00:00:00 and 23:59:59)
-    $time = rand_time();    
-    
+    $time = rand_time();
+
     # returns a time somewhere in between 04:00:00 and the end of the day
     $time = rand_time( min => '4:0:0' );
-    
+
     # returns a time somewhere in between 8:00:00 and the current time (if it's after 8:00)
     $time = rand_time( min => '12:00:00', max => 'now' );
-    
+
     # returns a date somewhere in between the current time and the end of the day
     $time = rand_time( min => 'now' );
-    
-See below for possible parameters.    
+
+See below for possible parameters.
 
 =over 4
 
@@ -738,7 +739,7 @@ min - the minimum time to be returned. It should be in the form "HH:MM:SS" or yo
 
 max - the maximum time to be returned. It should be in the form "HH:MM:SS" or you can alternatively use the string "now" to represent the current time.  The default is 23:59:59;
 
-=back 4
+=back
 
 
 =head2 rand_datetime()
@@ -747,16 +748,16 @@ This returns a random date and time in the form "YYYY-MM-DD HH:MM:SS".  See the 
 
     # returns a date somewhere in between the current date/time, and one year from the current date/time
     $datetime = rand_datetime();
-    
+
     # returns a date somewhere in between 4:00 September 21, 1978 and 4:00 September 21, 1979
     $datetime = rand_datetime( min => '1978-9-21 4:0:0' );
-    
+
     # returns a date somewhere in between 4:00 September 21, 1978 and the current date
     $datetime = rand_datetime( min => '1978-9-21 4:0:0', max => 'now' );
-    
+
     # returns a date somewhere in between the current date/time and the end of the day September 21, 2008
     $datetime = rand_datetime( min => 'now', max => '2008-9-21 23:59:59' );
-    
+
 See below for possible parameters.
 
 =over 4
@@ -769,7 +770,7 @@ min - the minimum date/time to be returned. It should be in the form "YYYY-MM-DD
 
 max - the maximum date/time to be returned. It should be in the form "YYYY-MM-DD HH:MM:SS" or you can alternatively use the string "now" to represent the current date/time.  The default is one year from the minimum date/time;
 
-=back 4
+=back
 
 
 =head2 rand_image()
@@ -822,29 +823,35 @@ bgcolor - the background color of the image.  The value must be a reference to a
 
 fgcolor - the foreground color of the image.  The value must be a reference to an RGB array where each element is an integer between 0 and 255 (eg. [ 55, 120, 255 ]).
 
-=back 4
+=back
 
 
 =head1 VERSION
 
-0.05
+0.06
+
 
 =head1 AUTHOR
 
-Adekunle Olonoh, koolade@users.sourceforge.net
+Originally written by: Adekunle Olonoh
+
+Currently maintained by: Buddy Burden (barefoot@cpan.org), starting with version 0.06
+
 
 =head1 CREDITS
 
-Hiroki Chalfant
-David Sarno
+    Hiroki Chalfant
+    David Sarno
+
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Adekunle Olonoh. All rights reserved. This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself. 
+Copyright (c) 2000-2011 Adekunle Olonoh.  All rights reserved.  This program is free software; you
+can redistribute it and/or modify it under the same terms as Perl itself.
+
 
 =head1 SEE ALSO
 
-Data::Random::WordList
+L<Data::Random::WordList>
 
 =cut
-

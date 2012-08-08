@@ -2,9 +2,470 @@
 
 DBD::ODBC::Changes - Log of significant changes to the DBD::ODBC
 
-As of $LastChangedDate: 2011-03-06 17:18:35 +0000 (Sun, 06 Mar 2011) $
+As of $LastChangedDate: 2012-04-07 14:53:28 +0100 (Sat, 07 Apr 2012) $
 
 $Revision: 10667 $
+
+=head2 Changes in DBD::ODBC 1.37 April 7 2012
+
+  A full release of the 1.36 dev releases.
+
+  Please note the changes in behaviour below.
+
+=head2 Changes in DBD::ODBC 1.36_2 March 31 2012
+
+  [BUG FIXES]
+
+  * not strictly a bug fix, more a workaround. MS Access mdb driver
+    reports 22 for the size of doubles but then returns an empty string
+    for long doubles that still fit in 22 chrs. rt 69864.
+
+  [CHANGE IN BEHAVIOUR]
+
+  * The odbc_disable_array_operations has been replaced with
+    odbc_array_operations and the default for array operations is off.
+    Sorry, but I warned this was experimental. The
+    ODBC_DISABLE_ARRAY_OPERATIONS env var remains.
+
+  [DOCUMENTATION]
+
+  * Rewrote parts of "Unicode implementation in DBD::ODBC" to describe
+    UTF-16/UCS-2 internal implementation.
+
+  * Changed ordering of some of the pod sections.
+
+=head2 Changes in DBD::ODBC 1.36_1 March 21 2012
+
+  [BUG FIXES]
+
+  * Fixed 12blob.t skip count when driver does not have a big enough
+    varchar column to run the test.
+
+  * Work around problems hit during the test suite in DB2 driver which
+    only allows rows of size up to the page size and varchars of 4K.
+
+  * Fix bug in execute_for_fetch where it would ignore the parameters
+    processed when creating the ArrayTupleStatus and hence could
+    attempt to call SQLGetDiagRec on a parameter row which was not
+    executed. See the logs in rt 75687 which show this although this
+    is not a fix for this rt.
+
+  * The code wasn't catching success with info from SQLExecute in
+    execute_for_fetch.
+
+  * Add support for drivers (DB2 in this case) which return
+    SQL_PARAM_DIAG_UNAVAILABLE in bound parameter status array when
+    running execute_for_fetch. Any driver returning doing
+    SQL_PARC_NO_BATCH from SQLGetInfo(SQL_PARAM_ARRAY_ROW_COUNTS)
+    might do this.
+
+  * Fix test code for execute_for_fetch to a) handle drivers doing
+    SQL_PARC_NO_BATCH and b) add "not null" to primary key fields for
+    drivers like DB2 which require it.
+
+  [CHANGE IN BEHAVIOUR]
+
+  * In execute_for_fetch set the parameter status array to all 9999
+    (which is invalid) so we can see if the ODBC driver actually sets
+    them and we can warn if they don't.
+
+  * For freeTDS default odbc_disable_array_operations to 1 as no
+    version of the freeTDS driver can be found that works. I was
+    requested to do this by the dbix-class guys. I may revert this
+    later if freeTDS is fixed.
+
+  * as above for MS Access. It is a shame I cannot find any way of
+    finding out if a driver is capable of array operations.
+
+  [ENHANCEMENTS]
+
+  * execute_for_fetch code now checks the
+    ODBC_DISABLE_ARRAY_OPERATIONS environment variable which can
+    be set to 1 or 0 to override the internal default.
+
+  [DOCUMENTATION]
+
+  * Fixed ColAttributes example in pod which used a $dbh instead of a
+    $sth.
+
+  * Fixed DescribeCol example in pod which used a $dbh instead of a
+    $sth.
+
+  * new FAQ on SQLRowCount, freeTDS and execute_for_fetch
+
+  * Fix typo shown in rt 75860.
+
+  [OTHER]
+
+  * Reduced usage of D_imp_xxx to avoid calls to dbih_getcom2.  See
+    thread on dbi-dev at
+    http://www.mail-archive.com/dbi-dev@perl.org/msg06675.html
+
+  * Changed the 70execute_array.t test to run it twice, once using
+    DBI's methods and once using the native one in DBD::ODBC.
+
+  * Made the 2 unicode tests work with DB2 ODBC driver.
+
+=head2 Changes in DBD::ODBC 1.35 March 6 2012
+
+  Full release of the 1.34 development releases
+
+=head2 Changes in DBD::ODBC 1.34_7 March 2 2012
+
+  [BUG FIXES]
+
+  * Fixed more compiler errors highlighed by a smoker using MS Visual
+    C where some code come before a variable definition.
+
+=head2 Changes in DBD::ODBC 1.34_6 February 27 2012
+
+  [BUG FIXES]
+
+  * Fixed some compiler warnings and a compile error highlighed by a
+    smoker using MS Visual C where some code come before a variable
+    definition.
+
+=head2 Changes in DBD::ODBC 1.34_5 February 17 2012
+
+  [BUG FIXES]
+
+  * The 40UnicodeRoundTrip tests counts could be 1 off in some cases.
+
+  * Fix for t/03batt.t which could fail a test if the data source had
+    no table - Kenichi Ishigaki
+
+  * If a driver misbehaves during global destruction e.g. SQLFreeStmt
+    fails but no error is available DBD::ODBC issues an error saying
+    an error occurred but no error diagnostics could be found. This is
+    pointless and irritating during global destruction. This stems
+    from a change in 1.28. Thanks to Peter Rabbitson for reporting
+    and suggested fix.
+
+  [CHANGE IN BEHAVIOUR]
+
+  * Prior to this release if you called selectall_* methods with a
+    non-select statement DBD::ODBC would raise an error saying "no
+    select statement currently executing".  See RT 68720. After
+    discussions on dbi-dev the concensus seems to be that issuing a
+    warning in this case is better so that is what I've done. As a
+    result t/rt_68720.t has been removed and
+    t/85_selectall_non_select.t has been added.
+
+  [DOCUMENTATION]
+
+  * odbc_getdiagfield was incorrectly named odbc_getdiagrec in the pod
+
+  * add DBI version required for StrictlyTyped and DiscardString to
+    pod
+
+  * Added new FAQ on why a transaction may be committed when
+    AutoCommit is turned off.
+
+  [OTHER]
+
+  * Make examples\odbc_diag.pl more tolerant of drivers which do not
+    handle diagnostic calls properly.
+
+  * Make t/40UnicodeRoundTrip.t work with SQLite - Kenichi Ishigaki
+
+  * Make t/odbc_describe_parameter.t work with SQLite - Kenichi
+    Ishigaki
+
+  * Add 80_odbc_diags.t based on the same file in examples
+
+=head2 Changes in DBD::ODBC 1.34_4 February 5 2012
+
+  [BUG FIXES]
+
+  * When odbc_getdiag* methods were added they installed themselves
+    into DBI but did not set IMP_KEEP_ERR so calling them cleared
+    DBI's errors.
+
+=head2 Changes in DBD::ODBC 1.34_3 February 3 2012
+
+  [BUG FIXES]
+
+  * Linking against unixODBC was working by accident on most UNIX
+    machines and depended on the order of the files in /usr/lib (or
+    wherever) and what files there were (e.g. an archive or a shared
+    object). Same applied to iODBC but it was more broken especially
+    on machines where libiodbc.so.N.N existed but there was no
+    libiodbc.so which could lead to no adding the shared object at
+    all. I doubt anyone really noticed this but I did eventually on
+    Ubuntu where libiodbc.so.N.N existed but libiodbc.so did not.
+
+  [ENHANCEMENTS]
+
+  * Added experimental odbc_getdiagrec and odbc_getdiagrec methods,
+    examples/odbc_diag.pl and examples/params_in_error.pl.
+
+  [DOCUMENTATION]
+
+  * New FAQ entries.
+
+=head2 Changes in DBD::ODBC 1.34_2 January 25 2012
+
+  [BUG FIXES]
+
+  * Fixed rt73734 - debian moved where unixODBC libs are stored.
+
+  * Fixed memory leak of the parameter status array introduced in
+    previous release when execute_for_fetch used. When the statement
+    handle is destroyed the parameter status array was not freed.
+
+  [ENHANCEMENTS]
+
+  * Added environment variable PERL_DBD_ODBC_PREFER_UNIXODBC as a
+    synonym for -x from Rafael Kitover (Caelum).
+
+  [DOCUMENTATION]
+
+  * Add a deviation from DBI spec for type_info_all.
+
+  [OTHER]
+
+  * Added example execute_for_fetch.pl
+  
+=head2 Changes in DBD::ODBC 1.34_1 December 11 2011
+
+  [ENHANCEMENTS]
+
+  * Added experimental execute_for_fetch support and associated
+    attributes odbc_batch_size and odbc_disable_array_operations.
+
+=head2 Changes in DBD::ODBC 1.33 December 1 2011
+
+  This is simply the official release of the 1.32 development
+  releases.
+
+=head2 Changes in DBD::ODBC 1.32_5 November 24 2011
+
+  [ENHANCEMENTS]
+
+  * Enable multiple active statement support in 70execute_array.t for
+    drivers we recognise which support MAS.
+
+  * Change column_info to support Unicode catalog/schema/table/column
+    names.
+
+=head2 Changes in DBD::ODBC 1.32_4 November 22 2011
+
+  [BUG FIXES]
+
+  * remove debugging printf which output "HERE" in some rare cases.
+    rt 72534 - thanks John Deighan for spotting this.
+
+  * The test 70execute_array.t could fail due to warning being output
+    if the driver does not support Multiple Active Statements.
+
+  [ENHANCEMENTS]
+
+  * Use SQLGetTypeInfoW on unicode builds.
+
+=head2 Changes in DBD::ODBC 1.32_3 November 15 2011
+
+  [BUG FIXES]
+
+  * Fix bug in utf16_copy which was not adding a trailing NUL but I'm
+    not sure this affected anyone until I changed table_info this
+    release.
+
+  [ENHANCEMENTS]
+
+  * DBD::ODBC now allows unicode catalog/schema/table parameters to be
+    passed to table_info. Of course they will only reliably work with
+    a supporting Unicode ODBC driver.
+
+=head2 Changes in DBD::ODBC 1.32_2 October 22 2011
+
+  [ENHANCEMENTS]
+
+  * Added new odbc_driver_complete attribute allowing the ODBC Driver
+    Manager and ODBC Driver to throw dialogues for incomplete
+    connection strings or expired passwords etc.
+
+  [OTHER]
+
+  * added more examples
+
+  [DOCUMENTATION]
+
+  * new FAQ entries
+
+  * added note saying you cannot pass unicode schema/table/column
+    names to metadata calls like table_info/column_info currently.
+
+=head2 Changes in DBD::ODBC 1.32_1 June 24 2011
+
+  [BUG FIXES]
+
+  * I omitted rt_68720.t from the 1.31 distribution which leads
+    to a warning as it is mentioned in the MANIFEST.
+ 
+  [OTHER]
+
+  * Changed line endings in README.af and README.unicode to be unix
+    line endings and native eol-style in subversion.
+
+  * Minor changes to Makefile.PL to save the opensuse guys patching.
+
+  * Added unicode_sql.pl and unicode_params.pl examples
+
+=head2 Changes in DBD::ODBC 1.31 June 21, 2011
+
+  [BUG FIXES]
+
+  Recently introduced test sql_type_cast.t cannot work with DBI less
+  than 1.611.
+
+  Minor change to Makefile.PL to avoid use of unitialised warning on
+  $ENV{LD_LIBRARY_PATH} in warning when it is not set.
+
+=head2 Changes in DBD::ODBC 1.30_7 June 15, 2011
+
+  [BUG FIXES]
+
+  Some time ago (I don't know when) a few internal errors generated by
+  DBD::ODBC got ignored. There are about 5 of them but I seriously
+  doubt anyone would hit any other than the data truncated error
+  (which is reported by the ODBC driver anyway) and "no select
+  statement currently executing". You can see rt_68720.t in the t
+  directory for an example of the latter.
+
+  [ENHANCEMENTS]
+
+  An extra argument has been added to the sub associated with
+  odbc_err_handler.  The arguments passed to the odbc_err_handler are
+  now state (string), error (string), native error code (number) and
+  the status returned from the last ODBC API. The status will be
+  SQL_ERROR (-1) for errors or SQL_SUCCESS_WITH_INFO (1) for
+  informational messages.
+
+=head2 Changes in DBD::ODBC 1.30_6 June 4, 2011
+
+  [BUG FIXES]
+
+  * When DBD::ODBC calls SQLExecDirect (the do method) it was not
+    reporting informational diagnostics (SQL_SUCCESS_WITH_INFO) and
+    not calling the error handler.
+
+    Arguably, this is a change in behaviour but one I've struggled to
+    resolve since in all other cases of warnings DBD::ODBC's error
+    handler is called. However, DBI does not call its error handler
+    for warnings so was DBD::ODBC wrong to call it's error in the
+    first place for warnings? I decided it was better to leave this as
+    it is but add checking of SQLExecDirect/do. Apart from anything
+    else if DBD::ODBC does not call its error handler for
+    informational diagnostics there is no way to retrieve print
+    statements etc from procedures.
+
+  * The odbc_describe_parameter.t test could fail with some versions
+    of MS SQL Server ODBC Driver. It was down to when
+    SQLDescribeParameter is disabled, the column_size passed to
+    SQLBindParameter is 0.
+
+  * pod example of odbc_err_handler incorrectly used \$err_handler
+    instead of \&err_handler.
+
+=head2 Changes in DBD::ODBC 1.30_5 May 24, 2011
+
+  [BUG FIXES]
+
+  * The change in behavior detailed in 1.30_1 for wide character
+    binding was still not working properly (see
+    http://rt.cpan.org/Ticket/Display.html?id=67994). It was working
+    for SQL_CHAR described columns but not SQL_VARCHAR.
+
+=head2 Changes in DBD::ODBC 1.30_4 May 18, 2011
+
+  [BUG FIXES]
+
+  * Fix issue described in
+    http://www.nntp.perl.org/group/perl.dbi.dev/2011/05/msg6567.html.
+    If you prepare a statement, disconnect and then try and execute the
+    statement you get an error but it does not tell what is wrong.
+
+  [ENHANCEMENTS]
+
+  * Added support for StrictlyTyped and DiscardString to the bind_col
+    method.
+
+  [OTHER]
+
+  * Minor changes to META.yml for mailing list, dynamic_config,
+    homepage and keywords.
+
+  * The pod was missing = before the heads on a couple of sections in
+    "Private DBD::ODBC Functions"
+
+  * TreatAsLob was incorrectly documented as BindAsLob.
+
+=head2 Changes in DBD::ODBC 1.30_3 May 17, 2011
+
+  [BUG FIXES]
+
+  * Made the new odbc_describe_parameters work and added test case.
+
+=head2 Changes in DBD::ODBC 1.30_2 May 16, 2011
+
+  [ENHANCEMENTS]
+
+  * Added the new odbc_describe_parameters attribute.
+
+=head2 Changes in DBD::ODBC 1.30_1 May 12, 2011
+
+  [BUG FIXES]
+
+  * Fixed some compiler warnings shown with -Wall including some
+    printf formats that had extra/missing arguments.
+
+  * Fixed t/70execute_array.t which was missing an "order by" in the
+    check_data sub which could cause failures for drivers not
+    returning the rows in the order they were inserted.
+
+  * Minor fix to Makefile.PL to avoid issuing variable used in void
+    context.
+
+  [CHANGE IN BEHAVIOUR]
+
+  * DBD::ODBC used to quietly rollback any transactions when
+    disconnect was called and AutoCommit was off. This can mask a
+    problem and leads to different behaviour when disconnect is called
+    vs not calling disconnect (where you get a warning). This release
+    issues a warning if you call disconnect and a transaction is in
+    progress then it is rolled back.
+
+  * DBD::ODBC used to bind char/varchar/longvarchar columns as SQL_CHAR
+    meaning that in the unicode build of DBD::ODBC the bound column
+    data would be returned 8bit in whatever character-set (codepage) the
+    data was in, in the database. This was inconvenient and arguably a
+    mistake. Columns like nchar/nvarchar etc were bound as SQL_WCHAR and
+    returned as Unicode. This release changes the behaviour in a unicode
+    build of DBD::ODBC to bind all char columns as SQL_WCHAR. This may
+    inconvenience a few people who expected 8bit chars back, knew the
+    char set and decoded them (sorry). See odbc_old_unicode to return
+    to old behaviour.
+
+  [ENHANCEMENTS]
+
+  * added -w option to Makefile.PL to add "-Wall" to CCFLAGS and
+    -fno-strict-aliasing so I can find warnings.
+
+  * Cope with broken ODBC drivers that describe a parameter as SQL
+    type 0.
+
+  [OTHER]
+
+  * Add "disconnect and transactions" to pod describing what DBD::ODBC
+    does if you call disconnect with an outstanding transaction.
+
+  * Reorganised FAQ for bound parameter issues and added a lot on
+    bound parameter problems.
+
+  * Added new FAQ entry for Firebird
+
+  * Removed some unused variables and added some missing function
+    prototypes
 
 =head2 Changes in DBD::ODBC 1.29 March 8, 2011
 
@@ -501,7 +962,7 @@ $Revision: 10667 $
   In 99_yaml.t pick up the yaml spec version from the meta file instead of
   specifying it.
 
-  Change calls to SQLPrepare which passed in the string lenth of the SQL
+  Change calls to SQLPrepare which passed in the string length of the SQL
   to use SQL_NTS because a) they are null terminated and more importantly
   b) unixODBC contains a bug in versions up to 2.2.16 which can overwrite
   the stack by 1 byte if the string length is specified and not built with
@@ -1119,7 +1580,7 @@ $Revision: 10667 $
   Minor changes to 02simple.t and 03dbatt.t to fix diagnostics output and
   help debug DBD which does not handle long data properly.
 
-  Further changes to Makefile.PL to avoid change in behavior of
+  Further changes to Makefile.PL to avoid change in behaviour of
   ExtUtils::MakeMaker wrt order of execution of PREREQ_PM and CONFIGURE.
   Now if DBI::DBD is not installed we just warn and exit 0 to avoid a
   cpan-testers failure.
@@ -1698,7 +2159,7 @@ $Revision: 10667 $
 
   Most significant change is the change in the default binding type which
   forces DBD::ODBC to attempt to determine the bind type if one is not
-  passed.  I decided to make this the default behavior to make things as
+  passed.  I decided to make this the default behaviour to make things as
   simple as possible.
 
   Fixed connection code put in 0.39 to work correctly.
@@ -1822,7 +2283,7 @@ $Revision: 10667 $
     $dbh->{odbc_default_bind_type} = 0; # before creating the query...
 
   Currently the default value of odbc_default_bind_type = SQL_VARCHAR
-  which mimicks the current behavior.  If you set odbc_default_bind_type
+  which mimicks the current behaviour.  If you set odbc_default_bind_type
   to 0, then SQLDescribeParam will be called to determine the columen
   type.  Not ALL databases handle this correctly.  For example, Oracle
   returns SQL_VARCHAR for all types and attempts to convert to the correct

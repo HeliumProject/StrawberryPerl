@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _DVEC_H_INCLUDED
 #define _DVEC_H_INCLUDED
@@ -11,7 +11,7 @@
 #error This file is only supported in C++ compilations!
 #endif
 
-#include <emmintrin.h>
+#include <intrin.h>
 #include <assert.h>
 #include <fvec.h>
 #include <_mingw.h>
@@ -21,6 +21,8 @@
 #if defined(_ENABLE_VEC_DEBUG)
 #include <iostream>
 #endif
+
+#ifdef __SSE__
 
 #pragma pack(push,16)
 
@@ -38,20 +40,20 @@ class Iu32vec4;
 class I64vec2;
 class I128vec1;
 
-#define _MM_16UB(element,vector) (*((unsigned char*)&##vector + ##element))
-#define _MM_16B(element,vector) (*((signed char*)&##vector + ##element))
+#define _MM_16UB(element,vector) (*((unsigned char*)&(vector) + (element)))
+#define _MM_16B(element,vector) (*((signed char*)&(vector) + (element)))
 
-#define _MM_8UW(element,vector) (*((unsigned short*)&##vector + ##element))
-#define _MM_8W(element,vector) (*((short*)&##vector + ##element))
+#define _MM_8UW(element,vector) (*((unsigned short*)&(vector) + (element)))
+#define _MM_8W(element,vector) (*((short*)&(vector) + (element)))
 
-#define _MM_4UDW(element,vector) (*((unsigned int*)&##vector + ##element))
-#define _MM_4DW(element,vector) (*((int*)&##vector + ##element))
+#define _MM_4UDW(element,vector) (*((unsigned int*)&(vector) + (element)))
+#define _MM_4DW(element,vector) (*((int*)&(vector) + (element)))
 
-#define _MM_2QW(element,vector) (*((__MINGW_EXTENSION __int64*)&##vector + ##element))
+#define _MM_2QW(element,vector) (*((__int64*)&(vector) + (element)))
 
-inline const __m128i get_mask128()
+__MINGW_EXTENSION inline const __m128i get_mask128()
 {
-  static const __m128i mask128 = _mm_set1_epi64(M64(0xffffffffffffffffi64));
+  static const __m128i mask128 = _mm_set1_epi64(M64((__int64)0xffffffffffffffffll));
   return mask128;
 }
 
@@ -96,10 +98,10 @@ public:
   I64vec2() { }
   I64vec2(__m128i mm) : M128(mm) { }
 
-  I64vec2(__m64 q1,__m64 q0)
+  __MINGW_EXTENSION I64vec2(__m64 q1,__m64 q0)
   {
-    _MM_2QW(0,vec) = *(__MINGW_EXTENSION __int64*)&q0;
-    _MM_2QW(1,vec) = *(__MINGW_EXTENSION __int64*)&q1;
+    _MM_2QW(0,vec) = *(__int64*)&q0;
+    _MM_2QW(1,vec) = *(__int64*)&q1;
   }
 
   I64vec2& operator= (const M128 &a) { return *this = (I64vec2) a; }
@@ -838,6 +840,9 @@ inline F32vec4 F64vec2ToF32vec4(const F64vec2 &a) { return _mm_cvtpd_ps(a); }
 inline F64vec2 IntToF64vec2(const F64vec2 &a,int b) { return _mm_cvtsi32_sd(a,b); }
 
 #pragma pack(pop)
+
+#endif /* ifdef __SSE__ */
+
 #pragma pack(pop)
 #endif
 #endif

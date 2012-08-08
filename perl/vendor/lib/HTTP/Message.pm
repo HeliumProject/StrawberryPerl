@@ -2,7 +2,7 @@ package HTTP::Message;
 
 use strict;
 use vars qw($VERSION $AUTOLOAD);
-$VERSION = "5.837";
+$VERSION = "6.03";
 
 require HTTP::Headers;
 require Carp;
@@ -307,7 +307,7 @@ sub decoded_content
 		    $content_ref = \$output;
 		    $content_ref_iscopy++;
 		}
-		elsif ($ce eq "x-bzip2") {
+		elsif ($ce eq "x-bzip2" or $ce eq "bzip2") {
 		    require IO::Uncompress::Bunzip2;
 		    my $output;
 		    IO::Uncompress::Bunzip2::bunzip2($content_ref, \$output, Transparent => 0)
@@ -364,16 +364,21 @@ sub decoded_content
 		$self->content_charset ||
 		"ISO-8859-1"
 	    );
-	    unless ($charset =~ /^(?:none|us-ascii|iso-8859-1)\z/) {
-		require Encode;
-		if (do{my $v = $Encode::VERSION; $v =~ s/_//g; $v} < 2.0901 &&
-		    !$content_ref_iscopy)
-		{
-		    # LEAVE_SRC did not work before Encode-2.0901
-		    my $copy = $$content_ref;
-		    $content_ref = \$copy;
-		    $content_ref_iscopy++;
+	    if ($charset eq "none") {
+		# leave it asis
+	    }
+	    elsif ($charset eq "us-ascii" || $charset eq "iso-8859-1") {
+		if ($$content_ref =~ /[^\x00-\x7F]/ && defined &utf8::upgrade) {
+		    unless ($content_ref_iscopy) {
+			my $copy = $$content_ref;
+			$content_ref = \$copy;
+			$content_ref_iscopy++;
+		    }
+		    utf8::upgrade($$content_ref);
 		}
+	    }
+	    else {
+		require Encode;
 		eval {
 		    $content_ref = \Encode::decode($charset, $$content_ref,
 			 ($opt{charset_strict} ? Encode::FB_CROAK() : 0) | Encode::LEAVE_SRC());
@@ -386,7 +391,7 @@ sub decoded_content
 			    # Retry decoding with the alternative charset
 			    $content_ref = \Encode::decode($alt_charset, $$content_ref,
 				 ($opt{charset_strict} ? Encode::FB_CROAK() : 0) | Encode::LEAVE_SRC())
-			        unless $alt_charset =~ /^(?:none|us-ascii|iso-8859-1)\z/;
+			        unless $alt_charset eq "none";
 			    $retried++;
 			}
 		    }
@@ -869,10 +874,10 @@ for details about how charset is determined.
 
 =item $mess->decoded_content( %options )
 
-Returns the content with any C<Content-Encoding> undone and the raw
-content encoded to perl's Unicode strings.  If the C<Content-Encoding>
-or C<charset> of the message is unknown this method will fail by
-returning C<undef>.
+Returns the content with any C<Content-Encoding> undone and for textual content
+the raw content encoded to Perl's Unicode strings.  If the C<Content-Encoding>
+or C<charset> of the message is unknown this method will fail by returning
+C<undef>.
 
 The following options can be specified.
 
@@ -976,7 +981,7 @@ one part returned.
 If the content type is C<message/http>, then the return value will be
 either an C<HTTP::Request> or an C<HTTP::Response> object.
 
-If an @parts argument is given, then the content of the message will be
+If a @parts argument is given, then the content of the message will be
 modified. The array reference form is provided so that an empty list
 can be provided.  The @parts array should contain C<HTTP::Message>
 objects.  The @parts objects are owned by $mess after this call and

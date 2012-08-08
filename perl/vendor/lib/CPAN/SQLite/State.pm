@@ -1,3 +1,5 @@
+# $Id: State.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::State;
 use strict;
 use warnings;
@@ -5,7 +7,7 @@ no warnings qw(redefine);
 use CPAN::SQLite::DBI qw($dbh);
 use CPAN::SQLite::DBI::Index;
 use CPAN::SQLite::Util qw(has_hash_data print_debug);
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 
 my %tbl2obj;
 $tbl2obj{$_} = __PACKAGE__ . '::' . $_ for (qw(dists mods auths));
@@ -34,7 +36,7 @@ sub new {
               cdbi => $cdbi,
               reindex => $args{reindex},
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub state {
@@ -62,7 +64,7 @@ sub create_objs {
       my $info = $index->{info};
       return unless has_hash_data($info);
       $obj = $pack->new(info => $info, 
-			cdbi => $self->{cdbi}->{objs}->{$table});
+                        cdbi => $self->{cdbi}->{objs}->{$table});
     }
     else {
       $obj = $pack->new();
@@ -89,14 +91,14 @@ sub state_info {
     for my $table (@tables) {
       my $obj = $self->{obj}->{$table};
       unless ($obj->$method()) {
-	if (my $error = $obj->{error_msg}) {
-	  print_debug("Fatal error from ", ref($obj), ": ", $error, $/);
-	  return;
-	}
-	else {
-	  my $info = $obj->{info_msg};
-	  print_debug("Info from ", ref($obj), ": ", $info, $/);
-	}
+        if (my $error = $obj->{error_msg}) {
+          print_debug("Fatal error from ", ref($obj), ": ", $error, $/);
+          return;
+        }
+        else {
+          my $info = $obj->{info_msg};
+          print_debug("Info from ", ref($obj), ": ", $info, $/);
+        }
       }
     }
   }
@@ -125,7 +127,7 @@ sub new {
               error_msg => '',
               info_msg => '',
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub ids {
@@ -197,7 +199,7 @@ sub new {
               info_msg => '',
               reindex => undef,
   };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub ids {
@@ -274,7 +276,7 @@ sub new {
               error_msg => '',
               info_msg => '',
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub ids {
@@ -289,7 +291,6 @@ sub ids {
 
 sub state {
   my $self = shift;
-  my $mods = $self->{info};
   my $mod_ids = $self->{ids};
   return unless my $dist_obj = $self->{obj}->{dists};
   my $dists = $dist_obj->{info};

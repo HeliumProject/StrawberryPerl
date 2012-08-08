@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #if !defined(_MAPIUTIL_H) && !defined(_WABUTIL_H)
 #define _WABUTIL_H
@@ -153,7 +153,7 @@ extern "C" {
   typedef struct {
     ULONG cctl;
     LPTSTR lpszResourceName;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LPTSTR lpszComponent;
       ULONG ulItemID;
     };
@@ -201,14 +201,14 @@ extern "C" {
   STDAPI_(SCODE) ScInitMapiUtil(ULONG ulFlags);
   STDAPI_(VOID) DeinitMapiUtil(VOID);
 
-#ifdef I_X86_
+#ifdef _X86_
 #define szHrDispatchNotifications "_HrDispatchNotifications@4"
 #endif
 
   typedef HRESULT (WINAPI DISPATCHNOTIFICATIONS)(ULONG ulFlags);
   typedef DISPATCHNOTIFICATIONS *LPDISPATCHNOTIFICATIONS;
 
-#ifdef I_X86_
+#ifdef _X86_
 #define szScCreateConversationIndex "_ScCreateConversationIndex@16"
 #endif
 

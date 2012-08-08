@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _APPMGMT_H_
 #define _APPMGMT_H_
@@ -92,7 +92,7 @@ extern "C" {
   } APPCATEGORYINFOLIST;
 
 #ifndef WINAPI
-#define WINAPI
+#define WINAPI  __stdcall
 #endif
 
   DWORD WINAPI InstallApplication(PINSTALLDATA pInstallInfo);

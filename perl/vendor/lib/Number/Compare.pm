@@ -1,9 +1,8 @@
-# $Id: Compare.pm 846 2002-10-25 15:46:01Z richardc $
 package Number::Compare;
 use strict;
 use Carp qw(croak);
 use vars qw/$VERSION/;
-$VERSION = '0.01';
+$VERSION = '0.03';
 
 sub new  {
     my $referent = shift;
@@ -26,7 +25,7 @@ sub parse_to_perl {
 
     my $comparison = $1 || '==';
     my $target     = $2;
-    my $magnitude  = $3;
+    my $magnitude  = $3 || '';
     $target *=           1000 if lc $magnitude eq 'k';
     $target *=           1024 if lc $magnitude eq 'ki';
     $target *=        1000000 if lc $magnitude eq 'm';
@@ -88,7 +87,7 @@ Richard Clamp <richardc@unixbeard.net>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2002 Richard Clamp.  All Rights Reserved.
+Copyright (C) 2002,2011 Richard Clamp.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

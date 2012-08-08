@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #include <_mingw.h>
 
@@ -94,7 +94,11 @@ extern "C" {
   } _CrtMemState;
 
 #ifndef _STATIC_ASSERT
+#if defined(_MSC_VER)
 #define _STATIC_ASSERT(expr) typedef char __static_assert_t[(expr)]
+#else
+#define _STATIC_ASSERT(expr) extern void __static_assert_t(int [(expr)?1:-1])
+#endif
 #endif
 
 #ifndef _ASSERT

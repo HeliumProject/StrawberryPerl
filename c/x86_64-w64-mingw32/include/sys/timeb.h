@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _TIMEB_H_
 #define _TIMEB_H_
@@ -76,9 +76,14 @@ extern "C" {
 #endif
 
   _CRTIMP void __cdecl _ftime64(struct __timeb64 *_Time);
-  _CRTIMP void __cdecl _ftime(struct __timeb32 *);
 
+#ifdef _WIN64
+#define _timeb __timeb64
+  _CRTIMP void __cdecl _ftime(struct __timeb64 *);
+#else
 #define _timeb __timeb32
+  _CRTIMP void __cdecl _ftime(struct __timeb32 *);
+#endif
 
 #ifndef _TIMESPEC_DEFINED
 #define _TIMESPEC_DEFINED

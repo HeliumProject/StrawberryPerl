@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_SEARCH
 #define _INC_SEARCH
@@ -22,8 +22,8 @@ extern "C" {
   _CRTIMP void *__cdecl _lsearch(const void *_Key,void *_Base,unsigned int *_NumOfElements,unsigned int _SizeOfElements,int (__cdecl *_PtFuncCompare)(const void *,const void *));
 
 #ifndef	NO_OLDNAMES
-  void *__cdecl lfind(const void *_Key,const void *_Base,unsigned int *_NumOfElements,unsigned int _SizeOfElements,int (__cdecl *_PtFuncCompare)(const void *,const void *));
-  void *__cdecl lsearch(const void *_Key,void *_Base,unsigned int *_NumOfElements,unsigned int _SizeOfElements,int (__cdecl *_PtFuncCompare)(const void *,const void *));
+  void *__cdecl lfind(const void *_Key,const void *_Base,unsigned int *_NumOfElements,unsigned int _SizeOfElements,int (__cdecl *_PtFuncCompare)(const void *,const void *)) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+  void *__cdecl lsearch(const void *_Key,void *_Base,unsigned int *_NumOfElements,unsigned int _SizeOfElements,int (__cdecl *_PtFuncCompare)(const void *,const void *)) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
 #endif
 
 /*
@@ -57,9 +57,9 @@ typedef struct node {
 } node_t;
 #endif
 
-void * __cdecl tdelete (const void * __restrict__, void ** __restrict__, int (*)(const void *, const void *)) __MINGW_ATTRIB_NONNULL (1) __MINGW_ATTRIB_NONNULL (3);
-void * __cdecl tfind (const void *, void * const *, int (*)(const void *, const void *)) __MINGW_ATTRIB_NONNULL (1) __MINGW_ATTRIB_NONNULL (3);
-void * __cdecl tsearch (const void *, void **, int (*)(const void *, const void *)) __MINGW_ATTRIB_NONNULL (1) __MINGW_ATTRIB_NONNULL (3);
+void * __cdecl tdelete (const void * __restrict__, void ** __restrict__, int (*)(const void *, const void *)) __MINGW_ATTRIB_NONNULL (2) __MINGW_ATTRIB_NONNULL (3);
+void * __cdecl tfind (const void *, void * const *, int (*)(const void *, const void *)) __MINGW_ATTRIB_NONNULL (2) __MINGW_ATTRIB_NONNULL (3);
+void * __cdecl tsearch (const void *, void **, int (*)(const void *, const void *)) __MINGW_ATTRIB_NONNULL (2) __MINGW_ATTRIB_NONNULL (3);
 void __cdecl twalk (const void *, void (*)(const void *, VISIT, int));
 
 #ifdef __cplusplus

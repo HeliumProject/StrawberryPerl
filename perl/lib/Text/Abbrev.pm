@@ -2,11 +2,11 @@ package Text::Abbrev;
 require 5.005;		# Probably works on earlier versions too.
 require Exporter;
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 
 =head1 NAME
 
-abbrev - create an abbreviation table from a list
+Text::Abbrev - abbrev - create an abbreviation table from a list
 
 =head1 SYNOPSIS
 

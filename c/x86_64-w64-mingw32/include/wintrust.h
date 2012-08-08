@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef WINTRUST_H
 #define WINTRUST_H
@@ -65,7 +65,7 @@ extern "C"
     DWORD dwUIChoice;
     DWORD fdwRevocationChecks;
     DWORD dwUnionChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       struct WINTRUST_FILE_INFO_ *pFile;
       struct WINTRUST_CATALOG_INFO_ *pCatalog;
       struct WINTRUST_BLOB_INFO_ *pBlob;
@@ -235,7 +235,7 @@ extern "C"
     DWORD csProvPrivData;
     struct _CRYPT_PROVIDER_PRIVDATA *pasProvPrivData;
     DWORD dwSubjectChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       struct _PROVDATA_SIP *pPDSip;
     };
     char *pszUsageOID;
@@ -480,7 +480,7 @@ extern "C"
 
   typedef struct SPC_LINK_ {
     DWORD dwLinkChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LPWSTR pwszUrl;
       SPC_SERIALIZED_OBJECT Moniker;
       LPWSTR pwszFile;
@@ -601,7 +601,11 @@ extern "C"
     LPWIN_CERTIFICATE lpCertificate;
   } WIN_SPUB_TRUSTED_PUBLISHER_DATA,*LPWIN_SPUB_TRUSTED_PUBLISHER_DATA;
 
-#endif
+#endif /* WT_DEFINE_ALL_APIS */
+
+#if (_WIN32_WINNT >= 0x0600)
+void WINAPI WintrustSetDefaultIncludePEPageHashes(WINBOOL fIncludePEPageHashes);
+#endif /*(_WIN32_WINNT >= 0x0600)*/
 
 #ifdef __cplusplus
 }

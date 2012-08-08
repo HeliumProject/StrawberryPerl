@@ -114,6 +114,46 @@ additional methods:
 makes Tk event loop run when waiting for user input (i.e., during
 C<readline> method).
 
+=item C<event_loop>
+
+Registers call-backs to wait for user input (i.e., during C<readline>
+method).  This supercedes tkRunning.
+
+The first call-back registered is the call back for waiting.  It is
+expected that the callback will call the current event loop until
+there is something waiting to get on the input filehandle.  The parameter
+passed in is the return value of the second call back.
+
+The second call-back registered is the call back for registration.  The
+input filehandle (often STDIN, but not necessarily) will be passed in.
+
+For example, with AnyEvent:
+
+  $term->event_loop(sub {
+    my $data = shift;
+    $data->[1] = AE::cv();
+    $data->[1]->recv();
+  }, sub {
+    my $fh = shift;
+    my $data = [];
+    $data->[0] = AE::io($fh, 0, sub { $data->[1]->send() });
+    $data;
+  });
+
+The second call-back is optional if the call back is registered prior to
+the call to $term-E<gt>readline.
+
+Deregistration is done in this case by calling event_loop with C<undef>
+as its parameter:
+
+    $term->event_loop(undef);
+
+This will cause the data array ref to be removed, allowing normal garbage
+collection to clean it up.  With AnyEvent, that will cause $data->[0] to
+be cleaned up, and AnyEvent will automatically cancel the watcher at that
+time.  If another loop requires more than that to clean up a file watcher,
+that will be up to the caller to handle.
+
 =item C<ornaments>
 
 makes the command line stand out by using termcap data.  The argument
@@ -150,27 +190,11 @@ be C<o=0> or C<ornaments=0>.  The head should be as described above, say
 If the variable is not set, or if the head of space-separated list is
 empty, the best available package is loaded.
 
-  export "PERL_RL=Perl o=0"	# Use Perl ReadLine without ornaments
-  export "PERL_RL= o=0"		# Use best available ReadLine without ornaments
+  export "PERL_RL=Perl o=0" # Use Perl ReadLine sans ornaments
+  export "PERL_RL= o=0"     # Use best available ReadLine sans ornaments
 
 (Note that processing of C<PERL_RL> for ornaments is in the discretion of the 
 particular used C<Term::ReadLine::*> package).
-
-=head1 CAVEATS
-
-It seems that using Term::ReadLine from Emacs minibuffer doesn't work
-quite right and one will get an error message like
-
-    Cannot open /dev/tty for read at ...
-
-One possible workaround for this is to explicitly open /dev/tty like this
-
-    open (FH, "/dev/tty" )
-      or eval 'sub Term::ReadLine::findConsole { ("&STDIN", "&STDERR") }';
-    die $@ if $@;
-    close (FH);
-
-or you can try using the 4-argument form of Term::ReadLine->new().
 
 =cut
 
@@ -192,11 +216,9 @@ sub readline {
   my $prompt = shift;
   print $out $rl_term_set[0], $prompt, $rl_term_set[1], $rl_term_set[2]; 
   $self->register_Tk 
-     if not $Term::ReadLine::registered and $Term::ReadLine::toloop
-	and defined &Tk::DoOneEvent;
+     if not $Term::ReadLine::registered and $Term::ReadLine::toloop;
   #$str = scalar <$in>;
   $str = $self->get_line;
-  $str =~ s/^\s*\Q$prompt\E// if ($^O eq 'MacOS');
   utf8::upgrade($str)
       if (${^UNICODE} & PERL_UNICODE_STDIN || defined ${^ENCODING}) &&
          utf8::valid($str);
@@ -211,9 +233,7 @@ sub findConsole {
     my $console;
     my $consoleOUT;
 
-    if ($^O eq 'MacOS') {
-        $console = "Dev:Console";
-    } elsif (-e "/dev/tty") {
+    if (-e "/dev/tty") {
 	$console = "/dev/tty";
     } elsif (-e "con" or $^O eq 'MSWin32') {
        $console = 'CONIN$';
@@ -235,6 +255,10 @@ sub findConsole {
 
     $consoleOUT = $console unless defined $consoleOUT;
     $console = "&STDIN" unless defined $console;
+    if ($console eq "/dev/tty" && !open(my $fh, "<", $console)) {
+      $console = "&STDIN";
+      undef($consoleOUT);
+    }
     if (!defined $consoleOUT) {
       $consoleOUT = defined fileno(STDERR) && $^O ne 'MSWin32' ? "&STDERR" : "&STDOUT";
     }
@@ -294,16 +318,16 @@ sub Attribs { {} }
 my %features = (tkRunning => 1, ornaments => 1, 'newTTY' => 1);
 sub Features { \%features }
 
-sub get_line {
-  my $self = shift;
-  my $in = $self->IN;
-  local ($/) = "\n";
-  return scalar <$in>;
-}
+#sub get_line {
+#  my $self = shift;
+#  my $in = $self->IN;
+#  local ($/) = "\n";
+#  return scalar <$in>;
+#}
 
 package Term::ReadLine;		# So late to allow the above code be defined?
 
-our $VERSION = '1.05';
+our $VERSION = '1.09';
 
 my ($which) = exists $ENV{PERL_RL} ? split /\s+/, $ENV{PERL_RL} : undef;
 if ($which) {
@@ -374,42 +398,88 @@ sub ornaments {
 
 package Term::ReadLine::Tk;
 
-our($count_handle, $count_DoOne, $count_loop);
-$count_handle = $count_DoOne = $count_loop = 0;
+# This package inserts a Tk->fileevent() before the diamond operator.
+# The Tk watcher dispatches Tk events until the filehandle returned by
+# the$term->IN() accessor becomes ready for reading.  It's assumed
+# that the diamond operator will return a line of input immediately at
+# that point.
 
-our($giveup);
-sub handle {$giveup = 1; $count_handle++}
+my ($giveup);
 
-sub Tk_loop {
-  # Tk->tkwait('variable',\$giveup);	# needs Widget
-  $count_DoOne++, Tk::DoOneEvent(0) until $giveup;
-  $count_loop++;
-  $giveup = 0;
-}
+# maybe in the future the Tk-specific aspects will be removed.
+sub Tk_loop{
+    if (ref $Term::ReadLine::toloop)
+    {
+        $Term::ReadLine::toloop->[0]->($Term::ReadLine::toloop->[2]);
+    }
+    else
+    {
+        Tk::DoOneEvent(0) until $giveup;
+        $giveup = 0;
+    }
+};
 
 sub register_Tk {
-  my $self = shift;
-  $Term::ReadLine::registered++ 
-    or Tk->fileevent($self->IN,'readable',\&handle);
-}
+    my $self = shift;
+    unless ($Term::ReadLine::registered++)
+    {
+        if (ref $Term::ReadLine::toloop)
+        {
+            $Term::ReadLine::toloop->[2] = $Term::ReadLine::toloop->[1]->($self->IN) if $Term::ReadLine::toloop->[1];
+        }
+        else
+        {
+            Tk->fileevent($self->IN,'readable',sub { $giveup = 1});
+        }
+    }
+};
 
 sub tkRunning {
   $Term::ReadLine::toloop = $_[1] if @_ > 1;
   $Term::ReadLine::toloop;
 }
 
-sub get_c {
-  my $self = shift;
-  $self->Tk_loop if $Term::ReadLine::toloop && defined &Tk::DoOneEvent;
-  return getc $self->IN;
+sub event_loop {
+    shift;
+
+    # T::RL::Gnu and T::RL::Perl check that this exists, if not,
+    # it doesn't call the loop.  Those modules will need to be
+    # fixed before this can be removed.
+    if (not defined &Tk::DoOneEvent)
+    {
+        *Tk::DoOneEvent = sub {
+            die "what?"; # this shouldn't be called.
+        }
+    }
+
+    # store the callback in toloop, again so that other modules will
+    # recognise it and call us for the loop.
+    $Term::ReadLine::toloop = [ @_ ] if @_ > 0; # 0 because we shifted off $self.
+    $Term::ReadLine::toloop;
 }
+
+sub PERL_UNICODE_STDIN () { 0x0001 }
 
 sub get_line {
   my $self = shift;
-  $self->Tk_loop if $Term::ReadLine::toloop && defined &Tk::DoOneEvent;
-  my $in = $self->IN;
+  my ($in,$out,$str) = @$self;
+
+  if ($Term::ReadLine::toloop) {
+    $self->register_Tk if not $Term::ReadLine::registered;
+    $self->Tk_loop;
+  }
+
   local ($/) = "\n";
-  return scalar <$in>;
+  $str = <$in>;
+
+  utf8::upgrade($str)
+      if (${^UNICODE} & PERL_UNICODE_STDIN || defined ${^ENCODING}) &&
+         utf8::valid($str);
+  print $out $rl_term_set[3];
+  # bug in 5.000: chomping empty string creats length -1:
+  chomp $str if defined $str;
+
+  $str;
 }
 
 1;

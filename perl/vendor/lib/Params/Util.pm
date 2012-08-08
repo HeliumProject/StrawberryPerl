@@ -64,20 +64,20 @@ require DynaLoader;
 
 use vars qw{$VERSION @ISA @EXPORT_OK %EXPORT_TAGS};
 
-$VERSION   = '1.04';
+$VERSION   = '1.07';
 @ISA       = qw{
 	Exporter
 	DynaLoader
 };
 @EXPORT_OK = qw{
 	_STRING     _IDENTIFIER
-	_CLASS      _CLASSISA   _SUBCLASS  _DRIVER
+	_CLASS      _CLASSISA   _SUBCLASS  _DRIVER  _CLASSDOES
 	_NUMBER     _POSINT     _NONNEGINT
 	_SCALAR     _SCALAR0
 	_ARRAY      _ARRAY0     _ARRAYLIKE
 	_HASH       _HASH0      _HASHLIKE
 	_CODE       _CODELIKE
-	_INVOCANT   _REGEX      _INSTANCE
+	_INVOCANT   _REGEX      _INSTANCE  _INSTANCEDOES
 	_SET        _SET0
 	_HANDLE
 };
@@ -88,6 +88,30 @@ eval {
 	bootstrap Params::Util $VERSION;
 	1;
 } unless $ENV{PERL_PARAMS_UTIL_PP};
+
+# Use a private pure-perl copy of looks_like_number if the version of
+# Scalar::Util is old (for whatever reason).
+my $SU = eval "$Scalar::Util::VERSION" || 0;
+if ( $SU >= 1.18 ) { 
+	Scalar::Util->import('looks_like_number');
+} else {
+	eval <<'END_PERL';
+sub looks_like_number {
+	local $_ = shift;
+
+	# checks from perlfaq4
+	return 0 if !defined($_);
+	if (ref($_)) {
+		return overload::Overloaded($_) ? defined(0 + $_) : 0;
+	}
+	return 1 if (/^[+-]?[0-9]+$/); # is a +/- integer
+	return 1 if (/^([+-]?)(?=[0-9]|\.[0-9])[0-9]*(\.[0-9]*)?([Ee]([+-]?[0-9]+))?$/); # a C float
+	return 1 if ($] >= 5.008 and /^(Inf(inity)?|NaN)$/i) or ($] >= 5.006001 and /^Inf$/i);
+
+	0;
+}
+END_PERL
+}
 
 
 
@@ -195,6 +219,21 @@ sub _CLASSISA ($$) {
 }
 END_PERL
 
+=head2 _CLASSDOES $string, $role
+
+This routine behaves exactly like C<L</_CLASSISA>>, but checks with C<< ->DOES
+>> rather than C<< ->isa >>.  This is probably only a good idea to use on Perl
+5.10 or later, when L<UNIVERSAL::DOES|UNIVERSAL::DOES/DOES> has been
+implemented.
+
+=cut
+
+eval <<'END_PERL' unless defined &_CLASSDOES;
+sub _CLASSDOES ($$) {
+	(defined $_[0] and ! ref $_[0] and $_[0] =~ m/^[^\W\d]\w*(?:::\w+)*\z/s and $_[0]->DOES($_[1])) ? $_[0] : undef;
+}
+END_PERL
+
 =pod
 
 =head2 _SUBCLASS $string, $class
@@ -239,7 +278,7 @@ number.
 
 eval <<'END_PERL' unless defined &_NUMBER;
 sub _NUMBER ($) {
-	( defined $_[0] and ! ref $_[0] and Scalar::Util::looks_like_number($_[0]) )
+	( defined $_[0] and ! ref $_[0] and looks_like_number($_[0]) )
 	? $_[0]
 	: undef;
 }
@@ -585,6 +624,21 @@ sub _INSTANCE ($$) {
 }
 END_PERL
 
+=head2 _INSTANCEDOES $object, $role
+
+This routine behaves exactly like C<L</_INSTANCE>>, but checks with C<< ->DOES
+>> rather than C<< ->isa >>.  This is probably only a good idea to use on Perl
+5.10 or later, when L<UNIVERSAL::DOES|UNIVERSAL::DOES/DOES> has been
+implemented.
+
+=cut
+
+eval <<'END_PERL' unless defined &_INSTANCEDOES;
+sub _INSTANCEDOES ($$) {
+	(Scalar::Util::blessed($_[0]) and $_[0]->DOES($_[1])) ? $_[0] : undef;
+}
+END_PERL
+
 =pod
 
 =head2 _REGEX $value
@@ -801,7 +855,7 @@ L<Params::Validate>
 
 =head1 COPYRIGHT
 
-Copyright 2005 - 2011 Adam Kennedy.
+Copyright 2005 - 2012 Adam Kennedy.
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

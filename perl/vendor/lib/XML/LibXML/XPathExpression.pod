@@ -7,9 +7,9 @@ XML::LibXML::XPathExpression - XML::LibXML::XPathExpression - interface to libxm
 
 
   use XML::LibXML;
-  my $compiled_xpath = new XML::LibXML::XPathExpression('//foo[@bar="baz"][position()<4]');
+  my $compiled_xpath = XML::LibXML::XPathExpression->new('//foo[@bar="baz"][position()<4]');
 
-  # interface from XML::LibXML::Node 
+  # interface from XML::LibXML::Node
 
   my $result = $node->find($compiled_xpath);
   my @nodes = $node->findnodes($compiled_xpath);
@@ -52,7 +52,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

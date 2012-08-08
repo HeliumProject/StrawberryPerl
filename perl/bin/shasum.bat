@@ -1,28 +1,32 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!perl -w
+#!perl
 #line 15
+    eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
+	if $running_under_some_shell;
+#!perl -w
 
 	## shasum: filter for computing SHA digests (ref. sha1sum/md5sum)
 	##
-	## Copyright (C) 2003-2011 Mark Shelor, All Rights Reserved
+	## Copyright (C) 2003-2012 Mark Shelor, All Rights Reserved
 	##
-	## Version: 5.61
-	## Wed Mar  9 05:26:36 MST 2011
+	## Version: 5.71
+	## Wed Feb 29 04:06:10 MST 2012
 
 	## shasum SYNOPSIS adapted from GNU Coreutils sha1sum.
-	## Include an "-a" option for algorithm selection, and a
-	## "-p" option for portable digest computation.
+	## Add an "-a" option for algorithm selection, a "-p"
+	## option for portable digest computation, and a "-0"
+	## option for reading bit strings.
 
 my $POD = <<'END_OF_POD';
 
@@ -39,9 +43,13 @@ shasum - Print or Check SHA Checksums
    -a, --algorithm   1 (default), 224, 256, 384, 512, 512224, 512256
    -b, --binary      read in binary mode
    -c, --check       read SHA sums from the FILEs and check them
-   -p, --portable    read files in portable mode
-                         produces same digest on Windows/Unix/Mac
    -t, --text        read in text mode (default)
+   -p, --portable    read in portable mode
+                         produces same digest on Windows/Unix/Mac
+   -0, --01          read in BITS mode
+                         ASCII '0' interpreted as 0-bit,
+                         ASCII '1' interpreted as 1-bit,
+                         all other characters ignored
 
  The following two options are useful only when verifying checksums:
    -s, --status      don't output anything, status code shows success
@@ -58,7 +66,7 @@ shasum - Print or Check SHA Checksums
  The sums are computed as described in FIPS-180-4.  When checking, the
  input should be a former output of this program.  The default mode is to
  print a line with checksum, a character indicating type (`*' for binary,
- ` ' for text, `?' for portable), and name for each FILE.
+ ` ' for text, `?' for portable, `^' for BITS), and name for each FILE.
 
  Report shasum bugs to mshelor@cpan.org
 
@@ -68,8 +76,8 @@ Running I<shasum> is often the quickest way to compute SHA message
 digests.  The user simply feeds data to the script through files or
 standard input, and then collects the results from standard output.
 
-The following command shows how easy it is to compute digests for typical
-inputs such as the NIST test vector "abc":
+The following command shows how to compute digests for typical inputs
+such as the NIST test vector "abc":
 
 	perl -e "print qq(abc)" | shasum
 
@@ -81,9 +89,16 @@ Since I<shasum> mimics the behavior of the combined GNU I<sha1sum>,
 I<sha224sum>, I<sha256sum>, I<sha384sum>, and I<sha512sum> programs,
 you can install this script as a convenient drop-in replacement.
 
+Unlike the GNU programs, I<shasum> encompasses the full SHA standard by
+allowing partial-byte inputs.  This is accomplished through the BITS
+option (I<-0>).  The following example computes the SHA-224 digest of
+the 7-bit message I<0001100>:
+
+	perl -e "print qq(0001100)" | shasum -0 -a 224
+
 =head1 AUTHOR
 
-Copyright (c) 2003-2011 Mark Shelor <mshelor@cpan.org>.
+Copyright (c) 2003-2012 Mark Shelor <mshelor@cpan.org>.
 
 =head1 SEE ALSO
 
@@ -98,7 +113,7 @@ use strict;
 use Fcntl;
 use Getopt::Long;
 
-my $VERSION = "5.61";
+my $VERSION = "5.71";
 
 
 	## Try to use Digest::SHA.  If not installed, use the slower
@@ -140,7 +155,7 @@ select((select(STDERR), $| = 1)[0]);
 	## Collect options from command line
 
 my ($alg, $binary, $check, $text, $status, $warn, $help, $version);
-my ($portable);
+my ($portable, $BITS);
 
 eval { Getopt::Long::Configure ("bundling") };
 GetOptions(
@@ -148,7 +163,8 @@ GetOptions(
 	't|text' => \$text, 'a|algorithm=i' => \$alg,
 	's|status' => \$status, 'w|warn' => \$warn,
 	'h|help' => \$help, 'v|version' => \$version,
-	'p|portable' => \$portable
+	'p|portable' => \$portable,
+	'0|01' => \$BITS
 ) or usage(1, "");
 
 
@@ -157,7 +173,7 @@ GetOptions(
 usage(0)
 	if $help;
 usage(1, "shasum: Ambiguous file mode\n")
-	if scalar(grep { defined $_ } ($binary, $portable, $text)) > 1;
+	if scalar(grep {defined $_} ($binary, $portable, $text, $BITS)) > 1;
 usage(1, "shasum: --warn option used only when verifying checksums\n")
 	if $warn && !$check;
 usage(1, "shasum: --status option used only when verifying checksums\n")
@@ -187,7 +203,7 @@ if ($version) {
 my $isDOSish = ($^O =~ /^(MSWin\d\d|os2|dos|mint|cygwin)$/);
 if ($isDOSish) { $binary = 1 unless $text || $portable }
 
-my $modesym = $binary ? '*' : ($portable ? '?' : ' ');
+my $modesym = $binary ? '*' : ($portable ? '?' : ($BITS ? '^' : ' '));
 
 
 	## Read from STDIN (-) if no files listed on command line
@@ -200,7 +216,7 @@ my $modesym = $binary ? '*' : ($portable ? '?' : ' ');
 sub sumfile {
 	my $file = shift;
 
-	my $mode = $portable ? 'p' : ($binary ? 'b' : '');
+	my $mode = $portable ? 'p' : ($binary ? 'b' : ($BITS ? '0' : ''));
 	my $digest = eval { $module->new($alg)->addfile($file, $mode) };
 	if ($@) { warn "shasum: $file: $!\n"; return }
 	$digest->hexdigest;
@@ -243,7 +259,7 @@ sub verify {
 		next if /^#/; s/\n$//; s/^[ \t]+//; $num_lines++;
 		$bslash = s/^\\//;
 		($sum, $modesym, $fname) =
-			/^([\da-fA-F]+)[ \t]([ *?])([^\0]*)/;
+			/^([\da-fA-F]+)[ \t]([ *?^])([^\0]*)/;
 		$alg = defined $sum ? $len2alg{length($sum)} : undef;
 		$fname = unescape($fname) if defined $fname && $bslash;
 		if (grep { ! defined $_ } ($alg, $sum, $modesym, $fname)) {
@@ -255,8 +271,8 @@ sub verify {
 		}
 		$fname =~ s/\r$// unless -e $fname;
 		$rsp = "$fname: "; $num_files++;
-		($binary, $portable, $text) =
-			map { $_ eq $modesym } ('*', '?', ' ');
+		($binary, $portable, $text, $BITS) =
+			map { $_ eq $modesym } ('*', '?', ' ', '^');
 		unless ($digest = sumfile($fname)) {
 			$rsp .= "FAILED open or read\n";
 			$err = 1; $read_errs++;

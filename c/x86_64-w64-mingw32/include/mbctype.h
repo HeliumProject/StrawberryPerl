@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_MBCTYPE
 #define _INC_MBCTYPE
@@ -91,6 +91,9 @@ extern "C" {
   _CRTIMP int __cdecl _ismbstrail_l(const unsigned char *_Str,const unsigned char *_Pos,_locale_t _Locale);
 #endif
 #endif
+
+_CRTIMP void __cdecl _mbccpy (unsigned char *dest, const unsigned char *src) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
+_CRTIMP void __cdecl _mbccpy_l(unsigned char *dest,const unsigned char *src,_locale_t locale) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
 
 #ifdef __cplusplus
 }

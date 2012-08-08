@@ -1,7 +1,5 @@
 C:\strawberry\perl\vendor\lib\XML\SAX.pm
-C:\strawberry\perl\vendor\lib\XML\SAX\Base.pm
 C:\strawberry\perl\vendor\lib\XML\SAX\DocumentLocator.pm
-C:\strawberry\perl\vendor\lib\XML\SAX\Exception.pm
 C:\strawberry\perl\vendor\lib\XML\SAX\Intro.pod
 C:\strawberry\perl\vendor\lib\XML\SAX\ParserFactory.pm
 C:\strawberry\perl\vendor\lib\XML\SAX\PurePerl.pm
@@ -20,4 +18,3 @@ C:\strawberry\perl\vendor\lib\XML\SAX\PurePerl\Reader\URI.pm
 C:\strawberry\perl\vendor\lib\XML\SAX\PurePerl\Reader\UnicodeExt.pm
 C:\strawberry\perl\vendor\lib\XML\SAX\PurePerl\UnicodeExt.pm
 C:\strawberry\perl\vendor\lib\XML\SAX\PurePerl\XMLDecl.pm
-C:\strawberry\perl\vendor\lib\XML\SAX\placeholder.pl

@@ -1,4 +1,4 @@
-# $Id: Parser.pm 785 2009-07-16 14:17:46Z pajas $
+# $Id$
 #
 # This is free software, you may use it and distribute it under the same terms as
 # Perl itself.
@@ -17,7 +17,7 @@ use XML::LibXML::Common qw(:libxml);
 use XML::SAX::Base;
 use XML::SAX::DocumentLocator;
 
-$VERSION = "1.70"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
 @ISA = ('XML::SAX::Base');
 
 sub CLONE_SKIP {
@@ -121,7 +121,7 @@ sub process_node {
     elsif ($node_type == XML_DOCUMENT_NODE
            || $node_type == XML_HTML_DOCUMENT_NODE
            || $node_type == XML_DOCUMENT_FRAG_NODE) {
-        # some times it is just usefull to generate SAX events from
+        # sometimes it is just useful to generate SAX events from
         # a document fragment (very good with filters).
         foreach my $kid ($node->childNodes) {
             $self->process_node($kid);

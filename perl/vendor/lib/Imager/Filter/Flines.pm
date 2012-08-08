@@ -4,17 +4,10 @@ use Imager;
 use vars qw($VERSION @ISA);
 
 BEGIN {
-  $VERSION = "0.02";
+  $VERSION = "0.03";
   
-  eval {
-    require XSLoader;
-    XSLoader::load('Imager::Filter::Flines', $VERSION);
-    1;
-  } or do {
-    require DynaLoader;
-    push @ISA, 'DynaLoader';
-    bootstrap Imager::Filter::Flines $VERSION;
-  };
+  require XSLoader;
+  XSLoader::load('Imager::Filter::Flines', $VERSION);
 }
 
 Imager->register_filter(type=>'flines',
@@ -48,7 +41,7 @@ This filter has no parameters.
 
 Original by Arnar M. Hrafnkelsson.
 
-Adapted by Tony Cook <tony@imager.perl.org>
+Adapted by Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

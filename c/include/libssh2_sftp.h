@@ -54,11 +54,11 @@ extern "C" {
  * Let's start with Version 3 (The version found in OpenSSH) and go from there
  */
 #define LIBSSH2_SFTP_VERSION        3
-#define LIBSSH2_SFTP_PACKET_MAXLEN  40000
 
 typedef struct _LIBSSH2_SFTP                LIBSSH2_SFTP;
 typedef struct _LIBSSH2_SFTP_HANDLE         LIBSSH2_SFTP_HANDLE;
 typedef struct _LIBSSH2_SFTP_ATTRIBUTES     LIBSSH2_SFTP_ATTRIBUTES;
+typedef struct _LIBSSH2_SFTP_STATVFS        LIBSSH2_SFTP_STATVFS;
 
 /* Flags for open_ex() */
 #define LIBSSH2_SFTP_OPENFILE           0
@@ -86,6 +86,10 @@ typedef struct _LIBSSH2_SFTP_ATTRIBUTES     LIBSSH2_SFTP_ATTRIBUTES;
 #define LIBSSH2_SFTP_ATTR_ACMODTIME         0x00000008
 #define LIBSSH2_SFTP_ATTR_EXTENDED          0x80000000
 
+/* SFTP statvfs flag bits */
+#define LIBSSH2_SFTP_ST_RDONLY              0x00000001
+#define LIBSSH2_SFTP_ST_NOSUID              0x00000002
+
 struct _LIBSSH2_SFTP_ATTRIBUTES {
     /* If flags & ATTR_* bit is set, then the value in this struct will be
      * meaningful Otherwise it should be ignored
@@ -96,6 +100,20 @@ struct _LIBSSH2_SFTP_ATTRIBUTES {
     unsigned long uid, gid;
     unsigned long permissions;
     unsigned long atime, mtime;
+};
+
+struct _LIBSSH2_SFTP_STATVFS {
+    libssh2_uint64_t  f_bsize;    /* file system block size */
+    libssh2_uint64_t  f_frsize;   /* fragment size */
+    libssh2_uint64_t  f_blocks;   /* size of fs in f_frsize units */
+    libssh2_uint64_t  f_bfree;    /* # free blocks */
+    libssh2_uint64_t  f_bavail;   /* # free blocks for non-root */
+    libssh2_uint64_t  f_files;    /* # inodes */
+    libssh2_uint64_t  f_ffree;    /* # free inodes */
+    libssh2_uint64_t  f_favail;   /* # free inodes for non-root */
+    libssh2_uint64_t  f_fsid;     /* file system ID */
+    libssh2_uint64_t  f_flag;     /* mount flags */
+    libssh2_uint64_t  f_namemax;  /* maximum filename length */
 };
 
 /* SFTP filetypes */
@@ -200,6 +218,7 @@ struct _LIBSSH2_SFTP_ATTRIBUTES {
 LIBSSH2_API LIBSSH2_SFTP *libssh2_sftp_init(LIBSSH2_SESSION *session);
 LIBSSH2_API int libssh2_sftp_shutdown(LIBSSH2_SFTP *sftp);
 LIBSSH2_API unsigned long libssh2_sftp_last_error(LIBSSH2_SFTP *sftp);
+LIBSSH2_API LIBSSH2_CHANNEL *libssh2_sftp_get_channel(LIBSSH2_SFTP *sftp);
 
 /* File / Directory Ops */
 LIBSSH2_API LIBSSH2_SFTP_HANDLE *libssh2_sftp_open_ex(LIBSSH2_SFTP *sftp,
@@ -268,6 +287,14 @@ LIBSSH2_API int libssh2_sftp_unlink_ex(LIBSSH2_SFTP *sftp,
                                        unsigned int filename_len);
 #define libssh2_sftp_unlink(sftp, filename) \
     libssh2_sftp_unlink_ex((sftp), (filename), strlen(filename))
+
+LIBSSH2_API int libssh2_sftp_fstatvfs(LIBSSH2_SFTP_HANDLE *handle,
+                                      LIBSSH2_SFTP_STATVFS *st);
+
+LIBSSH2_API int libssh2_sftp_statvfs(LIBSSH2_SFTP *sftp,
+                                     const char *path,
+                                     size_t path_len,
+                                     LIBSSH2_SFTP_STATVFS *st);
 
 LIBSSH2_API int libssh2_sftp_mkdir_ex(LIBSSH2_SFTP *sftp,
                                       const char *path,

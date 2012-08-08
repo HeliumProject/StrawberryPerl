@@ -26,7 +26,7 @@ local $Data::Dumper::Indent     = 1; # for dumpering from !
 BEGIN {
     use vars        qw[ $VERSION @ISA ];
     @ISA        =   qw[ CPANPLUS::Shell::_Base::ReadLine ];
-    $VERSION = "0.9105";
+    $VERSION = "0.9129";
 }
 
 load CPANPLUS::Shell;
@@ -56,6 +56,7 @@ my $map = {
     'u'     => '_uninstall',
     '/'     => '_meta',         # undocumented for now
     'c'     => '_reports',
+    'e'     => '_reload_shell',
 };
 ### free letters: e g j k n y ###
 
@@ -73,7 +74,7 @@ my $Prompt  = $Brand . '> ';
 
 =head1 NAME
 
-CPANPLUS::Shell::Default
+CPANPLUS::Shell::Default - the default CPANPLUS shell
 
 =head1 SYNOPSIS
 
@@ -141,6 +142,7 @@ CPANPLUS::Shell::Default
     cpanp> w                 # show last search results again
 
     cpanp> q                 # quit the shell
+    cpanp> e                 # exit the shell and reload
 
     cpanp> /plugins          # list available plugins
     cpanp> /? PLUGIN         # list help test of <PLUGIN>
@@ -210,6 +212,20 @@ sub new {
 
     ### load all the plugins
     $self->_plugins_init;
+
+    if (my $histfile = $cb->configure_object->get_conf( 'histfile' )) {
+        my $term = $self->term;
+        if ($term->can('AddHistory')) {
+            if (open my $fh, '<', $histfile) {
+                local $/ = "\n";
+                while (my $line = <$fh>) {
+                    chomp($line);
+                    $term->AddHistory($line);
+                }
+                close($fh);
+            }
+        }
+    }
 
     return $self;
 }
@@ -509,9 +525,26 @@ sub __display_results {
 
 sub _quit {
     my $self = shift;
+    my $term = $self->term;
 
     $self->dispatch_on_input( input => $rc->{'logout'} )
             if defined $rc->{'logout'};
+
+    if ($term->can('GetHistory')) {
+        my @history = $term->GetHistory;
+
+        my $histfile = $self->backend->configure_object->get_conf('histfile');
+
+        if (open my $fh, '>', $histfile) {
+            foreach my $line (@history) {
+                print {$fh} "$line\n";
+            }
+            close($fh);
+        }
+        else {
+            warn "Cannot open history file '$histfile' - $!";
+        }
+    }
 
     $self->__print( loc("Exiting CPANPLUS shell"), "\n" );
 
@@ -544,6 +577,7 @@ sub _quit {
 loc('[General]'                                                                     ),
 loc('    h | ?                  # display help'                                     ),
 loc('    q                      # exit'                                             ),
+loc('    e                      # exit and reload'                                  ),
 loc('    v                      # version information'                              ),
 loc('[Search]'                                                                      ),
 loc('    a AUTHOR ...           # search by author(s)'                              ),
@@ -1894,6 +1928,10 @@ sub _read_configuration_from_rc {
                         $tips[ int rand scalar @tips ], $/ );
         return 1;
     }
+}
+
+sub _reload_shell {
+  { exec ($^X, '-MCPANPLUS', '-e', 'shell') }; print STDERR "couldn't exec foo: $!";
 }
 
 1;

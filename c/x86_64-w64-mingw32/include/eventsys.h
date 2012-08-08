@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
@@ -854,7 +854,7 @@ extern "C"{
     CONST_VTBL struct IMultiInterfacePublisherFilterVtbl *lpVtbl;
   };
 #ifdef COBJMACROS
-  define IMultiInterfacePublisherFilter_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IMultiInterfacePublisherFilter_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
 #define IMultiInterfacePublisherFilter_AddRef(This) (This)->lpVtbl->AddRef(This)
 #define IMultiInterfacePublisherFilter_Release(This) (This)->lpVtbl->Release(This)
 #define IMultiInterfacePublisherFilter_Initialize(This,pEIC) (This)->lpVtbl->Initialize(This,pEIC)

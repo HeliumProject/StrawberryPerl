@@ -1,20 +1,8 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
-
-/* These are to suppress gcc's stddef.h mechanism,
- * therefore they are not guarded by _INC_CRTDEFS.  */
-#ifndef _STDDEF_H
-#define _STDDEF_H
-#endif
-#undef __need_size_t
-#undef __need_ptrdiff_t
-#undef __need_wint_t
-#undef __need_wchar_t
-#undef __need_NULL
-/* -- end of gcc-stddef.h hacks. -- */
 
 #ifndef _INC_CRTDEFS
 #define _INC_CRTDEFS
@@ -74,16 +62,34 @@ limitations in handling dllimport attribute.  */
 #define __MINGW_GNUC_PREREQ(major, minor)  0
 #endif
 
+#if defined (_MSC_VER)
+#define __MINGW_MSC_PREREQ(major, minor) \
+  (_MSC_VER >= (major * 100 + minor * 10))
+#else
+#define __MINGW_MSC_PREREQ(major, minor)   0
+#endif
+
+#ifdef _MSC_VER
+#define USE___UUIDOF	1
+#else
 #define USE___UUIDOF	0
+#endif
 
 #ifdef __cplusplus
 # define __CRT_INLINE inline
+#elif defined(_MSC_VER)
+# define __CRT_INLINE __inline
 #else
-# if ( __MINGW_GNUC_PREREQ(4, 3)  &&  __STDC_VERSION__ >= 199901L)
+# if ( __MINGW_GNUC_PREREQ(4, 3)  &&  __STDC_VERSION__ >= 199901L) \
+     || (defined (__clang__))
 #  define __CRT_INLINE extern inline __attribute__((__gnu_inline__))
 # else
 #  define __CRT_INLINE extern __inline__
 # endif
+#endif
+
+#if !defined(__MINGW_INTRIN_INLINE) && defined(__GNUC__)
+#define __MINGW_INTRIN_INLINE extern __inline__ __attribute__((__always_inline__,__gnu_inline__))
 #endif
 
 #ifdef __NO_INLINE__
@@ -101,9 +107,36 @@ limitations in handling dllimport attribute.  */
 # endif
 #endif
 
+#ifndef __GNUC__
+# ifdef _MSC_VER
+#  define __restrict__  __restrict
+# else
+#  define __restrict__	/* nothing */
+# endif
+#endif /* !__GNUC__ */
+
+#if __MINGW_GNUC_PREREQ (3,1) && !defined __GNUG__
+# define __restrict_arr __restrict
+#elif defined(_MSC_VER)
+# define __restrict_arr __restrict
+#else
+# ifdef __GNUC__
+#  define __restrict_arr        /* Not supported in old GCC.  */
+# else
+#  if defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L
+#   define __restrict_arr       restrict
+#  else
+#   define __restrict_arr       /* Not supported.  */
+#  endif
+# endif
+#endif
+
 #ifdef __GNUC__
 #define __MINGW_ATTRIB_NORETURN __attribute__ ((__noreturn__))
 #define __MINGW_ATTRIB_CONST __attribute__ ((__const__))
+#elif __MINGW_MSC_PREREQ(12, 0)
+#define __MINGW_ATTRIB_NORETURN __declspec(noreturn)
+#define __MINGW_ATTRIB_CONST
 #else
 #define __MINGW_ATTRIB_NORETURN
 #define __MINGW_ATTRIB_CONST
@@ -112,6 +145,9 @@ limitations in handling dllimport attribute.  */
 #if __MINGW_GNUC_PREREQ (3, 0)
 #define __MINGW_ATTRIB_MALLOC __attribute__ ((__malloc__))
 #define __MINGW_ATTRIB_PURE __attribute__ ((__pure__))
+#elif __MINGW_MSC_PREREQ(14, 0)
+#define __MINGW_ATTRIB_MALLOC __declspec(noalias) __declspec(restrict)
+#define __MINGW_ATTRIB_PURE
 #else
 #define __MINGW_ATTRIB_MALLOC
 #define __MINGW_ATTRIB_PURE
@@ -126,14 +162,27 @@ limitations in handling dllimport attribute.  */
 #define __MINGW_ATTRIB_NONNULL(arg)
 #endif /* GNUC >= 3.3 */
 
-#if  __MINGW_GNUC_PREREQ (3, 1)
-#define __MINGW_ATTRIB_DEPRECATED __attribute__ ((__deprecated__))
+#ifdef __GNUC__
+#define __MINGW_ATTRIB_UNUSED __attribute__ ((__unused__))
 #else
+#define __MINGW_ATTRIB_UNUSED
+#endif /* ATTRIBUTE_UNUSED */
+
+#if  __MINGW_GNUC_PREREQ (3, 1)
+#define __MINGW_ATTRIB_USED __attribute__ ((__used__))
+#define __MINGW_ATTRIB_DEPRECATED __attribute__ ((__deprecated__))
+#elif __MINGW_MSC_PREREQ(12, 0)
+#define __MINGW_ATTRIB_USED
+#define __MINGW_ATTRIB_DEPRECATED __declspec(deprecated)
+#else
+#define __MINGW_ATTRIB_USED __MINGW_ATTRIB_UNUSED
 #define __MINGW_ATTRIB_DEPRECATED
 #endif /* GNUC >= 3.1 */
 
 #if  __MINGW_GNUC_PREREQ (3, 3)
 #define __MINGW_NOTHROW __attribute__ ((__nothrow__))
+#elif __MINGW_MSC_PREREQ(12, 0) && defined (__cplusplus)
+#define __MINGW_NOTHROW __declspec(nothrow)
 #else
 #define __MINGW_NOTHROW
 #endif
@@ -142,6 +191,43 @@ limitations in handling dllimport attribute.  */
 #define __MINGW_ATTRIB_NO_OPTIMIZE __attribute__((__optimize__ ("0")))
 #else
 #define __MINGW_ATTRIB_NO_OPTIMIZE
+#endif
+
+#if __MINGW_GNUC_PREREQ (4, 4)
+#define __MINGW_PRAGMA_PARAM(x) _Pragma (#x)
+#elif __MINGW_MSC_PREREQ (13, 1)
+#define __MINGW_PRAGMA_PARAM(x) __pragma (x)
+#else
+#define __MINGW_PRAGMA_PARAM(x)
+#endif
+
+#define __MINGW_BROKEN_INTERFACE(x) \
+  __MINGW_PRAGMA_PARAM(message ("Interface " _CRT_STRINGIZE(x) \
+  " has unverified layout."))
+
+#ifdef __MINGW_MSVC_COMPAT_WARNINGS
+# if __MINGW_GNUC_PREREQ (4, 5)
+#  define __MINGW_ATTRIB_DEPRECATED_STR(X) __attribute__ ((__deprecated__ (X)))
+# else
+#  define __MINGW_ATTRIB_DEPRECATED_STR(X) __MINGW_ATTRIB_DEPRECATED
+# endif
+#else
+# define __MINGW_ATTRIB_DEPRECATED_STR(X)
+#endif
+
+#define __MINGW_SEC_WARN_STR "This function or variable may be unsafe, use _CRT_SECURE_NO_WARNINGS to disable deprecation"
+#define __MINGW_MSVC2005_DEPREC_STR "This POSIX function is deprecated beginning in Visual C++ 2005, use _CRT_NONSTDC_NO_DEPRECATE to disable deprecation"
+
+#if !defined (_CRT_NONSTDC_NO_DEPRECATE)
+# define __MINGW_ATTRIB_DEPRECATED_MSVC2005 __MINGW_ATTRIB_DEPRECATED_STR (__MINGW_MSVC2005_DEPREC_STR)
+#else
+# define __MINGW_ATTRIB_DEPRECATED_MSVC2005
+#endif
+
+#if !defined (_CRT_SECURE_NO_WARNINGS)
+# define __MINGW_ATTRIB_DEPRECATED_SEC_WARN __MINGW_ATTRIB_DEPRECATED_STR (__MINGW_SEC_WARN_STR)
+#else
+# define __MINGW_ATTRIB_DEPRECATED_SEC_WARN
 #endif
 
 #ifndef __MSVCRT_VERSION__
@@ -166,7 +252,9 @@ limitations in handling dllimport attribute.  */
 #define __int32 int
 #define __int64 long long
 #ifdef _WIN64
+#ifndef __SIZEOF_INT128__
 typedef int __int128 __attribute__ ((__mode__ (TI)));
+#endif
 #endif
 #endif /* __GNUC__ */
 #endif /* _INT128_DEFINED */
@@ -175,11 +263,16 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define __ptr32
 #define __ptr64
 #ifndef __unaligned
-/* gcc can not handle packed on base types, so
- * this is an empty define. */
-#define __unaligned /* __attribute ((packed)) */
+#define __unaligned
 #endif
-#define __forceinline __inline__ __attribute__((always_inline))
+#ifndef __w64
+#define __w64
+#endif
+#ifdef __cplusplus
+#define __forceinline inline __attribute__((__always_inline__))
+#else
+#define __forceinline extern __inline__ __attribute__((__always_inline__,__gnu_inline__))
+#endif /* __cplusplus */
 #endif /* __GNUC__ */
 
 #ifndef _WIN32
@@ -196,10 +289,10 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 
 #undef _CRT_PACKING
 #define _CRT_PACKING 8
-/* this is duplicated in vadefs.h */
-#pragma pack(push,_CRT_PACKING)
 
-#include <vadefs.h>
+#include <vadefs.h>	/* other headers depend on this include */
+
+#pragma pack(push,_CRT_PACKING)
 
 #ifndef _CRT_STRINGIZE
 #define __CRT_STRINGIZE(_Value) #_Value
@@ -265,8 +358,6 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define _AGLOBAL
 #endif
 
-#define __STDC_SECURE_LIB__ 200411L
-#define __GOT_SECURE_LIB__ __STDC_SECURE_LIB__
 #define _SECURECRT_FILL_BUFFER_PATTERN 0xFD
 #define _CRT_DEPRECATE_TEXT(_Text) __declspec(deprecated)
 
@@ -290,9 +381,9 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define _SIZE_T_DEFINED
 #undef size_t
 #ifdef _WIN64
-  __MINGW_EXTENSION typedef unsigned __int64 size_t;
+__MINGW_EXTENSION typedef unsigned __int64 size_t;
 #else
-  typedef unsigned int size_t;
+typedef unsigned int size_t;
 #endif /* _WIN64 */
 #endif /* _SIZE_T_DEFINED */
 
@@ -300,9 +391,9 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define _SSIZE_T_DEFINED
 #undef ssize_t
 #ifdef _WIN64
-  __MINGW_EXTENSION typedef __int64 ssize_t;
+__MINGW_EXTENSION typedef __int64 ssize_t;
 #else
-  typedef int ssize_t;
+typedef int ssize_t;
 #endif /* _WIN64 */
 #endif /* _SSIZE_T_DEFINED */
 
@@ -312,9 +403,9 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define __intptr_t_defined
 #undef intptr_t
 #ifdef _WIN64
-  __MINGW_EXTENSION typedef __int64 intptr_t;
+__MINGW_EXTENSION typedef __int64 intptr_t;
 #else
-  typedef int intptr_t;
+typedef int intptr_t;
 #endif /* _WIN64 */
 #endif /* __intptr_t_defined */
 #endif /* _INTPTR_T_DEFINED */
@@ -325,9 +416,9 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define __uintptr_t_defined
 #undef uintptr_t
 #ifdef _WIN64
-  __MINGW_EXTENSION typedef unsigned __int64 uintptr_t;
+__MINGW_EXTENSION typedef unsigned __int64 uintptr_t;
 #else
-  typedef unsigned int uintptr_t;
+typedef unsigned int uintptr_t;
 #endif /* _WIN64 */
 #endif /* __uintptr_t_defined */
 #endif /* _UINTPTR_T_DEFINED */
@@ -338,9 +429,9 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define _PTRDIFF_T_
 #undef ptrdiff_t
 #ifdef _WIN64
-  __MINGW_EXTENSION typedef __int64 ptrdiff_t;
+__MINGW_EXTENSION typedef __int64 ptrdiff_t;
 #else
-  typedef int ptrdiff_t;
+typedef int ptrdiff_t;
 #endif /* _WIN64 */
 #endif /* _PTRDIFF_T_ */
 #endif /* _PTRDIFF_T_DEFINED */
@@ -348,7 +439,7 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #ifndef _WCHAR_T_DEFINED
 #define _WCHAR_T_DEFINED
 #ifndef __cplusplus
-  typedef unsigned short wchar_t;
+typedef unsigned short wchar_t;
 #endif /* C++ */
 #endif /* _WCHAR_T_DEFINED */
 
@@ -356,22 +447,12 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #define _WCTYPE_T_DEFINED
 #ifndef _WINT_T
 #define _WINT_T
-  typedef unsigned short wint_t;
-  typedef unsigned short wctype_t;
+typedef unsigned short wint_t;
+typedef unsigned short wctype_t;
 #endif /* _WINT_T */
 #endif /* _WCTYPE_T_DEFINED */
 
-#ifndef __GNUC_VA_LIST
-#define __GNUC_VA_LIST
-  typedef __builtin_va_list __gnuc_va_list;
-#endif
-
-#ifndef _VA_LIST_DEFINED
-#define _VA_LIST_DEFINED
-  typedef __gnuc_va_list va_list;
-#endif /* _VA_LIST_DEFINED */
-
-#if defined (_WIN32) && !defined (_WIN64) && !defined (__MINGW_USE_VC2005_COMPAT)
+#if defined (_WIN32) && !defined (_WIN64) && !defined (__MINGW_USE_VC2005_COMPAT)/* && !(defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS == 64)*/
 #ifndef _USE_32BIT_TIME_T
 #define _USE_32BIT_TIME_T
 #endif
@@ -386,79 +467,47 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 
 #ifndef _ERRCODE_DEFINED
 #define _ERRCODE_DEFINED
-  typedef int errno_t;
+typedef int errno_t;
 #endif
 
 #ifndef _TIME32_T_DEFINED
 #define _TIME32_T_DEFINED
-  typedef long __time32_t;
+typedef long __time32_t;
 #endif
 
 #ifndef _TIME64_T_DEFINED
 #define _TIME64_T_DEFINED
-  __MINGW_EXTENSION typedef __int64 __time64_t;
+__MINGW_EXTENSION typedef __int64 __time64_t;
 #endif /* _TIME64_T_DEFINED */
 
 #ifndef _TIME_T_DEFINED
 #define _TIME_T_DEFINED
 #ifdef _USE_32BIT_TIME_T
-  typedef __time32_t time_t;
+typedef __time32_t time_t;
 #else
-  typedef __time64_t time_t;
+typedef __time64_t time_t;
 #endif
 #endif /* _TIME_T_DEFINED */
-
-/* A null pointer constant.  */
-#undef NULL
-#if defined(__GNUG__) && __GNUG__ >= 3
-#define NULL __null
-#else   /* G++ */
-#ifndef __cplusplus
-#define NULL ((void *)0)
-#else   /* C++ */
-#ifndef _WIN64
-#define NULL 0
-#else
-#define NULL 0LL
-#endif  /* W64 */
-#endif  /* C++ */
-#endif  /* G++ */
-
-/* Offset of member MEMBER in a struct of type TYPE. */
-#if __GNUC__ >= 4
-#define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
-#else
-#ifndef __cplusplus
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#else
-/* The cast to "char &" below avoids problems with user-defined
-   "operator &", which can appear in a POD type.  */
-#define offsetof(TYPE, MEMBER)					\
-  (__offsetof__ (reinterpret_cast <size_t>			\
-                 (&reinterpret_cast <const volatile char &>	\
-                  (static_cast<TYPE *> (0)->MEMBER))))
-#endif /* C++ */
-#endif /* __GNUC__ < 4 */
 
 #ifndef _CONST_RETURN
 #define _CONST_RETURN
 #endif
 
-#ifndef __CRT_UNALIGNED
-#define __CRT_UNALIGNED
-#endif
-
 #ifndef UNALIGNED
-#if defined(__ia64__) || defined(__x86_64)
-#define UNALIGNED __CRT_UNALIGNED
+#if defined(_M_IA64) || defined(_M_AMD64)
+#define UNALIGNED __unaligned
 #else
 #define UNALIGNED
 #endif
 #endif /* UNALIGNED */
 
 #ifndef _CRT_ALIGN
+#ifdef  _MSC_VER
+#define _CRT_ALIGN(x) __declspec(align(x))
+#else /* __GNUC__ */
 #define _CRT_ALIGN(x) __attribute__ ((__aligned__ (x)))
 #endif
+#endif /* _CRT_ALIGN */
 
 #ifndef __CRTDECL
 #define __CRTDECL __cdecl
@@ -496,90 +545,166 @@ typedef int __int128 __attribute__ ((__mode__ (TI)));
 #undef  _CRT_glob
 #define _CRT_glob _dowildcard
 
+
+#if defined(_MSC_VER) && !defined(_MSC_EXTENSIONS)
+#define NONAMELESSUNION		1
+#endif
+#if defined(NONAMELESSSTRUCT) && \
+   !defined(NONAMELESSUNION)
+#define NONAMELESSUNION		1
+#endif
+#if defined(NONAMELESSUNION)  && \
+   !defined(NONAMELESSSTRUCT)
+#define NONAMELESSSTRUCT	1
+#endif
+
+#ifndef __ANONYMOUS_DEFINED
+#define __ANONYMOUS_DEFINED
+#define _ANONYMOUS_UNION  __MINGW_EXTENSION
+#define _ANONYMOUS_STRUCT __MINGW_EXTENSION
+#ifndef NONAMELESSUNION
+#define _UNION_NAME(x)
+#define _STRUCT_NAME(x)
+#else /* NONAMELESSUNION */
+#define _UNION_NAME(x)  x
+#define _STRUCT_NAME(x) x
+#endif
+#endif	/* __ANONYMOUS_DEFINED */
+
 #ifndef DUMMYUNIONNAME
 # ifdef NONAMELESSUNION
 #  define DUMMYUNIONNAME  u
-#  define DUMMYUNIONNAME1 u1
+#  define DUMMYUNIONNAME1 u1	/* Wine uses this variant */
 #  define DUMMYUNIONNAME2 u2
 #  define DUMMYUNIONNAME3 u3
 #  define DUMMYUNIONNAME4 u4
 #  define DUMMYUNIONNAME5 u5
+#  define DUMMYUNIONNAME6 u6
+#  define DUMMYUNIONNAME7 u7
+#  define DUMMYUNIONNAME8 u8
+#  define DUMMYUNIONNAME9 u9
 # else /* NONAMELESSUNION */
 #  define DUMMYUNIONNAME
-#  define DUMMYUNIONNAME1
+#  define DUMMYUNIONNAME1	/* Wine uses this variant */
 #  define DUMMYUNIONNAME2
 #  define DUMMYUNIONNAME3
 #  define DUMMYUNIONNAME4
 #  define DUMMYUNIONNAME5
+#  define DUMMYUNIONNAME6
+#  define DUMMYUNIONNAME7
+#  define DUMMYUNIONNAME8
+#  define DUMMYUNIONNAME9
 # endif
 #endif	/* DUMMYUNIONNAME */
 
 #ifndef DUMMYSTRUCTNAME
-# ifdef NONAMELESSSTRUCT
-#  define DUMMYSTRUCTNAME s
+# ifdef NONAMELESSUNION
+#  define DUMMYSTRUCTNAME  s
+#  define DUMMYSTRUCTNAME1 s1	/* Wine uses this variant */
+#  define DUMMYSTRUCTNAME2 s2
+#  define DUMMYSTRUCTNAME3 s3
+#  define DUMMYSTRUCTNAME4 s4
+#  define DUMMYSTRUCTNAME5 s5
 # else
 #  define DUMMYSTRUCTNAME
+#  define DUMMYSTRUCTNAME1	/* Wine uses this variant */
+#  define DUMMYSTRUCTNAME2
+#  define DUMMYSTRUCTNAME3
+#  define DUMMYSTRUCTNAME4
+#  define DUMMYSTRUCTNAME5
 # endif
 #endif /* DUMMYSTRUCTNAME */
 
 
+/* Macros for __uuidof template-based emulation */
+#if defined(__cplusplus) && (USE___UUIDOF == 0)
+
+#define __CRT_UUID_DECL(type,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8)           \
+    extern "C++" {                                                      \
+    template<> inline const GUID &__mingw_uuidof<type>() {              \
+        return (const IID){l,w1,w2, {b1,b2,b3,b4,b5,b6,b7,b8}};         \
+    }                                                                   \
+    template<> inline const GUID &__mingw_uuidof<type*>() {             \
+        return __mingw_uuidof<type>();                                  \
+    }                                                                   \
+    }
+
+#define __uuidof(type) __mingw_uuidof<typeof(type)>()
+
+#else
+
+#define __CRT_UUID_DECL(type,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8)
+
+#endif
+
+
 /* MSVC-isms: */
 
-  struct threadlocaleinfostruct;
-  struct threadmbcinfostruct;
-  typedef struct threadlocaleinfostruct *pthreadlocinfo;
-  typedef struct threadmbcinfostruct *pthreadmbcinfo;
-  struct __lc_time_data;
+struct threadlocaleinfostruct;
+struct threadmbcinfostruct;
+typedef struct threadlocaleinfostruct *pthreadlocinfo;
+typedef struct threadmbcinfostruct *pthreadmbcinfo;
+struct __lc_time_data;
 
-  typedef struct localeinfo_struct {
-    pthreadlocinfo locinfo;
-    pthreadmbcinfo mbcinfo;
-  } _locale_tstruct,*_locale_t;
+typedef struct localeinfo_struct {
+  pthreadlocinfo locinfo;
+  pthreadmbcinfo mbcinfo;
+} _locale_tstruct,*_locale_t;
 
 #ifndef _TAGLC_ID_DEFINED
 #define _TAGLC_ID_DEFINED
-  typedef struct tagLC_ID {
-    unsigned short wLanguage;
-    unsigned short wCountry;
-    unsigned short wCodePage;
-  } LC_ID,*LPLC_ID;
+typedef struct tagLC_ID {
+  unsigned short wLanguage;
+  unsigned short wCountry;
+  unsigned short wCodePage;
+} LC_ID,*LPLC_ID;
 #endif /* _TAGLC_ID_DEFINED */
 
 #ifndef _THREADLOCALEINFO
 #define _THREADLOCALEINFO
-  typedef struct threadlocaleinfostruct {
-    int refcount;
-    unsigned int lc_codepage;
-    unsigned int lc_collate_cp;
-    unsigned long lc_handle[6];
-    LC_ID lc_id[6];
-    struct {
-      char *locale;
-      wchar_t *wlocale;
-      int *refcount;
-      int *wrefcount;
-    } lc_category[6];
-    int lc_clike;
-    int mb_cur_max;
-    int *lconv_intl_refcount;
-    int *lconv_num_refcount;
-    int *lconv_mon_refcount;
-    struct lconv *lconv;
-    int *ctype1_refcount;
-    unsigned short *ctype1;
-    const unsigned short *pctype;
-    const unsigned char *pclmap;
-    const unsigned char *pcumap;
-    struct __lc_time_data *lc_time_curr;
-  } threadlocinfo;
+typedef struct threadlocaleinfostruct {
+  int refcount;
+  unsigned int lc_codepage;
+  unsigned int lc_collate_cp;
+  unsigned long lc_handle[6];
+  LC_ID lc_id[6];
+  struct {
+    char *locale;
+    wchar_t *wlocale;
+    int *refcount;
+    int *wrefcount;
+  } lc_category[6];
+  int lc_clike;
+  int mb_cur_max;
+  int *lconv_intl_refcount;
+  int *lconv_num_refcount;
+  int *lconv_mon_refcount;
+  struct lconv *lconv;
+  int *ctype1_refcount;
+  unsigned short *ctype1;
+  const unsigned short *pctype;
+  const unsigned char *pclmap;
+  const unsigned char *pcumap;
+  struct __lc_time_data *lc_time_curr;
+} threadlocinfo;
 #endif /* _THREADLOCALEINFO */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifdef __MINGW_INTRIN_INLINE
+#if !defined (__clang__)
+void __cdecl __debugbreak(void);
+__MINGW_INTRIN_INLINE void __cdecl __debugbreak(void)
+{
+  __asm__ __volatile__("int $3");
+}
+#endif
+#endif
+
 /* mingw-w64 specific functions: */
-  const char *__mingw_get_crt_info (void);
+const char *__mingw_get_crt_info (void);
 
 #ifdef __cplusplus
 }
@@ -592,6 +717,14 @@ extern "C" {
 #ifndef MINGW_SDK_INIT
 #define MINGW_SDK_INIT
 
+
+
+#ifdef MINGW_HAS_SECURE_API
+#define __STDC_SECURE_LIB__ 200411L
+#define __GOT_SECURE_LIB__ __STDC_SECURE_LIB__
+#endif
+
 #include "sdks/_mingw_directx.h"
+#include "sdks/_mingw_ddk.h"
 
 #endif /* MINGW_SDK_INIT */

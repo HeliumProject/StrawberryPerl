@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -19,8 +19,13 @@ use Getopt::Std;
 use Archive::Tar;
 use Data::Dumper;
 
+# Allow historic support for dashless bundled options
+#  tar cvf file.tar
+# is valid (GNU) tar style
+@ARGV && $ARGV[0] =~ m/^[DdcvzthxIC]+[fT]?$/ and
+    unshift @ARGV, map { "-$_" } split m// => shift @ARGV;
 my $opts = {};
-getopts('Ddcvzthxf:IC', $opts) or die usage();
+getopts('Ddcvzthxf:ICT:', $opts) or die usage();
 
 ### show the help message ###
 die usage() if $opts->{h};
@@ -41,11 +46,21 @@ my $verbose     = $opts->{v} ? 1 : 0;
 my $file        = $opts->{f} ? $opts->{f} : 'default.tar';
 my $tar         = Archive::Tar->new();
 
-
 if( $opts->{c} ) {
     my @files;
+    my @src = @ARGV;
+    if( $opts->{T} ) {
+      if( $opts->{T} eq "-" ) {
+        chomp( @src = <STDIN> );
+	} elsif( open my $fh, "<", $opts->{T} ) {
+	    chomp( @src = <$fh> );
+	} else {
+	    die "$0: $opts->{T}: $!\n";
+	}
+    }
+
     find( sub { push @files, $File::Find::name;
-                print $File::Find::name.$/ if $verbose }, @ARGV );
+                print $File::Find::name.$/ if $verbose }, @src );
 
     if ($file eq '-') {
         use IO::Handle;
@@ -72,13 +87,13 @@ if( $opts->{c} ) {
     my $print = $verbose || $opts->{'t'} || 0;
 
     my $iter = Archive::Tar->iter( $file );
-        
+
     while( my $f = $iter->() ) {
         print $f->full_path . $/ if $print;
 
         ### data dumper output
         print Dumper( $f ) if $opts->{'D'};
-        
+
         ### extract it
         $f->extract if $opts->{'x'};
     }
@@ -101,6 +116,7 @@ sub usage {
 =head1 SYNOPSIS
 
     ptar -c [-v] [-z] [-C] [-f ARCHIVE_FILE | -] FILE FILE ...
+    ptar -c [-v] [-z] [-C] [-T index | -] [-f ARCHIVE_FILE | -]
     ptar -x [-v] [-z] [-f ARCHIVE_FILE | -]
     ptar -t [-z] [-f ARCHIVE_FILE | -]
     ptar -h
@@ -115,6 +131,7 @@ sub usage {
     v   Print filenames as they are added or extracted from ARCHIVE_FILE
     h   Prints this help message
     C   CPAN mode - drop 022 from permissions
+    T   get names to create from file
 
 =head1 SEE ALSO
 
@@ -125,10 +142,10 @@ sub usage {
     ### strip the pod directives
     $usage =~ s/=pod\n//g;
     $usage =~ s/=head1 //g;
-    
+
     ### add some newlines
     $usage .= $/.$/;
-    
+
     return $usage;
 }
 

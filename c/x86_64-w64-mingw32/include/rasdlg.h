@@ -1,11 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _RASDLG_H_
 #define _RASDLG_H_
 
+#include <_mingw_unicode.h>
 #include <pshpack4.h>
 
 #ifdef __cplusplus
@@ -47,11 +48,7 @@ extern "C" {
     CHAR szDomain[DNLEN + 1];
   };
 
-#ifdef UNICODE
-#define RASNOUSER RASNOUSERW
-#else
-#define RASNOUSER RASNOUSERA
-#endif
+#define RASNOUSER __MINGW_NAME_AW(RASNOUSER)
 
 #define LPRASNOUSERW RASNOUSERW*
 #define LPRASNOUSERA RASNOUSERA*
@@ -90,13 +87,8 @@ extern "C" {
     ULONG_PTR reserved2;
   };
 
-#ifdef UNICODE
-#define RASPBDLG RASPBDLGW
-#define RASPBDLGFUNC RASPBDLGFUNCW
-#else
-#define RASPBDLG RASPBDLGA
-#define RASPBDLGFUNC RASPBDLGFUNCA
-#endif
+#define RASPBDLG __MINGW_NAME_AW(RASPBDLG)
+#define RASPBDLGFUNC __MINGW_NAME_AW(RASPBDLGFUNC)
 
 #define LPRASPBDLGW RASPBDLGW*
 #define LPRASPBDLGA RASPBDLGA*
@@ -140,11 +132,7 @@ extern "C" {
     ULONG_PTR reserved2;
   };
 
-#ifdef UNICODE
-#define RASENTRYDLG RASENTRYDLGW
-#else
-#define RASENTRYDLG RASENTRYDLGA
-#endif
+#define RASENTRYDLG __MINGW_NAME_AW(RASENTRYDLG)
 
 #define LPRASENTRYDLGW RASENTRYDLGW*
 #define LPRASENTRYDLGA RASENTRYDLGA*
@@ -179,15 +167,9 @@ extern "C" {
   WINBOOL WINAPI RasDialDlgA(LPSTR lpszPhonebook,LPSTR lpszEntry,LPSTR lpszPhoneNumber,LPRASDIALDLG lpInfo);
   WINBOOL WINAPI RasDialDlgW(LPWSTR lpszPhonebook,LPWSTR lpszEntry,LPWSTR lpszPhoneNumber,LPRASDIALDLG lpInfo);
 
-#ifdef UNICODE
-#define RasPhonebookDlg RasPhonebookDlgW
-#define RasEntryDlg RasEntryDlgW
-#define RasDialDlg RasDialDlgW
-#else
-#define RasPhonebookDlg RasPhonebookDlgA
-#define RasEntryDlg RasEntryDlgA
-#define RasDialDlg RasDialDlgA
-#endif
+#define RasPhonebookDlg __MINGW_NAME_AW(RasPhonebookDlg)
+#define RasEntryDlg __MINGW_NAME_AW(RasEntryDlg)
+#define RasDialDlg __MINGW_NAME_AW(RasDialDlg)
 
 #ifdef __cplusplus
 }

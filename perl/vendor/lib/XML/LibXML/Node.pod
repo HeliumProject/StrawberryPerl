@@ -20,7 +20,7 @@ XML::LibXML::Node - Abstract Base Class of XML::LibXML Nodes
   $oldnode = $node->replaceChild( $newNode, $oldNode );
   $node->replaceNode($newNode);
   $childnode = $node->appendChild( $childnode );
-  $childnode = $node->addChild( $chilnode );
+  $childnode = $node->addChild( $childnode );
   $node = $parent->addNewChild( $nsURI, $name );
   $node->addSibling($newNode);
   $newnode =$node->cloneNode( $deep );
@@ -150,8 +150,8 @@ section in the L<<<<<< XML::LibXML >>>>>> manual page).
   $node->unbindNode();
 
 Unbinds the Node from its siblings and Parent, but not from the Document it
-belongs to. If the node is not inserted into the DOM afterwards it will be lost
-after the program terminated. From a low level view, the unbound node is
+belongs to. If the node is not inserted into the DOM afterwards, it will be
+lost after the program terminates. From a low level view, the unbound node is
 stripped from the context it is and inserted into a (hidden) document-fragment.
 
 
@@ -191,7 +191,7 @@ node is not part of the document, the node will be imported first.
 
 =item addChild
 
-  $childnode = $node->addChild( $chilnode );
+  $childnode = $node->addChild( $childnode );
 
 As an alternative to appendChild() one can use the addChild() function. This
 function is a bit faster, because it avoids all DOM conformity checks.
@@ -256,7 +256,7 @@ by the given node.
 
   $newnode =$node->cloneNode( $deep );
 
-I<<<<<< cloneNode >>>>>> creates a copy of C<<<<<< $node >>>>>>. When $deep is set to 1 (true) the function will copy all childnodes as well.
+I<<<<<< cloneNode >>>>>> creates a copy of C<<<<<< $node >>>>>>. When $deep is set to 1 (true) the function will copy all child nodes as well.
 If $deep is 0 only the current node will be copied. Note that in case of
 element, attributes are copied even if $deep is 0. 
 
@@ -307,23 +307,23 @@ DOM.
 
   $boolean = $node->hasChildNodes();
 
-If the current node has Childnodes this function returns TRUE (1), otherwise it
-returns FALSE (0, not undef).
+If the current node has child nodes this function returns TRUE (1), otherwise
+it returns FALSE (0, not undef).
 
 
 =item firstChild
 
   $childnode = $node->firstChild;
 
-If a node has childnodes this function will return the first node in the
-childlist.
+If a node has child nodes this function will return the first node in the child
+list.
 
 
 =item lastChild
 
   $childnode = $node->lastChild;
 
-If the C<<<<<< $node >>>>>> has childnodes this function returns the last child node.
+If the C<<<<<< $node >>>>>> has child nodes this function returns the last child node.
 
 
 =item ownerDocument
@@ -388,7 +388,7 @@ Note, that $refNode has to be passed explicitly even if it is undef.
   @nodes = $node->findnodes( $xpath_expression );
 
 I<<<<<< findnodes >>>>>> evaluates the xpath expression (XPath 1.0) on the current node and returns the
-resulting node set as an array. In scalar context returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+resulting node set as an array. In scalar context, returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 The xpath expression can be passed either as a string or or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object. 
 
@@ -445,7 +445,7 @@ See also XML::LibXML::XPathContext->findnodes.
 
 I<<<<<< find >>>>>> evaluates the XPath 1.0 expression using the current node as the context of the
 expression, and returns the result depending on what type of result the XPath
-expression had. For example, the XPath "1 * 3 + 52" results in a L<<<<<< XML::LibXML::Number >>>>>> object being returned. Other expressions might return a L<<<<<< XML::LibXML::Boolean >>>>>> object, or a L<<<<<< XML::LibXML::Literal >>>>>> object (a string). Each of those objects uses Perl's overload feature to "do
+expression had. For example, the XPath "1 * 3 + 52" results in a L<<<<<< XML::LibXML::Number >>>>>> object being returned. Other expressions might return an L<<<<<< XML::LibXML::Boolean >>>>>> object, or an L<<<<<< XML::LibXML::Literal >>>>>> object (a string). Each of those objects uses Perl's overload feature to "do
 the right thing" in different contexts.
 
 The xpath expression can be passed either as a string or or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object. 
@@ -624,7 +624,7 @@ the same way, it is required to test what kind of node is handled while
 accessing the functions result.
 
 If this function is called in array context the attribute nodes are returned as
-an array. In scalar context the function will return a L<<<<<< XML::LibXML::NamedNodeMap >>>>>> object.
+an array. In scalar context, the function will return a L<<<<<< XML::LibXML::NamedNodeMap >>>>>> object.
 
 
 =item lookupNamespaceURI
@@ -692,7 +692,7 @@ it does not return the document base (5.1.3), use method C<<<<<< URI >>>>>> of C
 
   $node->setBaseURI($strURI);
 
-This method only does something useful for an element node in a XML document.
+This method only does something useful for an element node in an XML document.
 It sets the xml:base attribute on the node to $strURI, which effectively sets
 the base URI of the node to the same value. 
 
@@ -739,7 +739,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

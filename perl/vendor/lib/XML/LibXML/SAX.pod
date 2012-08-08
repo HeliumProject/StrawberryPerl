@@ -11,7 +11,7 @@ tree.
 
 Such an interface is useful if very large XML documents have to be processed
 and no DOM functions are required. By using this interface it is possible to
-read data stored within a XML document directly into the application data
+read data stored within an XML document directly into the application data
 structures without loading the document into memory.
 
 The SAX interface of XML::LibXML is based on the famous XML::SAX interface. It
@@ -21,11 +21,22 @@ Additionally to the generic functions, which are only able to process entire
 documents, XML::LibXML::SAX provides I<<<<<< parse_chunk() >>>>>>. This method generates SAX events from well balanced data such as is often
 provided by databases.
 
-I<<<<<< NOTE: >>>>>> At the moment XML::LibXML provides only an incomplete interface to libxml2's
-native SAX implementation. The current implementation is not tested in
-production environment. It may causes significant memory problems or shows
-wrong behaviour. If you run into specific problems using this part of
-XML::LibXML, let me know.
+
+=head1 FEATURES
+
+I<<<<<< NOTE: >>>>>> This feature is experimental. 
+
+You can enable character data joining which may yield a significant speed boost
+in your XML processing in lower markup ratio situations by enabling the
+http://xmlns.perl.org/sax/join-character-data feature of this parser. This is
+done via the set_feature method like this: 
+
+
+
+  $p->set_feature('http://xmlns.perl.org/sax/join-character-data', 1);
+
+You can also specify a 0 to disable. The default is to have this feature
+disabled. 
 
 =head1 AUTHORS
 
@@ -36,7 +47,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

@@ -36,8 +36,8 @@ XML::LibXML::Error - Structured Errors
 
 =head1 DESCRIPTION
 
-The XML::LibXML::Error class is a tiny frontend to I<<<<<< libxml2 >>>>>>'s structured error support. If XML::LibXML is compied with structured error
-support, all errors reported by libxml2 are transformed to XML::LibXML:Error
+The XML::LibXML::Error class is a tiny frontend to I<<<<<< libxml2 >>>>>>'s structured error support. If XML::LibXML is compiled with structured error
+support, all errors reported by libxml2 are transformed to XML::LibXML::Error
 objects. These objects automatically serialize to the corresponding error
 messages when printed or used in a string operation, but as objects, can also
 be used to get a detailed and structured information about the error that
@@ -58,16 +58,19 @@ str2, str3, num1, num2, and _prev (some of them may be undefined).
 
   $XML::LibXML::Error::WARNINGS=1;
 
-Traditionally, XML::LibXML was supressing parser warnings by setting libxml2's
+Traditionally, XML::LibXML was suppressing parser warnings by setting libxml2's
 global variable xmlGetWarningsDefaultValue to 0. Since 1.70 we do not change
 libxml2's global variables anymore; for backward compatibility, XML::LibXML
 suppresses warnings. This variable can be set to 1 to enable reporting of these
 warnings via Perl C<<<<<< warn >>>>>> and to 2 to report hem via C<<<<<< die >>>>>>. 
 
+
+=item as_string
+
   $message = $@->as_string();
 
-This functions takes serializes a XML::LibXML::Error object to a string
-containing the full error message close to the message produced by I<<<<<< libxml2 >>>>>> default error handlers and tools like xmllint. This method is also used to
+This function serializes an XML::LibXML::Error object to a string containing
+the full error message close to the message produced by I<<<<<< libxml2 >>>>>> default error handlers and tools like xmllint. This method is also used to
 overload "" operator on XML::LibXML::Error, so it is automatically called
 whenever XML::LibXML::Error object is treated as a string (e.g. in print $@). 
 
@@ -76,9 +79,9 @@ whenever XML::LibXML::Error object is treated as a string (e.g. in print $@).
 
   print $@->dump();
 
-This function serializes a XML::LibXML::Error to a string displaying all fields
-of the error structure individually on separate lines of the form 'name' =>
-'value'. 
+This function serializes an XML::LibXML::Error to a string displaying all
+fields of the error structure individually on separate lines of the form 'name'
+=> 'value'. 
 
 
 =item domain
@@ -241,7 +244,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

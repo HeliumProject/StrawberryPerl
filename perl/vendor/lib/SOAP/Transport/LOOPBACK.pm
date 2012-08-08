@@ -1,7 +1,7 @@
 # ======================================================================
 #
 # Copyright (C) 2007 Martin Kutter.
-# Part of SOAP-Lite, Copyright (C) 2000-2001 Paul Kulchenko 
+# Part of SOAP-Lite, Copyright (C) 2000-2001 Paul Kulchenko
 #  (paulclinger@yahoo.com)
 # You may distribute/modify this file under the same terms as perl itself.
 #
@@ -25,7 +25,7 @@ sub new {
 
 sub send_receive {
     my($self, %parameters) = @_;
-    
+
     $self->code(200);
     $self->message('OK');
     $self->is_success(1);
@@ -40,26 +40,26 @@ __END__
 
 =pod
 
-=head1 NAME 
+=head1 NAME
 
-SOAP::Transport::LOOPBACK - Test loopback transport backend (Client only) 
+SOAP::Transport::LOOPBACK - Test loopback transport backend (Client only)
 
 =head1 DESCRIPTION
 
 SOAP::Transport::LOOPBACK is a test transport backend for SOAP::Lite.
 
-It just returns the XML request as response, thus allowing to test the 
-complete application stack of client applications from the front end down to 
-the transport layer without actually sending data over the wire.  
+It just returns the XML request as response, thus allowing to test the
+complete application stack of client applications from the front end down to
+the transport layer without actually sending data over the wire.
 
 Using this transport backend is triggered by setting a loopback:// URL.
 
-Sending requests through this transport backend alway succeeds with the 
+Sending requests through this transport backend alway succeeds with the
 following states:
 
  status: 200 OK
  code: 200
- message: OK 
+ message: OK
 
 =head1 COPYRIGHT
 

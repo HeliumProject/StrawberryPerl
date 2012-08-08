@@ -1,12 +1,14 @@
+use 5.005;
+use strict;
+BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package File::pushd;
+# ABSTRACT: change directory temporarily for a limited scope
+our $VERSION = '1.002'; # VERSION
 
-$VERSION = '1.00';
+use vars qw/@EXPORT @ISA/;
 @EXPORT  = qw( pushd tempd );
 @ISA     = qw( Exporter );
 
-use 5.004;
-use strict;
-#use warnings;
 use Exporter;
 use Carp;
 use Cwd         qw( cwd abs_path );
@@ -14,7 +16,7 @@ use File::Path  qw( rmtree );
 use File::Temp  qw();
 use File::Spec;
 
-use overload 
+use overload
     q{""} => sub { File::Spec->canonpath( $_[0]->{_pushd} ) },
     fallback => 1;
 
@@ -23,20 +25,35 @@ use overload
 #--------------------------------------------------------------------------#
 
 sub pushd {
-    my ($target_dir) = @_;
-    
-    my $orig = cwd;
-    
-    my $dest;
-    eval { $dest   = $target_dir ? abs_path( $target_dir ) : $orig };
-    
+    my ($target_dir, $options) = @_;
+    $options->{untaint_pattern} ||= qr{^([-+@\w./]+)$};
+
+    my $tainted_orig = cwd;
+    my $orig;
+    if ( $tainted_orig =~ $options->{untaint_pattern} ) {
+      $orig = $1;
+    }
+    else {
+      $orig = $tainted_orig;
+    }
+
+    my $tainted_dest;
+    eval { $tainted_dest   = $target_dir ? abs_path( $target_dir ) : $orig };
     croak "Can't locate directory $target_dir: $@" if $@;
-    
-    if ($dest ne $orig) { 
+
+    my $dest;
+    if ( $tainted_dest =~ $options->{untaint_pattern} ) {
+      $dest = $1;
+    }
+    else {
+      $dest = $tainted_dest;
+    }
+
+    if ($dest ne $orig) {
         chdir $dest or croak "Can't chdir to $dest\: $!";
     }
 
-    my $self = bless { 
+    my $self = bless {
         _pushd => $dest,
         _original => $orig
     }, __PACKAGE__;
@@ -49,7 +66,10 @@ sub pushd {
 #--------------------------------------------------------------------------#
 
 sub tempd {
-    my $dir = pushd( File::Temp::tempdir( CLEANUP => 0 ) );
+    my ($options) = @_;
+    my $dir;
+    eval { $dir = pushd( File::Temp::tempdir( CLEANUP => 0 ), $options ) };
+    croak $@ if $@;
     $dir->{_tempd} = 1;
     return $dir;
 }
@@ -68,7 +88,7 @@ sub preserve {
         return $self->{_preserve} = $_[0] ? 1 : 0;
     }
 }
-    
+
 #--------------------------------------------------------------------------#
 # DESTROY()
 # Revert to original directory as object is destroyed and cleanup
@@ -79,80 +99,81 @@ sub DESTROY {
     my ($self) = @_;
     my $orig = $self->{_original};
     chdir $orig if $orig; # should always be so, but just in case...
-    if ( $self->{_tempd} && 
+    if ( $self->{_tempd} &&
         !$self->{_preserve} ) {
         eval { rmtree( $self->{_pushd} ) };
         carp $@ if $@;
     }
 }
 
-1; #this line is important and will help the module return a true value
-__END__
+1;
 
-=begin wikidoc
 
-= NAME
+
+=pod
+
+=head1 NAME
 
 File::pushd - change directory temporarily for a limited scope
 
-= VERSION
+=head1 VERSION
 
-This documentation describes version %%VERSION%%.
+version 1.002
 
-= SYNOPSIS
+=head1 SYNOPSIS
 
- use File::pushd;
-
- chdir $ENV{HOME};
+  use File::pushd;
  
- # change directory again for a limited scope
- {
+  chdir $ENV{HOME};
+ 
+  # change directory again for a limited scope
+  {
+      my $dir = pushd( '/tmp' );
+      # working directory changed to /tmp
+  }
+  # working directory has reverted to $ENV{HOME}
+ 
+  # tempd() is equivalent to pushd( File::Temp::tempdir )
+  {
+      my $dir = tempd();
+  }
+ 
+  # object stringifies naturally as an absolute path
+  {
      my $dir = pushd( '/tmp' );
-     # working directory changed to /tmp
- }
- # working directory has reverted to $ENV{HOME}
+     my $filename = File::Spec->catfile( $dir, "somefile.txt" );
+     # gives /tmp/somefile.txt
+  }
 
- # tempd() is equivalent to pushd( File::Temp::tempdir )
- {
-     my $dir = tempd();
- }
+=head1 DESCRIPTION
 
- # object stringifies naturally as an absolute path
- {
-    my $dir = pushd( '/tmp' );
-    my $filename = File::Spec->catfile( $dir, "somefile.txt" );
-    # gives /tmp/somefile.txt
- }
-    
-= DESCRIPTION
-
-File::pushd does a temporary {chdir} that is easily and automatically
-reverted, similar to {pushd} in some Unix command shells.  It works by
+File::pushd does a temporary C<<< chdir >>> that is easily and automatically
+reverted, similar to C<<< pushd >>> in some Unix command shells.  It works by
 creating an object that caches the original working directory.  When the object
-is destroyed, the destructor calls {chdir} to revert to the original working
+is destroyed, the destructor calls C<<< chdir >>> to revert to the original working
 directory.  By storing the object in a lexical variable with a limited scope,
 this happens automatically at the end of the scope.
 
 This is very handy when working with temporary directories for tasks like
 testing; a function is provided to streamline getting a temporary
-directory from [File::Temp].
+directory from L<File::Temp>.
 
 For convenience, the object stringifies as the canonical form of the absolute
 pathname of the directory entered.
 
-= USAGE
+=head1 USAGE
 
- use File::pushd;
+  use File::pushd;
 
-Using File::pushd automatically imports the {pushd} and {tempd} functions.
+Using File::pushd automatically imports the C<<< pushd >>> and C<<< tempd >>> functions.
 
-== pushd
+=head2 pushd
 
- {
-     my $dir = pushd( $target_directory );
- }
+  {
+      my $dir = pushd( $target_directory );
+  }
 
-Caches the current working directory, calls {chdir} to change to the target
+Caches the current working directory, calls C<<< chdir >>> to change to the target
 directory, and returns a File::pushd object.  When the object is
 destroyed, the working directory reverts to the original directory.
 
@@ -160,70 +181,94 @@ The provided target directory can be a relative or absolute path. If
 called with no arguments, it uses the current directory as its target and
 returns to the current directory when the object is destroyed.
 
-== tempd
+If the target directory does not exist or if the directory change fails
+for some reason, C<<< pushd >>> will die with an error message.
 
- {
-     my $dir = tempd();
- }
+Can be given a hashref as an optional second argument.  The only supported
+option is C<<< untaint_pattern >>>, which is used to untaint file paths involved.
+It defaults to C<<< qr{^([-+@\w./]+)$} >>>, which is reasonably restrictive (e.g.
+it does not even allow spaces in the path).  Change this to suit your
+circumstances and security needs if running under taint mode. B<Note>: you
+must include the parentheses in the pattern to capture the untainted
+portion of the path.
 
-This function is like {pushd} but automatically creates and calls {chdir} to
-a temporary directory created by [File::Temp]. Unlike normal [File::Temp]
+=head2 tempd
+
+  {
+      my $dir = tempd();
+  }
+
+This function is like C<<< pushd >>> but automatically creates and calls C<<< chdir >>> to
+a temporary directory created by L<File::Temp>. Unlike normal L<File::Temp>
 cleanup which happens at the end of the program, this temporary directory is
-removed when the object is destroyed. (But also see {preserve}.)  A warning
+removed when the object is destroyed. (But also see C<<< preserve >>>.)  A warning
 will be issued if the directory cannot be removed.
 
-== preserve 
+As with C<<< pushd >>>, C<<< tempd >>> will die if C<<< chdir >>> fails.
 
- {
-     my $dir = tempd();
-     $dir->preserve;      # mark to preserve at end of scope
-     $dir->preserve(0);   # mark to delete at end of scope
- }
+It may be given a single options hash that will be passed internally
+to CE<lt>pushdE<gt>.
+
+=head2 preserve
+
+  {
+      my $dir = tempd();
+      $dir->preserve;      # mark to preserve at end of scope
+      $dir->preserve(0);   # mark to delete at end of scope
+  }
 
 Controls whether a temporary directory will be cleaned up when the object is
-destroyed.  With no arguments, {preserve} sets the directory to be preserved.
+destroyed.  With no arguments, C<<< preserve >>> sets the directory to be preserved.
 With an argument, the directory will be preserved if the argument is true, or
-marked for cleanup if the argument is false.  Only {tempd} objects may be
-marked for cleanup.  (Target directories to {pushd} are always preserved.)
-{preserve} returns true if the directory will be preserved, and false
+marked for cleanup if the argument is false.  Only C<<< tempd >>> objects may be
+marked for cleanup.  (Target directories to C<<< pushd >>> are always preserved.)
+C<<< preserve >>> returns true if the directory will be preserved, and false
 otherwise.
 
-= SEE ALSO
+=head1 SEE ALSO
 
-* [File::chdir]
+=over
 
-= BUGS
+=item *
 
-Please report any bugs or feature using the CPAN Request Tracker.  
-Bugs can be submitted through the web interface at 
-[http://rt.cpan.org/Dist/Display.html?Queue=File-pushd]
+L<File::chdir>
 
-When submitting a bug or request, please include a test-file or a patch to an
-existing test-file that illustrates the bug or desired feature.
+=back
 
-= AUTHOR
+=for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders
 
-David A. Golden (DAGOLDEN)
+=head1 SUPPORT
 
-= COPYRIGHT AND LICENSE
+=head2 Bugs / Feature Requests
 
-Copyright (c) 2005, 2006, 2007 by David A. Golden
+Please report any bugs or feature requests through the issue tracker
+at L<http://rt.cpan.org/Public/Dist/Display.html?Name=File-pushd>.
+You will be notified automatically of any progress on your issue.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at 
-[http://www.apache.org/licenses/LICENSE-2.0]
+=head2 Source Code
 
-Files produced as output though the use of this software, including
-generated copies of boilerplate templates provided with this software,
-shall not be considered Derivative Works, but shall be considered the
-original work of the Licensor.
+This is open source software.  The code repository is available for
+public review and contribution under the terms of the license.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+L<https://github.com/dagolden/file-pushd>
 
-=end wikidoc
+  git clone https://github.com/dagolden/file-pushd.git
+
+=head1 AUTHOR
+
+David A Golden <dagolden@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is Copyright (c) 2011 by David A Golden.
+
+This is free software, licensed under:
+
+  The Apache License, Version 2.0, January 2004
+
+=cut
+
+
+__END__
+
 

@@ -2,9 +2,58 @@
 
 DBI::Changes - List of significant changes to the DBI
 
-(As of $Date: 2010-12-30 10:10:54 +0000 (Thu, 30 Dec 2010) $ $Revision: 14616 $)
+(As of $Date: 2012-02-25 14:14:52 +0000 (Sat, 25 Feb 2012) $ $Revision: 15179 $)
 
 =cut
+
+=head2 Changes in DBI 1.618 (svn r15170) 25rd February 2012
+
+  Fixed compiler warnings in Driver_xst.h (Martin J. Evans)
+  Fixed compiler warning in DBI.xs (H.Merijn Brand)
+  Fixed Gofer tests failing on Windows RT74975 (Manoj Kumar)
+  Fixed my_ctx compile errors on Windows (Dave Mitchell)
+
+  Significantly optimized method dispatch via cache (Dave Mitchell)
+  Significantly optimized DBI internals for threads (Dave Mitchell)
+  Xsub to xsub calling optimization now enabled for threaded perls.
+  Corrected typo in example in docs (David Precious)
+  Added note that calling clone() without an arg may warn in future.
+  Minor changes to the install_method() docs in DBI::DBD.
+  Updated dbipport.h from Devel::PPPort 3.20
+
+=head2 Changes in DBI 1.617 (svn r15107) 30th January 2012
+
+  NOTE: The officially supported minimum perl version will change
+  from perl 5.8.1 (2003) to perl 5.8.3 (2004) in a future release.
+  (The last change, from perl 5.6 to 5.8.1, was announced
+  in July 2008 and implemented in DBI 1.611 in April 2010.)
+
+  Fixed ParamTypes example in the pod (Martin J. Evans)
+  Fixed the definition of ArrayTupleStatus and remove confusion over
+    rows affected in list context of execute_array (Martin J. Evans)
+  Fixed sql_type_cast example and typo in errors (Martin J. Evans)
+  Fixed Gofer error handling for keeperr methods like ping (Tim Bunce)
+  Fixed $dbh->clone({}) RT73250 (Tim Bunce)
+  Fixed is_nested_call logic error RT73118 (Reini Urban)
+
+  Enhanced performance for threaded perls (Dave Mitchell, Tim Bunce)
+  Enhanced and standardized driver trace level mechanism (Tim Bunce)
+  Removed old code that was an inneffective attempt to detect
+    people doing DBI->{Attrib}.
+  Clear ParamValues on bind_param param count error RT66127 (Tim Bunce)
+  Changed DBI::ProxyServer to require DBI at compile-time RT62672 (Tim Bunce)
+
+  Added pod for default_user to DBI::DBD (Martin J. Evans)
+  Added CON, ENC and DBD trace flags and extended 09trace.t (Martin J. Evans)
+  Added TXN trace flags and applied CON and TXN to relevant methods (Tim Bunce)
+  Added some more fetchall_arrayref(..., $maxrows) tests (Tim Bunce)
+  Clarified docs for fetchall_arrayref called on an inactive handle.
+  Clarified docs for clone method (Tim Bunce)
+  Added note to DBI::Profile about async queries (Marcel Grünauer).
+  Reserved spatialite_ as a driver prefix for DBD::Spatialite
+  Reserved mo_ as a driver prefix for DBD::MO
+  Updated link to the SQL Reunion 95 docs, RT69577 (Ash Daminato)
+  Changed links for DBI recipes. RT73286 (Martin J. Evans)
 
 =head2 Changes in DBI 1.616 (svn r14616) 30th December 2010
 

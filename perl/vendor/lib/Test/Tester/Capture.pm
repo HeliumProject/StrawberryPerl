@@ -11,7 +11,6 @@ use vars qw( @ISA );
 BEGIN {
 	use Config;
 	if( $] >= 5.008 && $Config{useithreads} ) {
-		require threads;
 		require threads::shared;
 		threads::shared->import;
 	}

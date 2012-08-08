@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _FENV_H_
 #define _FENV_H_
@@ -27,6 +27,10 @@
 /* The MXCSR exception flags are the same as the
    FE flags. */
 #define __MXCSR_EXCEPT_FLAG_SHIFT 0
+
+/* How much to shift FE status word exception flags
+   to get the MXCSR exeptions masks,  */
+#define __MXCSR_EXCEPT_MASK_SHIFT 7
 
 /* How much to shift FE status word exception flags
    to get MXCSR rounding flags,  */

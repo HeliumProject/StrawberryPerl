@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef IP_EXPORT_INCLUDED
 #define IP_EXPORT_INCLUDED 1
@@ -10,34 +10,11 @@ typedef ULONG IPAddr;
 typedef ULONG IPMask;
 typedef ULONG IP_STATUS;
 
-#ifndef s6_addr
-typedef struct in6_addr {
-  union {
-    UCHAR Byte[16];
-    USHORT Word[8];
-  } u;
-} IN6_ADDR;
-
-#define in_addr6 in6_addr
-#define _S6_un u
-#define _S6_u8 Byte
-#define s6_addr _S6_un._S6_u8
-#define s6_bytes u.Byte
-#define s6_words u.Word
-#endif
+#include <in6addr.h>
 
 typedef struct in6_addr IPv6Addr;
 
-#ifndef s_addr
-struct in_addr {
-  union {
-    struct { UCHAR s_b1,s_b2,s_b3,s_b4; } S_un_b;
-    struct { USHORT s_w1,s_w2; } S_un_w;
-    ULONG S_addr;
-  } S_un;
-};
-#define s_addr S_un.S_addr
-#endif
+#include <inaddr.h>
 
 typedef struct ip_option_information {
   UCHAR Ttl;
@@ -117,6 +94,13 @@ typedef struct _IP_MCAST_COUNTER_INFO {
   ULONG64 InMcastPkts;
   ULONG64 OutMcastPkts;
 } IP_MCAST_COUNTER_INFO,*PIP_MCAST_COUNTER_INFO;
+
+typedef struct _IPV6_ADDRESS_EX {
+  USHORT sin6_port;
+  ULONG  sin6_flowinfo;
+  USHORT sin6_addr[8];
+  ULONG  sin6_scope_id;
+} IPV6_ADDRESS_EX, *PIPV6_ADDRESS_EX;
 
 #define IP_STATUS_BASE 11000
 

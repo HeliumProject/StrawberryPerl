@@ -15,7 +15,7 @@ BEGIN {
 	require 5.004;
 	require Exporter;
 	require Carp;
-	$YAML::Tiny::VERSION   = '1.48';
+	$YAML::Tiny::VERSION   = '1.51';
 	# $YAML::Tiny::VERSION   = eval $YAML::Tiny::VERSION;
 	@YAML::Tiny::ISA       = qw{ Exporter  };
 	@YAML::Tiny::EXPORT    = qw{ Load Dump };
@@ -458,7 +458,7 @@ sub _write_scalar {
 		$string =~ s/([\x00-\x1f])/\\$UNPRINTABLE[ord($1)]/g;
 		return qq|"$string"|;
 	}
-	if ( $string =~ /(?:^\W|\s)/ or $QUOTE{$string} ) {
+	if ( $string =~ /(?:^\W|\s|:\z)/ or $QUOTE{$string} ) {
 		return "'$string'";
 	}
 	return $string;
@@ -613,8 +613,9 @@ BEGIN {
 	eval {
 		require Scalar::Util;
 	};
-	if ( $@ or $Scalar::Util::VERSION < 1.18 ) {
-		eval <<'END_PERL' if $@;
+	my $v = eval("$Scalar::Util::VERSION") || 0;
+	if ( $@ or $v < 1.18 ) {
+		eval <<'END_PERL';
 # Scalar::Util failed to load or too old
 sub refaddr {
 	my $pkg = ref($_[0]) or return undef;
@@ -1163,7 +1164,7 @@ L<http://use.perl.org/~Alias/journal/29427>, L<http://ali.as/>
 
 =head1 COPYRIGHT
 
-Copyright 2006 - 2011 Adam Kennedy.
+Copyright 2006 - 2012 Adam Kennedy.
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

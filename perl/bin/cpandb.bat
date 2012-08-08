@@ -1,17 +1,20 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!C:\strawberry\perl\bin\perl.exe 
+#!usr/bin/perl -w
 #line 15
+
+# $Id: cpandb 33 2011-06-13 04:17:28Z stro $
+
 use strict;
 use warnings;
 use CPAN::SQLite;
@@ -136,11 +139,11 @@ EOI
       }
       my $mods = $results->{mods};
       if ($mods and (ref($mods) eq 'ARRAY')) {
-	print qq{\nProvided modules:\n};
-	foreach my $item(@$mods) {
-	  my $abs = $item->{mod_abs} || '';
-	  print qq{  $item->{mod_name}: $abs\n};
-	}
+        print qq{\nProvided modules:\n};
+        foreach my $item(@$mods) {
+          my $abs = $item->{mod_abs} || '';
+          print qq{  $item->{mod_name}: $abs\n};
+        }
       }
       last RESULTS;
     };
@@ -161,11 +164,11 @@ EOI
       }
       my $dists = $results->{dists};
       if ($dists and (ref($dists) eq 'ARRAY')) {
-	print qq{\nAvailable distributions:\n};
-	foreach my $item(@$dists) {
-	  my $abs = $item->{dist_abs} || '';
-	  print qq{  $item->{dist_file}: $abs\n};
-	}
+        print qq{\nAvailable distributions:\n};
+        foreach my $item(@$dists) {
+          my $abs = $item->{dist_abs} || '';
+          print qq{  $item->{dist_file}: $abs\n};
+        }
       }
       last RESULTS;
     };
@@ -207,7 +210,7 @@ configured, and are updated if they are more than one
 day old.
 
 If the C<CPAN> option is not given, it will default
-to C<cpan_home> of L<CPAN>, if this is configured,
+to C<cpan_home> of L<CPAN::>, if this is configured,
 with the sources being found under C<keep_source_where>.
 A fatal error results if such a directory isn't found.
 Updates to these index files are assumed here to be

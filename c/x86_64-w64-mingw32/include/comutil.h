@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_COMUTIL
 #define _INC_COMUTIL
@@ -32,7 +32,7 @@ class _bstr_t;
 class _variant_t;
 
 namespace _com_util {
-  inline void CheckError(HRESULT hr) throw(...) {
+  inline void CheckError(HRESULT hr) throw() {
     if(FAILED(hr)) { _com_issue_error(hr); }
   }
 }

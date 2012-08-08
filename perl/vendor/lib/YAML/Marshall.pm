@@ -1,10 +1,10 @@
-package YAML::Marshall;
-
 use strict;
 use warnings;
-use YAML::Node ();
+package YAML::Marshall;
 
-our $VERSION = '0.72';
+our $VERSION = '0.81';
+
+use YAML::Node ();
 
 sub import {
     my $class = shift;
@@ -71,7 +71,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006. Ingy döt Net. All rights reserved.
+Copyright (c) 2006, 2011-2012. Ingy döt Net. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

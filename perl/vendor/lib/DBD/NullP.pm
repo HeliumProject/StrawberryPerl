@@ -5,9 +5,9 @@
     require Carp;
 
     @EXPORT = qw(); # Do NOT @EXPORT anything.
-    $VERSION = sprintf("12.%06d", q$Revision: 14563 $ =~ /(\d+)/o);
+    $VERSION = sprintf("12.%06d", q$Revision: 14714 $ =~ /(\d+)/o);
 
-#   $Id: NullP.pm 14563 2010-12-06 11:25:20Z timbo $
+#   $Id: NullP.pm 14714 2011-02-22 17:27:07Z timbo $
 #
 #   Copyright (c) 1994-2007 Tim Bunce
 #
@@ -118,6 +118,7 @@
             $sth->{dbd_nullp_data} = [ @{$params}{ sort keys %$params } ];
             $sth->STORE(Active => 1); 
         }
+        # force a sleep - handy for testing
         elsif ($sth->{Statement} =~ m/^ \s* SLEEP \s+ (\S+) /xmsi) {
             my $secs = $1;
             if (eval { require Time::HiRes; defined &Time::HiRes::sleep }) {
@@ -127,6 +128,11 @@
                 sleep $secs;
             }
         }
+        # force an error - handy for testing
+        elsif ($sth->{Statement} =~ m/^ \s* ERROR \s+ (\d+) \s* (.*) /xmsi) {
+            return $sth->set_err($1, $2);
+        }
+        # anything else is silently ignored, sucessfully
 	1;
     }
 

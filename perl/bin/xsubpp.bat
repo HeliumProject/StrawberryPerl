@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -14,10 +14,26 @@ goto endofperl
 #line 15
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
-#!./miniperl
+#!perl
+use 5.006;
+use strict;
+eval {
+  require ExtUtils::ParseXS;
+  ExtUtils::ParseXS->import(
+    qw(
+      process_file
+      report_error_count
+    )
+  );
+  1;
+}
+or do {
+  my $err = $@ || 'Zombie error';
+  my $v = $ExtUtils::ParseXS::VERSION;
+  $v = '<undef>' if not defined $v;
+  die "Failed to load or import from ExtUtils::ParseXS (version $v). Please check that ExtUtils::ParseXS is installed correctly and that the newest version will be found in your \@INC path: $err";
+};
 
-require 5.002;
-use ExtUtils::ParseXS qw(process_file);
 use Getopt::Long;
 
 my %args = ();
@@ -54,7 +70,7 @@ if ($args{v}) {
 $args{filename} = shift @ARGV;
 
 process_file(%args);
-exit( ExtUtils::ParseXS::errors() ? 1 : 0 );
+exit( report_error_count() ? 1 : 0 );
 
 __END__
 
@@ -68,7 +84,8 @@ B<xsubpp> [B<-v>] [B<-except>] [B<-s pattern>] [B<-prototypes>] [B<-noversionche
 
 =head1 DESCRIPTION
 
-This compiler is typically run by the makefiles created by L<ExtUtils::MakeMaker>.
+This compiler is typically run by the makefiles created by L<ExtUtils::MakeMaker>
+or by L<Module::Build> or other Perl module build tools.
 
 I<xsubpp> will compile XS code into C code by embedding the constructs
 necessary to let C functions manipulate Perl values and creates the glue
@@ -126,7 +143,7 @@ number.
 
 =item B<-nolinenumbers>
 
-Prevents the inclusion of `#line' directives in the output.
+Prevents the inclusion of '#line' directives in the output.
 
 =item B<-nooptimize>
 

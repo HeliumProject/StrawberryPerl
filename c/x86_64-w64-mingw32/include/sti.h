@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _STICOM_
 #define _STICOM_
@@ -46,7 +46,7 @@ extern "C" {
 #define STI_VERSION_REAL 0x00000002
 #define STI_VERSION_MIN_ALLOWED 0x00000002
 
-#ifdef UNICODE
+#if defined(UNICODE)
 #define STI_VERSION (STI_VERSION_REAL | STI_VERSION_FLAG_UNICODE)
 #else
 #define STI_VERSION (STI_VERSION_REAL)

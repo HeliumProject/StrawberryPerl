@@ -1,12 +1,13 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
+#include <_mingw_unicode.h>
 #include "rpc.h"
 #include "rpcndr.h"
 
@@ -1360,18 +1361,14 @@ extern "C"{
 #define _MLANG_H_API_DEF_
   STDAPI LcidToRfc1766A(LCID Locale,LPSTR pszRfc1766,int iMaxLength);
   STDAPI LcidToRfc1766W(LCID Locale,LPWSTR pszRfc1766,int nChar);
-#ifdef UNICODE
-#define LcidToRfc1766 LcidToRfc1766W
-#else
-#define LcidToRfc1766 LcidToRfc1766A
-#endif
+
+#define LcidToRfc1766 __MINGW_NAME_AW(LcidToRfc1766)
+
   STDAPI Rfc1766ToLcidA(LCID *pLocale,LPCSTR pszRfc1766);
   STDAPI Rfc1766ToLcidW(LCID *pLocale,LPCWSTR pszRfc1766);
-#ifdef UNICODE
-#define Rfc1766ToLcid Rfc1766ToLcidW
-#else
-#define Rfc1766ToLcid Rfc1766ToLcidA
-#endif
+
+#define Rfc1766ToLcid __MINGW_NAME_AW(Rfc1766ToLcid)
+
   STDAPI IsConvertINetStringAvailable(DWORD dwSrcEncoding,DWORD dwDstEncoding);
   STDAPI ConvertINetString(LPDWORD lpdwMode,DWORD dwSrcEncoding,DWORD dwDstEncoding,LPCSTR lpSrcStr,LPINT lpnSrcSize,LPSTR lpDstStr,LPINT lpnDstSize);
   STDAPI ConvertINetMultiByteToUnicode(LPDWORD lpdwMode,DWORD dwEncoding,LPCSTR lpSrcStr,LPINT lpnMultiCharCount,LPWSTR lpDstStr,LPINT lpnWideCharCount);

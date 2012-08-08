@@ -5,24 +5,23 @@ use vars qw($VERSION @ISA);
 @ISA = qw(Imager::Font);
 
 BEGIN {
-  $VERSION = "0.78";
+  $VERSION = "0.84";
 
-  eval {
-    require XSLoader;
-    XSLoader::load('Imager::Font::W32', $VERSION);
-    1;
-  } or do {
-    require DynaLoader;
-    push @ISA, 'DynaLoader';
-    bootstrap Imager::Font::W32 $VERSION;
-  };
+  require XSLoader;
+  XSLoader::load('Imager::Font::W32', $VERSION);
 }
 
 # called by Imager::Font::new()
 # since Win32's HFONTs include the size information this
 # is just a stub
 sub new {
-  my ($class, %opts) = @_;
+  my $class = shift;
+  my %opts =
+      (
+       color => Imager::Color->new(255, 0, 0),
+       size => 15,
+       @_,
+      );
 
   return bless \%opts, $class;
 }
@@ -47,6 +46,8 @@ sub _draw {
 	      $input{'y'}, $input{color}, $input{size}, 
 	      $input{string}, $input{align}, $input{aa}, $input{utf8});
   }
+
+  return 1;
 }
 
 
@@ -85,7 +86,7 @@ renamed it.
 
 =head1 AUTHOR
 
-Tony Cook <tony@imager.perl.org>
+Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

@@ -24,6 +24,10 @@ XML::LibXML::Parser - Parsing XML Data with XML::LibXML
       string => $xml_string
       # parser options ...
     );
+  $dom = XML::LibXML->load_xml(
+      string => (\$xml_string)
+      # parser options ...
+    );
   $dom = XML::LibXML->load_xml({
       IO => $perl_file_handle
       # parser options ...
@@ -73,7 +77,7 @@ XML::LibXML::Parser - Parsing XML Data with XML::LibXML
 
 =head1 PARSING
 
-A XML document is read into a data structure such as a DOM tree by a piece of
+An XML document is read into a data structure such as a DOM tree by a piece of
 software, called a parser. XML::LibXML currently provides four different parser
 interfaces:
 
@@ -158,6 +162,10 @@ eval{} block
       string => $xml_string
       # parser options ...
     );
+  $dom = XML::LibXML->load_xml(
+      string => (\$xml_string)
+      # parser options ...
+    );
   $dom = XML::LibXML->load_xml({
       IO => $perl_file_handle
       # parser options ...
@@ -175,7 +183,7 @@ parser (preserving its settings) and additionally applies the specified options
 to the new parser. See the constructor C<<<<<< new >>>>>> and L<<<<<< Parser Options >>>>>> for more information. 
 
 
-=item load_xml
+=item load_html
 
   
   $dom = XML::LibXML->load_html(...);
@@ -184,6 +192,9 @@ to the new parser. See the constructor C<<<<<< new >>>>>> and L<<<<<< Parser Opt
 
 This function is available since XML::LibXML 1.70. It has the same usage as C<<<<<< load_xml >>>>>>, providing interface to the HTML parser. See C<<<<<< load_xml >>>>>> for more information. 
 
+
+
+=back
 
 Parsing HTML may cause problems, especially if the ampersand ('&') is used.
 This is a common problem if HTML code is parsed that contains links to
@@ -194,7 +205,7 @@ Such HTML documents should be parsed using the I<<<<<< recover >>>>>> flag. By d
 
 The functions described above are implemented to parse well formed documents.
 In some cases a program gets well balanced XML instead of well formed documents
-(e.g. a XML fragment from a Database). With XML::LibXML it is not required to
+(e.g. an XML fragment from a database). With XML::LibXML it is not required to
 wrap such fragments in the code, because XML::LibXML is capable even to parse
 well balanced XML fragments.
 
@@ -218,7 +229,7 @@ with the push parser interface, this function should not be used anymore.
 
 =back
 
-By default XML::LibXML does not process XInclude tags within a XML Document
+By default XML::LibXML does not process XInclude tags within an XML Document
 (see options section below). XML::LibXML allows to post process a document to
 expand XInclude tags.
 
@@ -281,13 +292,15 @@ parse_fh() as follows:
 
   $doc = $parser->parse_string( $xmlstring);
 
-This function is similar to parse_fh(), but it parses a XML document that is
-available as a single string in memory. Again, you can pass an optional base
-URI to the function.
+This function is similar to parse_fh(), but it parses an XML document that is
+available as a single string in memory, or alternatively as a reference to a
+scalar containing a string. Again, you can pass an optional base URI to the
+function.
 
 
 
   my $doc = $parser->parse_string( $xmlstring, $baseuri );
+  my $doc = $parser->parse_string(\$xmlstring, $baseuri);
 
 
 =item parse_html_file
@@ -323,9 +336,6 @@ Similar to parse_string() but parses HTML (strict) strings.
 An optional second argument can be used to pass some options to the HTML parser
 as a HASH reference. See options labeled with HTML in L<<<<<< Parser Options >>>>>>. 
 
-
-
-=back
 
 
 =back
@@ -573,7 +583,7 @@ IMPORTANT NOTE: This documentation reflects the parser flags available in
 libxml2 2.7.3. Some options have no effect if an older version of libxml2 is
 used. 
 
-Each of the flags listed below is labeled labeled
+Each of the flags listed below is labeled
 
 =over 4
 
@@ -621,7 +631,7 @@ element). The line numbers are also used for reporting positions of validation
 errors. 
 
 IMPORTANT: Due to limitations in the libxml2 library line numbers greater than
-65535 will be returned as 65535. Unfortunatelly, this is a long and sad story,
+65535 will be returned as 65535. Unfortunately, this is a long and sad story,
 please see L<<<<<< http://bugzilla.gnome.org/show_bug.cgi?id=325533 >>>>>> for more details. 
 
 
@@ -657,12 +667,12 @@ substitute entities; possible values are 0 and 1; default is 1
 
 Note that although this flag disables entity substitution, it does not prevent
 the parser from loading external entities; when substitution of an external
-entity is disabled, the entity will be represented in the document tree by a
+entity is disabled, the entity will be represented in the document tree by an
 XML_ENTITY_REF_NODE node whose subtree will be the content obtained by parsing
-the external resource; Although this is level of nesting is visible from the
-DOM it is transparent to XPath data model, so it is possible to match nodes in
-an unexpanded entity by the same XPath expression as if the entity was
-expanded. See also ext_ent_handler. 
+the external resource; Although this nesting is visible from the DOM it is
+transparent to XPath data model, so it is possible to match nodes in an
+unexpanded entity by the same XPath expression as if the entity were expanded.
+See also ext_ent_handler. 
 
 
 =item ext_ent_handler
@@ -690,7 +700,7 @@ resolvers, as in
   sub match {   # accept file:/ URIs except for XML catalogs in /etc/xml/
     my ($uri) = @_;
     return ($uri=~m{^file:/}
-            and $uri !~ m{^file:///etc/xml/}) 
+            and $uri !~ m{^file:///etc/xml/})
            ? 1 : 0;
   }
   $c->register_callbacks([ \&match, sub{}, sub{}, sub{} ]);
@@ -754,13 +764,22 @@ pedantic error reporting; possible values are 0 and 1
 remove blank nodes; possible values are 0 and 1
 
 
+=item no_defdtd
+
+/html/
+
+do not add a default DOCTYPE; possible values are 0 and 1
+
+the default is (0) to add a DTD when the input html lacks one
+
+
 =item expand_xinclude or xinclude
 
 /parser, reader/
 
 Implement XInclude substitution; possible values are 0 and 1
 
-Expands XIinclude tags immediately while parsing the document. Note that the
+Expands XInclude tags immediately while parsing the document. Note that the
 parser will use the URI resolvers installed via C<<<<<< XML::LibXML::InputCallback >>>>>> to parse the included document (if any).
 
 
@@ -819,7 +838,7 @@ specified, XML::LibXML sets this option to 1.
 
 THIS OPTION IS EXPERIMENTAL!
 
-Although quite powerful, XML:LibXML's DOM implementation is incomplete with
+Although quite powerful, XML::LibXML's DOM implementation is incomplete with
 respect to the DOM level 2 or level 3 specifications. XML::GDOME is based on
 libxml2 as well and and provides a rather complete DOM implementation by
 wrapping libgdome. This flag allows you to make use of XML::LibXML's full
@@ -881,7 +900,7 @@ Get/set the C<<<<<< expand_entities >>>>>> option. If called with a true argumen
 
   $parser->keep_blanks(0);
 
-This is actually an oposite of the C<<<<<< no_blanks >>>>>> parser option. If used without an argument retrieves negated value of C<<<<<< no_blanks >>>>>>. If used with an argument sets C<<<<<< no_blanks >>>>>> to the oposite value. 
+This is actually the opposite of the C<<<<<< no_blanks >>>>>> parser option. If used without an argument retrieves negated value of C<<<<<< no_blanks >>>>>>. If used with an argument sets C<<<<<< no_blanks >>>>>> to the opposite value. 
 
 
 =item base_uri
@@ -922,6 +941,13 @@ Loads the XML catalog file $catalog_file.
 
 
 
+  # Global external entity loader (similar to ext_ent_handler option
+  # but this works really globally, also in XML::LibXSLT include etc..)
+
+  XML::LibXML::externalEntityLoader(\&my_loader);
+
+
+
 =back
 
 
@@ -953,7 +979,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

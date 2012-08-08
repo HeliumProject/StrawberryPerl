@@ -30,6 +30,23 @@ my @EX_channel = qw(
         LIBSSH2_CHANNEL_EXTENDED_DATA_NORMAL
 );
 
+my @EX_socket = qw(
+        LIBSSH2_SOCKET_BLOCK_INBOUND
+        LIBSSH2_SOCKET_BLOCK_OUTBOUND
+);
+
+my @EX_trace = qw(
+        LIBSSH2_TRACE_TRANS
+        LIBSSH2_TRACE_KEX
+        LIBSSH2_TRACE_AUTH
+        LIBSSH2_TRACE_CONN
+        LIBSSH2_TRACE_SCP
+        LIBSSH2_TRACE_SFTP
+        LIBSSH2_TRACE_ERROR
+        LIBSSH2_TRACE_PUBLICKEY
+        LIBSSH2_TRACE_SOCKET
+);
+
 my @EX_error = qw(
         LIBSSH2_ERROR_ALLOC
         LIBSSH2_ERROR_BANNER_NONE
@@ -66,6 +83,7 @@ my @EX_error = qw(
         LIBSSH2_ERROR_SOCKET_TIMEOUT
         LIBSSH2_ERROR_TIMEOUT
         LIBSSH2_ERROR_ZLIB
+        LIBSSH2_ERROR_EAGAIN
 );
 
 my @EX_hash = qw(
@@ -170,13 +188,15 @@ my @EX_disconnect = qw(
 
 our %EXPORT_TAGS = (
     all        => [
-        @EX_callback, @EX_channel, @EX_error, @EX_hash, @EX_method,
-        @EX_fx, @EX_fxf, @EX_sftp, @EX_disconnect,
+        @EX_callback, @EX_channel, @EX_error, @EX_socket, @EX_trace, @EX_hash,
+        @EX_method, @EX_fx, @EX_fxf, @EX_sftp, @EX_disconnect,
     ],
     # ssh
     callback   => \@EX_callback,
     channel    => \@EX_channel,
     error      => \@EX_error,
+    socket     => \@EX_socket,
+    trace      => \@EX_trace,
     hash       => \@EX_hash,
     method     => \@EX_method,
     disconnect => \@EX_disconnect,
@@ -188,7 +208,7 @@ our %EXPORT_TAGS = (
 
 our @EXPORT_OK = @{$EXPORT_TAGS{all}};
 
-our $VERSION = '0.33';
+our $VERSION = '0.44';
 
 # methods
 
@@ -196,7 +216,11 @@ sub new {
     my $class = shift;
     my %opts  = @_;
 
-    $class->_new($opts{trace} ? 1 : 0);
+    my $self = $class->_new;
+
+    $self->trace($opts{trace}) if exists $opts{trace};
+
+    return $self;
 }
 
 sub connect {
@@ -253,49 +277,63 @@ sub connect {
     return $self->_startup($fd, $sock);
 }
 
-my %Auth = (
-    'hostbased'     => {
-        ssh    => 'hostbased',
-        method => \&auth_hostbased,
-        params => [qw(username publickey privatekey
-                   hostname local_username? password?)],
-    },
-    'publickey'     => {
-        ssh    => 'publickey',
-        method => \&auth_publickey,
-        params => [qw(username publickey privatekey password?)],
-    },
-    'keyboard'      => {
-        ssh    => 'keyboard-interactive', 
-        method => \&auth_keyboard,
-        params => [qw(_interact username cb_keyboard?)]
-    },
-    'keyboard-auto' => {
-        ssh    => 'keyboard-interactive',
-        method => \&auth_keyboard,
-        params => [qw(username password)],
-    },
-    'password'      => {
-        ssh    => 'password',
-        method => \&auth_password,
-        params => [qw(username password cb_password?)],
-    },
-    'none'          => {
-        ssh    => 'none',
-        method => \&auth_password,
-        params => [qw(username)],
-    },
-);
+sub _auth_methods {
+    return {
+        ((version())[1]||0 >= 0x010203 ? (
+            'agent' => {
+                ssh => 'agent',
+                method => \&auth_agent,
+                params => [qw(username)],
+            },
+        ) : ()),
+        'hostbased'     => {
+            ssh    => 'hostbased',
+            method => \&auth_hostbased,
+            params => [qw(username publickey privatekey
+                       hostname local_username? password?)],
+        },
+        'publickey'     => {
+            ssh    => 'publickey',
+            method => \&auth_publickey,
+            params => [qw(username publickey privatekey password?)],
+        },
+        'keyboard'      => {
+            ssh    => 'keyboard-interactive', 
+            method => \&auth_keyboard,
+            params => [qw(_interact username cb_keyboard?)]
+        },
+        'keyboard-auto' => {
+            ssh    => 'keyboard-interactive',
+            method => \&auth_keyboard,
+            params => [qw(username password)],
+        },
+        'password'      => {
+            ssh    => 'password',
+            method => \&auth_password,
+            params => [qw(username password cb_password?)],
+        },
+        'none'          => {
+            ssh    => 'none',
+            method => \&auth_password,
+            params => [qw(username)],
+        },
+    };
+}
 
-my @Rank = qw(hostbased publickey keyboard keyboard-auto password none);
+sub _auth_rank {
+    return [
+        ((version())[1]||0 >= 0x010203 ? ('agent') : ()),
+        qw(hostbased publickey keyboard keyboard-auto password none)
+    ];
+}
 
 sub auth {
     my ($self, %p) = @_;
-    my $rank = delete $p{rank} || \@Rank;
+    my $rank = delete $p{rank} || $self->_auth_rank;
 
     TYPE: for(my $i = 0; $i < @$rank; $i++) {
         my $type = $rank->[$i];
-        my $data = $Auth{$type};
+        my $data = $self->_auth_methods->{$type};
         confess "unknown authentication method '$type'" unless $data;
 
         # do we have the required parameters?
@@ -372,8 +410,15 @@ sub scp_put {
       $self->error(0, "want $block, have $count"), return
        unless $count == $block;
       die 'sysread mismatch' unless length $buf == $count;
+      my $wrote = 0;
+      while ($wrote >= 0 && $wrote < $count) {
+        my $wr = $chan->write($buf);
+        last if $wr < 0;
+        $wrote += $wr;
+        $buf = substr $buf, $wr;
+      }
       $self->error(0, "error writing $count bytes to channel"), return
-       unless $chan->write($buf) == $count;
+       unless $wrote == $count;
     }
 
     # send/receive SCP acknowledgement
@@ -528,6 +573,60 @@ false on failure; use the error method to get extended error information.
 The typical order is to create the SSH2 object, set up the connection methods
 you want to use, call connect, authenticate with one of the C<auth> methods,
 then create channels on the connection to perform commands.
+
+=head1 EXPORTS
+
+Exports the following constant tags:
+
+=over 4
+
+=item all
+
+All constants.
+
+=back
+
+ssh constants:
+
+=over 4
+
+=item callback
+
+=item channel
+
+=item error
+
+=item socket
+
+=item trace
+
+Tracing constants for use with C<< ->trace >> and C<< ->new(trace => ...) >>.
+
+=item hash
+
+Key hash constants.
+
+=item method
+
+=item disconnect
+
+Disconnect type constants.
+
+=back
+
+SFTP constants:
+
+=over 4
+
+=item fx
+
+=item fxf
+
+=item sftp
+
+=back
+
+=head1 METHODS
 
 =head2 new
 
@@ -808,6 +907,11 @@ echoed, respectively) which should return an array of responses.
 If only a username is provided, the default callback will handle standard
 interactive responses; L<Term::ReadKey> is required.
 
+=head2 auth_agent ( username )
+
+Try to authenticate using ssh-agent. This requires libssh2 version 1.2.3 or
+later.
+
 =head2 auth ( ... )
 
 This is a general, prioritizing authentication mechanism that can use any
@@ -918,6 +1022,12 @@ the integer value.
 =back
 
 Returns undef on error, or the number of active objects.
+
+=head2 block_directions
+
+Get the blocked direction when a function returns LIBSSH2_ERROR_EAGAIN, returns
+LIBSSH2_SOCKET_BLOCK_INBOUND or LIBSSH2_SOCKET_BLOCK_OUTBOUND from the socket
+export group.
 
 =head2 debug ( state )
 

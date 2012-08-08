@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -74,6 +74,8 @@ use LWP::UserAgent ();
 use LWP::MediaTypes qw(guess_media_type media_suffix);
 use URI ();
 use HTTP::Date ();
+use Encode;
+use Encode::Locale;
 
 my $progname = $0;
 $progname =~ s,.*/,,;    # only basename left in progname
@@ -87,10 +89,10 @@ unless (getopts('as', \%opt)) {
     usage();
 }
 
-my $url = URI->new(shift || usage());
-my $argfile = shift;
+my $url = URI->new(decode(locale => shift) || usage());
+my $argfile = encode(locale_fs => decode(locale => shift));
 usage() if defined($argfile) && !length($argfile);
-my $VERSION = "5.835";
+my $VERSION = "6.00";
 
 my $ua = LWP::UserAgent->new(
    agent => "lwp-download/$VERSION ",

@@ -50,7 +50,7 @@ The libxml2 input callbacks come in groups. One group contains a URI matcher (I<
 
 =head3 The Parser Process
 
-The parser process work on a XML data stream, along which, links to other
+The parser process works on an XML data stream, along which, links to other
 resources can be embedded. This can be links to external DTDs or XIncludes for
 example. Those resources are identified by URIs. The callback implementation of
 libxml2 assumes that one callback group can handle a certain amount of URIs and
@@ -85,11 +85,11 @@ register callback groups.
 
 
   my $input_callbacks = XML::LibXML::InputCallback->new();
-  $input_callbacks->register_callbacks([ $match_cb1, $open_cb1, 
+  $input_callbacks->register_callbacks([ $match_cb1, $open_cb1,
                                          $read_cb1, $close_cb1 ] );
-  $input_callbacks->register_callbacks([ $match_cb2, $open_cb2, 
+  $input_callbacks->register_callbacks([ $match_cb2, $open_cb2,
                                          $read_cb2, $close_cb2 ] );
-  $input_callbacks->register_callbacks( [ $match_cb3, $open_cb3, 
+  $input_callbacks->register_callbacks( [ $match_cb3, $open_cb3,
                                           $read_cb3, $close_cb3 ] );
 
   $parser->input_callbacks( $input_callbacks );
@@ -199,9 +199,10 @@ be identified by the I<<<<<< match >>>>>> callback and deleted from the callback
 from the stack.
 
 
-=item init_callbacks()
+=item init_callbacks( $parser )
 
-Initializes the callback system before a parsing process.
+Initializes the callback system for the provided parser before starting a
+parsing process.
 
 
 =item cleanup_callbacks()
@@ -253,7 +254,7 @@ MyScheme::Handler object that responds to methods similar to an IO::Handle.
       return $buffer; # $buffer will be an empty string '' if read() is done
   }
 
-  # Close the handle associated with the resource.  
+  # Close the handle associated with the resource.
   sub close_uri {
       my $handler = shift;
       close($handler);
@@ -261,13 +262,13 @@ MyScheme::Handler object that responds to methods similar to an IO::Handle.
 
   # Register them with a instance of XML::LibXML::InputCallback
   my $input_callbacks = XML::LibXML::InputCallback->new();
-  $input_callbacks->register_callbacks([ \&match_uri, \&open_uri, 
+  $input_callbacks->register_callbacks([ \&match_uri, \&open_uri,
                                          \&read_uri, \&close_uri ] );
 
   # Register the callback group at a parser instance
   $parser->input_callbacks( $input_callbacks );
 
-  # $some_xml_file will be parsed using our callbacks 
+  # $some_xml_file will be parsed using our callbacks
   $parser->parse_file( $some_xml_file );
 
 =head1 AUTHORS
@@ -279,7 +280,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

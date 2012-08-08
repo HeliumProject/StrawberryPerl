@@ -1,15 +1,17 @@
-# $Id: DBI.pm 14568 2010-12-14 15:23:58Z mjevans $
+# $Id: DBI.pm 15137 2012-02-09 15:22:56Z timbo $
 # vim: ts=8:sw=4:et
 #
-# Copyright (c) 1994-2010  Tim Bunce  Ireland
+# Copyright (c) 1994-2012  Tim Bunce  Ireland
 #
 # See COPYRIGHT section in pod text below for usage and distribution rights.
 #
 
+package DBI;
+
 require 5.008_001;
 
 BEGIN {
-$DBI::VERSION = "1.616"; # ==> ALSO update the version in the pod text below!
+$VERSION = "1.618"; # ==> ALSO update the version in the pod text below!
 }
 
 =head1 NAME
@@ -124,8 +126,8 @@ Tim he is very likely to just forward it to the mailing list.
 
 =head2 NOTES
 
-This is the DBI specification that corresponds to the DBI version 1.616
-($Revision: 14568 $).
+This is the DBI specification that corresponds to the DBI version 1.618
+($Revision: 15137 $).
 
 The DBI is evolving at a steady pace, so it's good to check that
 you have the latest copy.
@@ -152,9 +154,6 @@ L<http://search.cpan.org/search?query=DBI&mode=all>.
 =cut
 
 # The POD text continues at the end of the file.
-
-
-package DBI;
 
 use Carp();
 use DynaLoader ();
@@ -245,7 +244,7 @@ BEGIN {
    ) ], # notionally "in" DBI::Profile and normally imported from there
 );
 
-$DBI::dbi_debug = 0;
+$DBI::dbi_debug = 0;          # mixture of bit fields and int sub-fields
 $DBI::neat_maxlen = 1000;
 $DBI::stderr = 2_000_000_000; # a very round number below 2**31
 
@@ -308,65 +307,60 @@ tie $DBI::rows,   'DBI::var', '&rows';   # call &rows   in last used pkg
 sub DBI::var::TIESCALAR{ my $var = $_[1]; bless \$var, 'DBI::var'; }
 sub DBI::var::STORE    { Carp::croak("Can't modify \$DBI::${$_[0]} special variable") }
 
-{   # used to catch DBI->{Attrib} mistake
-    sub DBI::DBI_tie::TIEHASH { bless {} }
-    sub DBI::DBI_tie::STORE   { Carp::carp("DBI->{$_[1]} is invalid syntax (you probably want \$h->{$_[1]})");}
-    *DBI::DBI_tie::FETCH = \&DBI::DBI_tie::STORE;
-}
-tie %DBI::DBI => 'DBI::DBI_tie';
-
 # --- Driver Specific Prefix Registry ---
 
 my $dbd_prefix_registry = {
-  ad_      => { class => 'DBD::AnyData',	},
-  ado_     => { class => 'DBD::ADO',		},
-  amzn_    => { class => 'DBD::Amazon',		},
-  best_    => { class => 'DBD::BestWins',	},
-  csv_     => { class => 'DBD::CSV',		},
-  db2_     => { class => 'DBD::DB2',		},
-  dbi_     => { class => 'DBI',			},
-  dbm_     => { class => 'DBD::DBM',		},
-  df_      => { class => 'DBD::DF',		},
-  f_       => { class => 'DBD::File',		},
-  file_    => { class => 'DBD::TextFile',	},
-  go_      => { class => 'DBD::Gofer',  	},
-  ib_      => { class => 'DBD::InterBase',	},
-  ing_     => { class => 'DBD::Ingres',		},
-  ix_      => { class => 'DBD::Informix',	},
-  jdbc_    => { class => 'DBD::JDBC',		},
-  monetdb_ => { class => 'DBD::monetdb',	},
-  msql_    => { class => 'DBD::mSQL',		},
-  mvsftp_  => { class => 'DBD::MVS_FTPSQL',	},
-  mysql_   => { class => 'DBD::mysql',		},
-  mx_      => { class => 'DBD::Multiplex',	},
-  nullp_   => { class => 'DBD::NullP',		},
-  odbc_    => { class => 'DBD::ODBC',		},
-  ora_     => { class => 'DBD::Oracle',		},
-  pg_      => { class => 'DBD::Pg',		},
-  pgpp_    => { class => 'DBD::PgPP',		},
-  plb_     => { class => 'DBD::Plibdata',	},
-  po_      => { class => 'DBD::PO',		},
-  proxy_   => { class => 'DBD::Proxy',		},
-  ram_     => { class => 'DBD::RAM',		},
-  rdb_     => { class => 'DBD::RDB',		},
-  sapdb_   => { class => 'DBD::SAP_DB',		},
-  solid_   => { class => 'DBD::Solid',		},
-  sponge_  => { class => 'DBD::Sponge',		},
-  sql_     => { class => 'DBI::DBD::SqlEngine',	},
-  sqlite_  => { class => 'DBD::SQLite',  	},
-  syb_     => { class => 'DBD::Sybase',		},
-  sys_     => { class => 'DBD::Sys',		},
-  tdat_    => { class => 'DBD::Teradata',	},
-  tmpl_    => { class => 'DBD::Template',	},
-  tmplss_  => { class => 'DBD::TemplateSS',	},
-  tuber_   => { class => 'DBD::Tuber',		},
-  uni_     => { class => 'DBD::Unify',		},
-  vt_      => { class => 'DBD::Vt',		},
-  wmi_     => { class => 'DBD::WMI',		},
-  x_       => { }, # for private use
-  xbase_   => { class => 'DBD::XBase',		},
-  xl_      => { class => 'DBD::Excel',		},
-  yaswi_   => { class => 'DBD::Yaswi',		},
+  ad_          => { class => 'DBD::AnyData',        },
+  ado_         => { class => 'DBD::ADO',            },
+  amzn_        => { class => 'DBD::Amazon',         },
+  best_        => { class => 'DBD::BestWins',       },
+  csv_         => { class => 'DBD::CSV',            },
+  db2_         => { class => 'DBD::DB2',            },
+  dbi_         => { class => 'DBI',                 },
+  dbm_         => { class => 'DBD::DBM',            },
+  df_          => { class => 'DBD::DF',             },
+  f_           => { class => 'DBD::File',           },
+  file_        => { class => 'DBD::TextFile',       },
+  go_          => { class => 'DBD::Gofer',          },
+  ib_          => { class => 'DBD::InterBase',      },
+  ing_         => { class => 'DBD::Ingres',         },
+  ix_          => { class => 'DBD::Informix',       },
+  jdbc_        => { class => 'DBD::JDBC',           },
+  mo_          => { class => 'DBD::MO',             },
+  monetdb_     => { class => 'DBD::monetdb',        },
+  msql_        => { class => 'DBD::mSQL',           },
+  mvsftp_      => { class => 'DBD::MVS_FTPSQL',     },
+  mysql_       => { class => 'DBD::mysql',          },
+  mx_          => { class => 'DBD::Multiplex',      },
+  nullp_       => { class => 'DBD::NullP',          },
+  odbc_        => { class => 'DBD::ODBC',           },
+  ora_         => { class => 'DBD::Oracle',         },
+  pg_          => { class => 'DBD::Pg',             },
+  pgpp_        => { class => 'DBD::PgPP',           },
+  plb_         => { class => 'DBD::Plibdata',       },
+  po_          => { class => 'DBD::PO',             },
+  proxy_       => { class => 'DBD::Proxy',          },
+  ram_         => { class => 'DBD::RAM',            },
+  rdb_         => { class => 'DBD::RDB',            },
+  sapdb_       => { class => 'DBD::SAP_DB',         },
+  solid_       => { class => 'DBD::Solid',          },
+  spatialite_  => { class => 'DBD::Spatialite',     },
+  sponge_      => { class => 'DBD::Sponge',         },
+  sql_         => { class => 'DBI::DBD::SqlEngine', },
+  sqlite_      => { class => 'DBD::SQLite',         },
+  syb_         => { class => 'DBD::Sybase',         },
+  sys_         => { class => 'DBD::Sys',            },
+  tdat_        => { class => 'DBD::Teradata',       },
+  tmpl_        => { class => 'DBD::Template',       },
+  tmplss_      => { class => 'DBD::TemplateSS',     },
+  tuber_       => { class => 'DBD::Tuber',          },
+  uni_         => { class => 'DBD::Unify',          },
+  vt_          => { class => 'DBD::Vt',             },
+  wmi_         => { class => 'DBD::WMI',            },
+  x_           => { }, # for private use
+  xbase_       => { class => 'DBD::XBase',          },
+  xl_          => { class => 'DBD::Excel',          },
+  yaswi_       => { class => 'DBD::Yaswi',          },
 };
 
 my %dbd_class_registry = map { $dbd_prefix_registry->{$_}->{class} => { prefix => $_ } }
@@ -414,21 +408,21 @@ my $keeperr = { O=>0x0004 };
         visit_child_handles => { U => [2,3,'$coderef [, $info ]'], O=>0x0404, T=>4 },
     },
     dr => {		# Database Driver Interface
-	'connect'  =>	{ U =>[1,5,'[$db [,$user [,$passwd [,\%attr]]]]'], H=>3, O=>0x8000 },
-	'connect_cached'=>{U=>[1,5,'[$db [,$user [,$passwd [,\%attr]]]]'], H=>3, O=>0x8000 },
-	'disconnect_all'=>{ U =>[1,1], O=>0x0800 },
-	data_sources => { U =>[1,2,'[\%attr]' ], O=>0x0800 },
-	default_user => { U =>[3,4,'$user, $pass [, \%attr]' ] },
+	'connect'  =>	{ U =>[1,5,'[$db [,$user [,$passwd [,\%attr]]]]'], H=>3, O=>0x8000, T=>0x200 },
+	'connect_cached'=>{U=>[1,5,'[$db [,$user [,$passwd [,\%attr]]]]'], H=>3, O=>0x8000, T=>0x200 },
+	'disconnect_all'=>{ U =>[1,1], O=>0x0800, T=>0x200 },
+	data_sources => { U =>[1,2,'[\%attr]' ], O=>0x0800, T=>0x200 },
+	default_user => { U =>[3,4,'$user, $pass [, \%attr]' ], T=>0x200 },
 	dbixs_revision  => $keeperr,
     },
     db => {		# Database Session Class Interface
 	data_sources	=> { U =>[1,2,'[\%attr]' ], O=>0x0200 },
 	take_imp_data	=> { U =>[1,1], O=>0x10000 },
-	clone   	=> { U =>[1,2,'[\%attr]'] },
-	connected   	=> { U =>[1,0], O => 0x0004 },
-	begin_work   	=> { U =>[1,2,'[ \%attr ]'], O=>0x0400 },
-	commit     	=> { U =>[1,1], O=>0x0480|0x0800 },
-	rollback   	=> { U =>[1,1], O=>0x0480|0x0800 },
+	clone   	=> { U =>[1,2,'[\%attr]'], T=>0x200 },
+	connected   	=> { U =>[1,0], O => 0x0004, T=>0x200 },
+	begin_work   	=> { U =>[1,2,'[ \%attr ]'], O=>0x0400, T=>0x1000 },
+	commit     	=> { U =>[1,1], O=>0x0480|0x0800, T=>0x1000 },
+	rollback   	=> { U =>[1,1], O=>0x0480|0x0800, T=>0x1000 },
 	'do'       	=> { U =>[2,0,'$statement [, \%attr [, @bind_params ] ]'], O=>0x3200 },
 	last_insert_id	=> { U =>[5,6,'$catalog, $schema, $table_name, $field_name [, \%attr ]'], O=>0x2800 },
 	preparse    	=> {  }, # XXX
@@ -441,7 +435,7 @@ my $keeperr = { O=>0x0004 };
 	selectall_hashref=>{ U =>[3,0,'$statement, $keyfield [, \%attr [, @bind_params ] ]'], O=>0x2000 },
 	selectcol_arrayref=>{U =>[2,0,'$statement [, \%attr [, @bind_params ] ]'], O=>0x2000 },
 	ping       	=> { U =>[1,1], O=>0x0404 },
-	disconnect 	=> { U =>[1,1], O=>0x0400|0x0800|0x10000 },
+	disconnect 	=> { U =>[1,1], O=>0x0400|0x0800|0x10000, T=>0x200 },
 	quote      	=> { U =>[2,3, '$string [, $data_type ]' ], O=>0x0430 },
 	quote_identifier=> { U =>[2,6, '$name [, ...] [, \%attr ]' ],    O=>0x0430 },
 	rows       	=> $keeperr,
@@ -495,7 +489,7 @@ while ( my ($class, $meths) = each %DBI::DBI_methods ) {
     my $ima_trace = 0+($ENV{DBI_IMA_TRACE}||0);
     while ( my ($method, $info) = each %$meths ) {
 	my $fullmeth = "DBI::${class}::$method";
-	if ($DBI::dbi_debug >= 15) { # quick hack to list DBI methods
+	if (($DBI::dbi_debug & 0xF) == 15) { # quick hack to list DBI methods
 	    # and optionally filter by IMA flags
 	    my $O = $info->{O}||0;
 	    printf "0x%04x %-20s\n", $O, $fullmeth
@@ -726,7 +720,7 @@ sub connect {
         # and finished the attribute setup. pass in the original arguments
 	$dbh->connected(@orig_args); #if ref $dbh ne 'DBI::db' or $proxy;
 
-	DBI->trace_msg("    <- connect= $dbh\n") if $DBI::dbi_debug;
+	DBI->trace_msg("    <- connect= $dbh\n") if $DBI::dbi_debug & 0xF;
 
 	return $dbh;
     };
@@ -770,7 +764,7 @@ sub install_driver {		# croaks on failure
 
     $class->trace_msg("    -> $class->install_driver($driver"
 			.") for $^O perl=$] pid=$$ ruid=$< euid=$>\n")
-	if $DBI::dbi_debug;
+	if $DBI::dbi_debug & 0xF;
 
     # --- load the code
     my $driver_class = "DBD::$driver";
@@ -800,7 +794,7 @@ sub install_driver {		# croaks on failure
 	}
 	Carp::croak("install_driver($driver) failed: $err$advice\n");
     }
-    if ($DBI::dbi_debug) {
+    if ($DBI::dbi_debug & 0xF) {
 	no strict 'refs';
 	(my $driver_file = $driver_class) =~ s/::/\//g;
 	my $dbd_ver = ${"$driver_class\::VERSION"} || "undef";
@@ -823,7 +817,7 @@ sub install_driver {		# croaks on failure
     }
 
     $DBI::installed_drh{$driver} = $drh;
-    $class->trace_msg("    <- install_driver= $drh\n") if $DBI::dbi_debug;
+    $class->trace_msg("    <- install_driver= $drh\n") if $DBI::dbi_debug & 0xF;
     $drh;
 }
 
@@ -832,15 +826,17 @@ sub install_driver {		# croaks on failure
 
 sub setup_driver {
     my ($class, $driver_class) = @_;
-    my $type;
-    foreach $type (qw(dr db st)){
-	my $class = $driver_class."::$type";
+    my $h_type;
+    foreach $h_type (qw(dr db st)){
+	my $h_class = $driver_class."::$h_type";
 	no strict 'refs';
-	push @{"${class}::ISA"},     "DBD::_::$type"
-	    unless UNIVERSAL::isa($class, "DBD::_::$type");
-	my $mem_class = "DBD::_mem::$type";
-	push @{"${class}_mem::ISA"}, $mem_class
-	    unless UNIVERSAL::isa("${class}_mem", $mem_class)
+	push @{"${h_class}::ISA"},     "DBD::_::$h_type"
+	    unless UNIVERSAL::isa($h_class, "DBD::_::$h_type");
+	# The _mem class stuff is (IIRC) a crufty hack for global destruction
+	# timing issues in early versions of perl5 and possibly no longer needed.
+	my $mem_class = "DBD::_mem::$h_type";
+	push @{"${h_class}_mem::ISA"}, $mem_class
+	    unless UNIVERSAL::isa("${h_class}_mem", $mem_class)
 	    or $DBI::PurePerl;
     }
 }
@@ -1423,6 +1419,10 @@ sub _new_sth {	# called by DBD::<drivername>::db::prepare)
 	my ($h, $name) = @_;
 	#      0xddDDDDrL (driver, DBI, reserved, Level)
 	return 0x00000100 if $name eq 'SQL';
+    return 0x00000200 if $name eq 'CON';
+    return 0x00000400 if $name eq 'ENC';
+    return 0x00000800 if $name eq 'DBD';
+    return 0x00001000 if $name eq 'TXN';
 	return;
     }
 
@@ -1479,7 +1479,7 @@ sub _new_sth {	# called by DBD::<drivername>::db::prepare)
 	};
 	my $dbh = $cache->{$key};
         $drh->trace_msg(sprintf("    connect_cached: key '$key', cached dbh $dbh\n", DBI::neat($key), DBI::neat($dbh)))
-            if $DBI::dbi_debug >= 4;
+            if (($DBI::dbi_debug & 0xF) >= 4);
 
         my $cb = $attr->{Callbacks}; # take care not to autovivify
 	if ($dbh && $dbh->FETCH('Active') && eval { $dbh->ping }) {
@@ -1512,8 +1512,11 @@ sub _new_sth {	# called by DBD::<drivername>::db::prepare)
 
     sub clone {
 	my ($old_dbh, $attr) = @_;
-	my $closure = $old_dbh->{dbi_connect_closure} or return;
-	unless ($attr) {
+
+	my $closure = $old_dbh->{dbi_connect_closure}
+            or return $old_dbh->set_err($DBI::stderr, "Can't clone handle");
+
+	unless ($attr) { # XXX deprecated, caller should always pass a hash ref
 	    # copy attributes visible in the attribute cache
 	    keys %$old_dbh;	# reset iterator
 	    while ( my ($k, $v) = each %$old_dbh ) {
@@ -1529,6 +1532,7 @@ sub _new_sth {	# called by DBD::<drivername>::db::prepare)
 		ShowErrorStatement TaintIn TaintOut
 	    ));
 	}
+
 	# use Data::Dumper; warn Dumper([$old_dbh, $attr]);
 	my $new_dbh = &$closure($old_dbh, $attr);
 	unless ($new_dbh) {
@@ -1536,6 +1540,7 @@ sub _new_sth {	# called by DBD::<drivername>::db::prepare)
 	    my $drh = $old_dbh->{Driver};
 	    return $old_dbh->set_err($drh->err, $drh->errstr, $drh->state);
 	}
+        $new_dbh->{dbi_connect_closure} = $closure;
 	return $new_dbh;
     }
 
@@ -2343,7 +2348,7 @@ L</do> methods.
 For an interesting diversion on the I<real> history of RDBMS and SQL,
 from the people who made it happen, see:
 
-  http://ftp.digital.com/pub/DEC/SRC/technical-notes/SRC-1997-018-html/sqlr95.html
+  http://www.mcjones.org/System_R/SQL_Reunion_95/sqlr95.html
 
 Follow the "Full Contents" then "Intergalactic dataspeak" links for the
 SQL history.
@@ -3076,7 +3081,7 @@ it can be handy to store hash values in a database.
 
 =head3 C<sql_type_cast>
 
-  $sts = DBI->sql_type_cast($sv, $sql_type, $flags);
+  $sts = DBI::sql_type_cast($sv, $sql_type, $flags);
 
 sql_type_cast attempts to cast C<$sv> to the SQL type (see L<DBI
 Constants>) specified in C<$sql_type>. At present only the SQL types
@@ -3122,7 +3127,7 @@ The returned C<$sts> value is:
   -2 sql_type is not handled
   -1 sv is undef so unchanged
    0 sv could not be cast cleanly and DBIstcf_STRICT was used
-   1 sv could not be case and DBIstcf_STRICT was not used
+   1 sv could not be cast and DBIstcf_STRICT was not used
    2 sv was cast successfully
 
 This method is exported by the :utils tag and was introduced in DBI
@@ -4216,7 +4221,7 @@ committed before it's returned, you can eliminate the C<AutoCommit> attribute
 in a C<connect_cached.reused> callback, like so:
 
   my $cb = {
-      ‘connect_cached.reused’ => sub { delete $_[4]->{AutoCommit} },
+      'connect_cached.reused' => sub { delete $_[4]->{AutoCommit} },
   };
 
   sub dbh {
@@ -4308,31 +4313,26 @@ The following methods are specified for DBI database handles:
 
 =head3 C<clone>
 
-  $new_dbh = $dbh->clone();
   $new_dbh = $dbh->clone(\%attr);
 
 The C<clone> method duplicates the $dbh connection by connecting
 with the same parameters ($dsn, $user, $password) as originally used.
 
 The attributes for the cloned connect are the same as those used
-for the original connect, with some other attributes merged over
-them depending on the \%attr parameter.
+for the I<original> connect, with any other attributes in C<\%attr>
+merged over them.  Effectively the same as doing:
 
-If \%attr is given then the attributes it contains are merged into
-the original attributes and override any with the same names.
-Effectively the same as doing:
-
-  %attribues_used = ( %original_attributes, %attr );
+  %attributes_used = ( %original_attributes, %attr );
 
 If \%attr is not given then it defaults to a hash containing all
 the attributes in the attribute cache of $dbh excluding any non-code
 references, plus the main boolean attributes (RaiseError, PrintError,
-AutoCommit, etc.). This behaviour is subject to change.
+AutoCommit, etc.). I<This behaviour is unreliable and so use of clone without
+an argument is deprecated and may cause a warning in a future release.>
 
 The clone method can be used even if the database handle is disconnected.
 
-The C<clone> method was added in DBI 1.33. It is very new and likely
-to change.
+The C<clone> method was added in DBI 1.33.
 
 =head3 C<data_sources>
 
@@ -6090,8 +6090,10 @@ failed and with what errors.
 
 When called in list context the execute_array() method returns two scalars;
 $tuples is the same as calling execute_array() in scalar context and $rows is
-the sum of the number of rows affected for each tuple, if available or
--1 if the driver cannot determine this.
+the number of rows affected for each tuple, if available or
+-1 if the driver cannot determine this. NOTE, some drivers cannot determine
+the number of rows affected per tuple but can provide the number of rows
+affected for the batch.
 If you are doing an update operation the returned rows affected may not be what
 you expect if, for instance, one or more of the tuples affected the same row
 multiple times.  Some drivers may not yet support list context, in which case
@@ -6143,10 +6145,11 @@ executed parameter tuple. Note the C<ArrayTupleStatus> attribute was
 mandatory until DBI 1.38.
 
 For tuples which are successfully executed, the element at the same
-ordinal position in the status array is the resulting rowcount.
+ordinal position in the status array is the resulting rowcount (or -1
+if unknown).
 If the execution of a tuple causes an error, then the corresponding
 status array element will be set to a reference to an array containing
-the error code and error string set by the failed execution.
+L</err>, L</errstr> and L</state> set by the failed execution.
 
 If B<any> tuple execution returns an error, C<execute_array> will
 return C<undef>. In that case, the application should inspect the
@@ -6214,8 +6217,11 @@ was added in 1.36.
   ($tuples, $rows) = $sth->execute_for_fetch($fetch_tuple_sub);
   ($tuples, $rows) = $sth->execute_for_fetch($fetch_tuple_sub, \@tuple_status);
 
-The execute_for_fetch() method is used to perform bulk operations
-and is most often used via the execute_array() method, not directly.
+The execute_for_fetch() method is used to perform bulk operations and
+although it is most often used via the execute_array() method you can
+use it directly. The main difference between execute_array and
+execute_for_fetch is the former does column or row-wise binding and
+the latter uses row-wise binding.
 
 The fetch subroutine, referenced by $fetch_tuple_sub, is expected
 to return a reference to an array (known as a 'tuple') or undef.
@@ -6374,7 +6380,9 @@ The C<fetchall_arrayref> method can be used to fetch all the data to be
 returned from a prepared and executed statement handle. It returns a
 reference to an array that contains one reference per row.
 
-If there are no rows to return, C<fetchall_arrayref> returns a reference
+If called on an I<inactive> statement handle, C<fetchall_arrayref> returns undef.
+
+If there are no rows left to return from an I<active> statement handle, C<fetchall_arrayref> returns a reference
 to an empty array. If an error occurs, C<fetchall_arrayref> returns the
 data fetched thus far, which may be none.  You should check C<$sth-E<gt>err>
 afterwards (or use the C<RaiseError> attribute) to discover if the data is
@@ -6979,8 +6987,8 @@ For example:
   my $sth2 = $dbh->prepare( $sth1->{Statement} );
   my $ParamValues = $sth1->{ParamValues} || {};
   my $ParamTypes  = $sth1->{ParamTypes}  || {};
-  $sth2->bind_param($_, $PV->{$_} $PT->{$_})
-    for keys %{ %$PV, %$PT };
+  $sth2->bind_param($_, $ParamValues->{$_} $ParamTypes->{$_})
+    for keys %{ {%$ParamValues, %$ParamTypes} };
   $sth2->execute();
 
 The C<ParamTypes> attribute was added in DBI 1.49. Implementation
@@ -7605,6 +7613,13 @@ Currently the DBI only defines two trace flags:
   ALL - turn on all DBI and driver flags (not recommended)
   SQL - trace SQL statements executed
         (not yet implemented in DBI but implemented in some DBDs)
+  CON - trace connection process
+  ENC - trace encoding (unicode translations etc)
+        (not yet implemented in DBI but implemented in some DBDs)
+  DBD - trace only DBD messages
+        (not implemented by all DBDs yet)
+  TXN - trace transactions
+        (not implemented in all DBDs yet)
 
 The L</parse_trace_flags> and L</parse_trace_flag> methods are used
 to convert trace flag names into the corresponding integer bit flags.
@@ -8047,7 +8062,8 @@ Other DBI related links:
  http://wdvl.com/Authoring/DB/Intro/toc.html
  http://www.hotwired.com/webmonkey/backend/tutorials/tutorial1.html
  http://bumppo.net/lists/macperl/1999/06/msg00197.html
- http://gmax.oltrelinux.com/dbirecipes.html
+ http://www.perlmonks.org/?node=DBI%20recipes
+ http://www.perlmonks.org/?node=Speeding%20up%20the%20DBI
 
 Other database related links:
 
@@ -8092,7 +8108,7 @@ Perl by Larry Wall and the C<perl5-porters>.
 
 =head1 COPYRIGHT
 
-The DBI module is Copyright (c) 1994-2009 Tim Bunce. Ireland.
+The DBI module is Copyright (c) 1994-2012 Tim Bunce. Ireland.
 All rights reserved.
 
 You may distribute under the terms of either the GNU General Public

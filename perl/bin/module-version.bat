@@ -1,83 +1,97 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!perl -w
+#!perl
 #line 15
-$0 =~ s|\.bat||i;
-unless (-f $0) {
-    $0 =~ s|.*[/\\]||;
-    for (".", split ';', $ENV{PATH}) {
-	$_ = "." if $_ eq "";
-	$0 = "$_/$0" , goto doit if -f "$_/$0";
-    }
-    die "`$0' not found.\n";
-}
-doit: exec "perl", "-x", $0, @ARGV;
-die "Failed to exec `$0': $!";
+
+use 5.008009;
+use strict;
+use warnings;
+
+use App::module::version;
+
+my $app = App::module::version->new();
+$app->parse_options(@ARGV);
+$app->do_job() or exit 1;
+
 __END__
 
 =head1 NAME
 
-runperl.bat - "universal" batch file to run perl scripts
+module-version - Gets the version info about a module
 
-=head1 SYNOPSIS
+=head1 VERSION
 
-	C:\> copy runperl.bat foo.bat
-	C:\> foo
-	[..runs the perl script `foo'..]
-	
-	C:\> foo.bat
-	[..runs the perl script `foo'..]
-	
+This document describes module-version version 1.004
 
 =head1 DESCRIPTION
 
-This file can be copied to any file name ending in the ".bat" suffix.
-When executed on a DOS-like operating system, it will invoke the perl
-script of the same name, but without the ".bat" suffix.  It will
-look for the script in the same directory as itself, and then in
-the current directory, and then search the directories in your PATH.
+This script gets the version of a requested list of modules.
 
-It relies on the C<exec()> operator, so you will need to make sure
-that works in your perl.
+It also can check the version of perl, or of Strawberry Perl or 
+ActivePerl.
 
-This method of invoking perl scripts has some advantages over
-batch-file wrappers like C<pl2bat.bat>:  it avoids duplication
-of all the code; it ensures C<$0> contains the same name as the
-executing file, without any egregious ".bat" suffix; it allows
-you to separate your perl scripts from the wrapper used to
-run them; since the wrapper is generic, you can use symbolic
-links to simply link to C<runperl.bat>, if you are serving your
-files on a filesystem that supports that.
+=head1 SYNOPSIS
 
-On the other hand, if the batch file is invoked with the ".bat"
-suffix, it does an extra C<exec()>.  This may be a performance
-issue.  You can avoid this by running it without specifying
-the ".bat" suffix.
+  module-version [ --help ] [ --usage ] [ --man ] [ --version ] [ -?] 
+                 [--prompt] [perl] [strawberry[perl]] [activeperl]
+                 Module1::To::Check Module2::To::Check ...
 
-Perl is invoked with the -x flag, so the script must contain
-a C<#!perl> line.  Any flags found on that line will be honored.
+  Options:
+    -usage          Gives a minimum amount of aid and comfort.
+    -help           Gives aid and comfort.
+    -?              Gives aid and comfort.
+    -man            Gives maximum aid and comfort.
 
-=head1 BUGS
+    -version        Gives the name, version and copyright of the script.
 
-Perl is invoked with the -S flag, so it will search the PATH to find
-the script.  This may have undesirable effects.
+    -prompt         Prompts for module names to print the versions of.
 
-=head1 SEE ALSO
+    perl            Gives the version, $^O, and $Config{archname} of perl.
+    strawberryperl  Gives the version, bitness and version of gcc of
+                    Strawberry Perl.
+    activeperl      Gives the version and build number of ActivePerl.
 
-perl, perlwin32, pl2bat.bat
+    Module1::To::Check Module2::To::Check
+                    Prints the version of the module if it exists and
+                    is easily retrievable.
+
+=head1 DEPENDENCIES
+
+Perl 5.8.9 is the mimimum version of perl that this script will run on.
+
+Other modules that this script depends on are 
+L<Getopt::Long|Getopt::Long>, L<Pod::Usage|Pod::Usage>, 
+and L<Term::ReadKey|Term::ReadKey>
+
+=head1 SUPPORT
+
+Support is provided for this script on the same basis as Strawberry Perl.
+
+=head1 AUTHOR
+
+Curtis Jewell, E<lt>csjewell@cpan.orgE<gt>
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2010 Curtis Jewell.
+
+This program is free software; you can redistribute
+it and/or modify it under the same terms as Perl itself.
+
+The full text of the license can be found in the
+LICENSE file included with this distribution.
 
 =cut
-
 
 __END__
 :endofperl

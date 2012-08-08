@@ -13,7 +13,7 @@ One also has to remember, that XML::LibXML is an interface to libxml2 nodes
 which actually reside on the C-Level of XML::LibXML. This means each node is a
 reference to a structure different than a perl hash or array. The only way to
 access these structure's values is through the DOM interface provided by
-XML::LibXML. This also means, that one I<<<<<< can't >>>>>> simply inherit a XML::LibXML node and add new member variables as they were
+XML::LibXML. This also means, that one I<<<<<< can't >>>>>> simply inherit an XML::LibXML node and add new member variables as they were
 hash keys.
 
 The DOM interface of XML::LibXML does not intend to implement a full DOM
@@ -78,7 +78,7 @@ automatically, usually when a namespaced node is attached to a document and no
 existing declaration of the namespace and prefix is in the scope to be reused.
 In this respect, XML::LibXML DOM implementation differs from the DOM Level 2
 specification according to which special attributes for declaring the
-apropriate XML namespaces should not be added when a node with a namespace
+appropriate XML namespaces should not be added when a node with a namespace
 prefix and namespace URI is created. 
 
 Namespace declarations are also created when L<<<<<< XML::LibXML::Document >>>>>>'s createElementNS() or createAttributeNS() function are used. If the a
@@ -109,7 +109,7 @@ This piece of code will result in the following document:
 The namespace is declared on the document element during the
 setAttributeNodeNS() call. 
 
-Namespaces can be also declared explicitly by the use of XML::LibXML:Element's
+Namespaces can be also declared explicitly by the use of XML::LibXML::Element's
 setNamespace() function. Since 1.61, they can also be manipulated with
 functions setNamespaceDeclPrefix() and setNamespaceDeclURI() (not available in
 DOM). Changing an URI or prefix of an existing namespace declaration affects
@@ -129,7 +129,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

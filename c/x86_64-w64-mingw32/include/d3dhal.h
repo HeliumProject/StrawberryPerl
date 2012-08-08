@@ -22,8 +22,6 @@
 #ifndef __WINE_D3DHAL_H
 #define __WINE_D3DHAL_H
 
-#include <_mingw_dxhelper.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,7 +37,7 @@ typedef struct _D3DDeviceDesc_V1 {
   D3DCOLORMODEL		dcmColorModel;
   DWORD			dwDevCaps;
   D3DTRANSFORMCAPS	dtcTransformCaps;
-  BOOL			bClipping;
+  WINBOOL			bClipping;
   D3DLIGHTINGCAPS	dlcLightingCaps;
   D3DPRIMCAPS		dpcLineCaps;
   D3DPRIMCAPS		dpcTriCaps;
@@ -304,7 +302,6 @@ typedef enum _D3DHAL_DP2OPERATION {
   D3DDP2OP_POINTS		= 1,
   D3DDP2OP_INDEXEDLINELIST	= 2,
   D3DDP2OP_INDEXEDTRIANGLELIST	= 3,
-  D3DDP2OP_RESERVED0		= 4,
   D3DDP2OP_RENDERSTATE		= 8,
   D3DDP2OP_LINELIST		= 15,
   D3DDP2OP_LINESTRIP		= 16,
@@ -330,7 +327,6 @@ typedef enum _D3DHAL_DP2OPERATION {
   D3DDP2OP_SETLIGHT		= 34,
   D3DDP2OP_CREATELIGHT		= 35,
   D3DDP2OP_SETTRANSFORM		= 36,
-  D3DDP2OP_EXT			= 37,
   D3DDP2OP_TEXBLT		= 38,
   D3DDP2OP_STATESET		= 39,
   D3DDP2OP_SETPRIORITY		= 40,
@@ -524,4 +520,4 @@ typedef struct _D3DHAL_DP2SETTEXLOD {
 } /* extern "C" */
 #endif
 
-#endif /* __WINE_DDRAWI_H */
+#endif /* __WINE_D3DHAL_H */

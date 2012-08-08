@@ -4,7 +4,7 @@ set ROOT=%~dp0
 
 set XCFLAGS=-I%ROOT%..\include\mysql_5
 set XLIBS=-L%ROOT%..\lib -lmysql
-set XVERSION=5.1.44
+set XVERSION=5.5.11
 set XPREFIX=%ROOT%..\
 
 for %%p in (%*) do (

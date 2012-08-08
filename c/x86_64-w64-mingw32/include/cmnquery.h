@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __cmnquery_h
 #define __cmnquery_h
@@ -103,7 +103,7 @@ typedef struct {
   LPVOID pHandlerParameters;
   CLSID clsidDefaultForm;
   IPersistQuery *pPersistQuery;
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     void *pFormParameters;
     IPropertyBag *ppbFormParameters;
   };

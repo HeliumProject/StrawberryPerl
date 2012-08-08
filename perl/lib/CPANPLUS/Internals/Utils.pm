@@ -10,6 +10,7 @@ use File::Copy;
 use Params::Check               qw[check];
 use Module::Load::Conditional   qw[can_load];
 use Locale::Maketext::Simple    Class => 'CPANPLUS', Style => 'gettext';
+use version;
 
 local $Params::Check::VERBOSE = 1;
 
@@ -17,7 +18,7 @@ local $Params::Check::VERBOSE = 1;
 
 =head1 NAME
 
-CPANPLUS::Internals::Utils
+CPANPLUS::Internals::Utils - convenience functions for CPANPLUS
 
 =head1 SYNOPSIS
 
@@ -199,7 +200,11 @@ sub _version_to_number {
 
     check( $tmpl, \%hash ) or return;
 
-    return $version if $version =~ /^\.?\d/;
+    $version =~ s!_!!g; # *sigh*
+    return $version if $version =~ /^\d*(?:\.\d+)?$/;
+    if ( my ($vers) = $version =~ /^(v?\d+(?:\.\d+(?:\.\d+)?)?)/ ) {
+      return eval { version->parse($vers)->numify };
+    }
     return '0.0';
 }
 
@@ -374,7 +379,8 @@ sub _vcmp {
     my $self = shift;
     my ($x, $y) = @_;
 
-    s/_//g foreach $x, $y;
+    $x = $self->_version_to_number(version => $x);
+    $y = $self->_version_to_number(version => $y);
 
     return $x <=> $y;
 }
@@ -386,6 +392,15 @@ Returns the user's homedir, or C<cwd> if it could not be found
 =cut
 
 sub _home_dir {
+
+    if ( can_load( modules => { 'File::HomeDir' => 0.0 } ) ) {
+      if ( defined $ENV{APPDATA} && length $ENV{APPDATA} && !ON_WIN32 ) {
+        msg("'APPDATA' env var is set and not on MSWin32, " .
+            "please use 'PERL5_CPANPLUS_HOME' instead to change .cpanplus location", 1 );
+      }
+      return File::HomeDir->my_home if -d File::HomeDir->my_home;
+    }
+
     my @os_home_envs = qw( APPDATA HOME USERPROFILE WINDIR SYS$LOGIN );
 
     for my $env ( @os_home_envs ) {

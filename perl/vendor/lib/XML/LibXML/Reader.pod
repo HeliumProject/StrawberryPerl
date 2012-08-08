@@ -10,7 +10,7 @@ XML::LibXML::Reader - XML::LibXML::Reader - interface to libxml2 pull parser
 
 
 
-  my $reader = new XML::LibXML::Reader(location => "file.xml")
+  my $reader = XML::LibXML::Reader->new(location => "file.xml")
          or die "cannot read file.xml\n";
   while ($reader->read) {
     processNode($reader);
@@ -19,7 +19,7 @@ XML::LibXML::Reader - XML::LibXML::Reader - interface to libxml2 pull parser
 
 
   sub processNode {
-      $reader = shift;
+      my $reader = shift;
       printf "%d %d %s %d\n", ($reader->depth,
                                $reader->nodeType,
                                $reader->name,
@@ -30,7 +30,7 @@ or
 
 
 
-  $reader = new XML::LibXML::Reader(location => "file.xml")
+  my $reader = XML::LibXML::Reader->new(location => "file.xml")
          or die "cannot read file.xml\n";
     $reader->preservePattern('//table/tr');
     $reader->finish;
@@ -40,8 +40,8 @@ or
 =head1 DESCRIPTION
 
 This is a perl interface to libxml2's pull-parser implementation xmlTextReader I<<<<<< http://xmlsoft.org/html/libxml-xmlreader.html >>>>>>. This feature requires at least libxml2-2.6.21. Pull-parser (StAX in Java,
-XmlReader in C#) use an iterator approach to parse a xml-file. They are easier
-to program than event-based parser (SAX) and much more lightweight than
+XmlReader in C#) use an iterator approach to parse XML documents. They are
+easier to program than event-based parser (SAX) and much more lightweight than
 tree-based parser (DOM), which load the complete tree into memory.
 
 The Reader acts as a cursor going forward on the document stream and stopping
@@ -140,7 +140,7 @@ is then used to validate the document as it is processed.
 
 =item ...
 
-the reader further supports various parser options described in L<<<<<< XML::LibXML::Parser >>>>>> (specificly those labeled by /reader/). 
+the reader further supports various parser options described in L<<<<<< XML::LibXML::Parser >>>>>> (specifically those labeled by /reader/). 
 
 
 
@@ -316,7 +316,7 @@ if the current node is neither an element nor attribute.
 
 =item nodePath()
 
-Returns a cannonical location path to the current element from the root node to
+Returns a canonical location path to the current element from the root node to
 the current node. Namespaced elements are matched by '*', because there is no
 way to declare prefixes within XPath patterns. Unlike C<<<<<< XML::LibXML::Node::nodePath() >>>>>>, this function does not provide sibling counts (i.e. instead of e.g. '/a/b[1]'
 and '/a/b[2]' you get '/a/b' for both matches). 
@@ -656,7 +656,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

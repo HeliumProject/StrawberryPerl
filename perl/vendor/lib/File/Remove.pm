@@ -6,23 +6,16 @@ use strict;
 use vars qw{ $VERSION @ISA @EXPORT_OK };
 use vars qw{ $DEBUG $unlink $rmdir    };
 BEGIN {
-	$VERSION   = '1.49';
+	$VERSION   = '1.52';
 	# $VERSION   = eval $VERSION;
 	@ISA       = qw{ Exporter };
 	@EXPORT_OK = qw{ remove rm clear trash };
 }
 
-# If we ever need a Mac::Glue object we will want to cache it.
-my $glue;
-
 use File::Path ();
 use File::Glob ();
-use File::Spec 3.2701 ();
-use Cwd        3.2701 ();
-
-sub expand (@) {
-	map { -e $_ ? $_ : File::Glob::bsd_glob($_) } @_;
-}
+use File::Spec 3.29 ();
+use Cwd        3.29 ();
 
 # $debug variable must be set before loading File::Remove.
 # Convert to a constant to allow debugging code to be pruned out.
@@ -40,6 +33,9 @@ use constant IS_MAC   => !! ( $^O eq 'darwin' );
 # If so write permissions does not imply deletion permissions
 use constant IS_WIN32 => !! ( $^O =~ /^MSWin/ or $^O eq 'cygwin' );
 
+# If we ever need a Mac::Glue object we will want to cache it.
+my $glue;
+
 
 
 
@@ -47,7 +43,7 @@ use constant IS_WIN32 => !! ( $^O =~ /^MSWin/ or $^O eq 'cygwin' );
 #####################################################################
 # Main Functions
 
-my @END_DELETE = ();
+my @CLEANUP = ();
 
 sub clear (@) {
 	my @files = expand( @_ );
@@ -58,18 +54,22 @@ sub clear (@) {
 		remove( \1, $file );
 	}
 
-	# Delete again at END-time
-	push @END_DELETE, @files;
+	# Delete again at END-time.
+	# Save the current PID so that forked children
+	# won't delete things that the parent expects to
+	# live until their end-time.
+	push @CLEANUP, map { [ $$, $_ ] } @files;
 }
 
 END {
-	foreach my $file ( @END_DELETE ) {
-		next unless -e $file;
-		remove( \1, $file );
+	foreach my $file ( @CLEANUP ) {
+		next unless $file->[0] == $$;
+		next unless -e $file->[1];
+		remove( \1, $file->[1] );
 	}
 }
 
-# acts like unlink would until given a directory as an argument, then
+# Acts like unlink would until given a directory as an argument, then
 # it acts like rm -rf ;) unless the recursive arg is zero which it is by
 # default
 sub remove (@) {
@@ -223,6 +223,10 @@ sub undelete (@) {
 ######################################################################
 # Support Functions
 
+sub expand (@) {
+	map { -e $_ ? $_ : File::Glob::bsd_glob($_) } @_;
+}
+
 # Do we need to move to a different directory to delete a directory,
 # and if so which.
 sub _moveto {
@@ -364,7 +368,7 @@ Adam Kennedy E<lt>adamk@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Some parts copyright 2006 - 2011 Adam Kennedy.
+Some parts copyright 2006 - 2012 Adam Kennedy.
 
 Taken over by Adam Kennedy E<lt>adamk@cpan.orgE<gt> to fix the
 "deep readonly files" bug, and do some package cleaning.

@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #define __specstrings
 
@@ -314,8 +314,12 @@ extern "C" {
 #endif
 
 #ifndef DECLSPEC_ADDRSAFE
+#if (_MSC_VER >= 1200) && (defined(_M_ALPHA) || defined(_M_AXP64))
+#define DECLSPEC_ADDRSAFE  __declspec(address_safe)
+#else
 #define DECLSPEC_ADDRSAFE
 #endif
+#endif /* DECLSPEC_ADDRSAFE */
 
 #ifdef __cplusplus
 }

@@ -4,7 +4,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(guess_media_type media_suffix);
 @EXPORT_OK = qw(add_type add_encoding read_media_types);
-$VERSION = "5.835";
+$VERSION = "6.02";
 
 use strict;
 
@@ -39,13 +39,6 @@ my %suffixEncoding = (
 
 read_media_types();
 
-
-
-sub _dump {
-    require Data::Dumper;
-    Data::Dumper->new([\%suffixType, \%suffixExt, \%suffixEncoding],
-		      [qw(*suffixType *suffixExt *suffixEncoding)])->Dump;
-}
 
 
 sub guess_media_type
@@ -168,24 +161,13 @@ sub read_media_types
     local($/, $_) = ("\n", undef);  # ensure correct $INPUT_RECORD_SEPARATOR
 
     my @priv_files = ();
-    if($^O eq "MacOS") {
-	push(@priv_files, "$ENV{HOME}:media.types", "$ENV{HOME}:mime.types")
-	    if defined $ENV{HOME};  # Some does not have a home (for instance Win32)
-    }
-    else {
-	push(@priv_files, "$ENV{HOME}/.media.types", "$ENV{HOME}/.mime.types")
-	    if defined $ENV{HOME};  # Some doesn't have a home (for instance Win32)
-    }
+    push(@priv_files, "$ENV{HOME}/.media.types", "$ENV{HOME}/.mime.types")
+	if defined $ENV{HOME};  # Some doesn't have a home (for instance Win32)
 
     # Try to locate "media.types" file, and initialize %suffixType from it
     my $typefile;
     unless (@files) {
-	if($^O eq "MacOS") {
-	    @files = map {$_."LWP:media.types"} @INC;
-	}
-	else {
-	    @files = map {"$_/LWP/media.types"} @INC;
-	}
+	@files = map {"$_/LWP/media.types"} @INC;
 	push @files, @priv_files;
     }
     for $typefile (@files) {

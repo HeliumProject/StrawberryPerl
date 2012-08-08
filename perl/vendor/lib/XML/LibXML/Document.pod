@@ -41,7 +41,7 @@ XML::LibXML::Document - XML::LibXML DOM Document Class
   $attrnode = $doc->createAttribute($name [,$value]);
   $attrnode = $doc->createAttributeNS( namespaceURI, $name [,$value] );
   $fragment = $doc->createDocumentFragment();
-  $cdata = $dom->create( $cdata_content );
+  $cdata = $dom->createCDATASection( $cdata_content );
   my $pi = $doc->createProcessingInstruction( $target, $data );
   my $entref = $doc->createEntityReference($refname);
   $dtd = $document->createInternalSubset( $rootnode, $public, $system);
@@ -236,8 +236,8 @@ Note that this feature will I<<<<<< only >>>>>> work if libxml2 is compiled with
 
   $docstring = $dom->toString($format);
 
-I<<<<<< toString >>>>>> is a DOM serializing function, so the DOM Tree is serialized into a XML string,
-ready for output.
+I<<<<<< toString >>>>>> is a DOM serializing function, so the DOM Tree is serialized into an XML
+string, ready for output.
 
 IMPORTANT: unlike toString for other nodes, on document nodes this function
 returns the XML as a byte string in the original encoding of the document (see
@@ -245,8 +245,8 @@ the actualEncoding() method)! This means you can simply do:
 
 
 
-  open OUT, $file;
-  print OUT $doc->toString;
+  open my $out_fh, '>', $file;
+  print {$out_fh} $doc->toString;
 
 regardless of the actual encoding of the document. See the section on encodings
 in L<<<<<< XML::LibXML >>>>>> for more details.
@@ -432,7 +432,7 @@ This function creates a DocumentFragment.
 
 =item createCDATASection
 
-  $cdata = $dom->create( $cdata_content );
+  $cdata = $dom->createCDATASection( $cdata_content );
 
 Similar to createTextNode and createComment, this function creates a
 CDataSection bound to the current DOM.
@@ -612,7 +612,7 @@ document by using this function. The removed dtd node will be returned.
 
 Implements the DOM Level 2 function
 
-In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 
 =item getElementsByTagNameNS
@@ -621,7 +621,7 @@ In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> o
 
 Implements the DOM Level 2 function
 
-In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 
 =item getElementsByLocalName
@@ -631,7 +631,7 @@ In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> o
 This allows the fetching of all nodes from a given document with the given
 Localname.
 
-In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 
 =item getElementById
@@ -683,7 +683,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef MAPIDEFS_H
 #define MAPIDEFS_H
@@ -35,9 +35,12 @@
 extern "C" {
 #endif
 
+#ifndef __WCHAR_DEFINED
+#define __WCHAR_DEFINED
   typedef wchar_t WCHAR;
+#endif
 
-#ifdef UNICODE
+#if defined(UNICODE)
   typedef WCHAR TCHAR;
 #else
   typedef char TCHAR;
@@ -78,7 +81,7 @@ extern "C" {
 
 #define MAPI_UNICODE ((ULONG) 0x80000000)
 
-#ifdef UNICODE
+#if defined(UNICODE)
 #define fMapiUnicode MAPI_UNICODE
 #else
 #define fMapiUnicode 0
@@ -166,7 +169,7 @@ extern "C" {
 #define PT_R8 PT_DOUBLE
 #define PT_LONGLONG PT_I8
 
-#ifdef UNICODE
+#if defined(UNICODE)
 #define PT_TSTRING PT_UNICODE
 #define PT_MV_TSTRING (MV_FLAG|PT_UNICODE)
 #define LPSZ lpszW

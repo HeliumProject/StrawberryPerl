@@ -228,15 +228,16 @@ often be modules that pull in the monster pragmas. But one can hope...
 
 package common::sense;
 
-our $VERSION = '3.4';
+our $VERSION = '3.5';
 
 # overload should be included
 
 sub import {
+   local $^W; # work around perl 5.16 spewing out warnings for next line
    # use warnings
-   ${^WARNING_BITS} ^= ${^WARNING_BITS} ^ "\x3c\x3f\x33\x00\x0f\xf0\x0f\xc0\xf0\xfc\x33\x00";
+   ${^WARNING_BITS} ^= ${^WARNING_BITS} ^ "";
    # use strict, use utf8;
-   $^H |= 0x800600;
+   $^H |= 0x8006c0;
    # use feature
    $^H{feature_switch} =
    $^H{feature_say}    =
@@ -353,6 +354,12 @@ ew73
    "... I never got past the SYNOPSIS before calling it shit."
    [...]
    How come no one ever quotes me. :("
+
+chip (not willing to explain his cryptic questions about links in Changes files)
+
+   "I'm willing to ask the question I've asked. I'm not willing to go
+   through the whole dance you apparently have choreographed. Either
+   answer the completely obvious question, or tell me to fuck off again."
 
 =head1 FREQUENTLY ASKED QUESTIONS
 

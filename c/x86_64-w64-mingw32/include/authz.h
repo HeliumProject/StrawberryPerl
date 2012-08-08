@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __AUTHZ_H__
 #define __AUTHZ_H__
@@ -91,8 +91,8 @@ extern "C" {
   AUTHZAPI WINBOOL WINAPI AuthzAddSidsToContext(AUTHZ_CLIENT_CONTEXT_HANDLE hAuthzClientContext,PSID_AND_ATTRIBUTES Sids,DWORD SidCount,PSID_AND_ATTRIBUTES RestrictedSids,DWORD RestrictedSidCount,PAUTHZ_CLIENT_CONTEXT_HANDLE phNewAuthzClientContext);
   AUTHZAPI WINBOOL WINAPI AuthzGetInformationFromContext(AUTHZ_CLIENT_CONTEXT_HANDLE hAuthzClientContext,AUTHZ_CONTEXT_INFORMATION_CLASS InfoClass,DWORD BufferSize,PDWORD pSizeRequired,PVOID Buffer);
   AUTHZAPI WINBOOL WINAPI AuthzFreeContext(AUTHZ_CLIENT_CONTEXT_HANDLE hAuthzClientContext);
-  AUTHZAPI WINBOOL WINAPI AuthzInitializeObjectAccessAuditEvent(DWORD Flags,AUTHZ_AUDIT_EVENT_TYPE_HANDLE hAuditEventType,PWSTR szOperationType,PWSTR szObjectType,PWSTR szObjectName,PWSTR szAdditionalInfo,PAUTHZ_AUDIT_EVENT_HANDLE phAuditEvent,DWORD dwAdditionalParameterCount,...);
-  AUTHZAPI WINBOOL WINAPI AuthzInitializeObjectAccessAuditEvent2(DWORD Flags,AUTHZ_AUDIT_EVENT_TYPE_HANDLE hAuditEventType,PWSTR szOperationType,PWSTR szObjectType,PWSTR szObjectName,PWSTR szAdditionalInfo,PWSTR szAdditionalInfo2,PAUTHZ_AUDIT_EVENT_HANDLE phAuditEvent,DWORD dwAdditionalParameterCount,...);
+  AUTHZAPI WINBOOL WINAPIV AuthzInitializeObjectAccessAuditEvent(DWORD Flags,AUTHZ_AUDIT_EVENT_TYPE_HANDLE hAuditEventType,PWSTR szOperationType,PWSTR szObjectType,PWSTR szObjectName,PWSTR szAdditionalInfo,PAUTHZ_AUDIT_EVENT_HANDLE phAuditEvent,DWORD dwAdditionalParameterCount,...);
+  AUTHZAPI WINBOOL WINAPIV AuthzInitializeObjectAccessAuditEvent2(DWORD Flags,AUTHZ_AUDIT_EVENT_TYPE_HANDLE hAuditEventType,PWSTR szOperationType,PWSTR szObjectType,PWSTR szObjectName,PWSTR szAdditionalInfo,PWSTR szAdditionalInfo2,PAUTHZ_AUDIT_EVENT_HANDLE phAuditEvent,DWORD dwAdditionalParameterCount,...);
   AUTHZAPI WINBOOL WINAPI AuthzGetInformationFromAuditEvent(AUTHZ_AUDIT_EVENT_HANDLE hAuditEvent,AUTHZ_AUDIT_EVENT_INFORMATION_CLASS InfoClass,DWORD BufferSize,PDWORD pSizeRequired,PVOID Buffer);
   AUTHZAPI WINBOOL WINAPI AuthzFreeAuditEvent(AUTHZ_AUDIT_EVENT_HANDLE hAuditEvent);
 
@@ -120,8 +120,60 @@ extern "C" {
   AUTHZAPI WINBOOL WINAPI AuthzEnumerateSecurityEventSources(DWORD dwFlags,PAUTHZ_SOURCE_SCHEMA_REGISTRATION Buffer,PDWORD pdwCount,PDWORD pdwLength);
   AUTHZAPI WINBOOL WINAPI AuthzRegisterSecurityEventSource(DWORD dwFlags,PCWSTR szEventSourceName,PAUTHZ_SECURITY_EVENT_PROVIDER_HANDLE phEventProvider);
   AUTHZAPI WINBOOL WINAPI AuthzUnregisterSecurityEventSource(DWORD dwFlags,PAUTHZ_SECURITY_EVENT_PROVIDER_HANDLE phEventProvider);
-  AUTHZAPI WINBOOL WINAPI AuthzReportSecurityEvent(DWORD dwFlags,AUTHZ_SECURITY_EVENT_PROVIDER_HANDLE hEventProvider,DWORD dwAuditId,PSID pUserSid,DWORD dwCount,...);
+  AUTHZAPI WINBOOL WINAPIV AuthzReportSecurityEvent(DWORD dwFlags,AUTHZ_SECURITY_EVENT_PROVIDER_HANDLE hEventProvider,DWORD dwAuditId,PSID pUserSid,DWORD dwCount,...);
   AUTHZAPI WINBOOL WINAPI AuthzReportSecurityEventFromParams(DWORD dwFlags,AUTHZ_SECURITY_EVENT_PROVIDER_HANDLE hEventProvider,DWORD dwAuditId,PSID pUserSid,PAUDIT_PARAMS pParams);
+
+#if (_WIN32_WINNT >= 0x0601)
+typedef enum _AUTHZ_SECURITY_ATTRIBUTE_OPERATION {
+  AUTHZ_SECURITY_ATTRIBUTE_OPERATION_NONE          = 0,
+  AUTHZ_SECURITY_ATTRIBUTE_OPERATION_REPLACE_ALL,
+  AUTHZ_SECURITY_ATTRIBUTE_OPERATION_ADD,
+  AUTHZ_SECURITY_ATTRIBUTE_OPERATION_DELETE,
+  AUTHZ_SECURITY_ATTRIBUTE_OPERATION_REPLACE 
+} AUTHZ_SECURITY_ATTRIBUTE_OPERATION, *PAUTHZ_SECURITY_ATTRIBUTE_OPERATION;
+
+typedef struct _AUTHZ_SECURITY_ATTRIBUTE_FQBN_VALUE {
+  ULONG64 Version;
+  PWSTR   pName;
+} AUTHZ_SECURITY_ATTRIBUTE_FQBN_VALUE, *PAUTHZ_SECURITY_ATTRIBUTE_FQBN_VALUE;
+
+typedef struct _AUTHZ_SECURITY_ATTRIBUTE_OCTET_STRING_VALUE {
+  PVOID pValue;
+  ULONG ValueLength;
+} AUTHZ_SECURITY_ATTRIBUTE_OCTET_STRING_VALUE, *PAUTHZ_SECURITY_ATTRIBUTE_OCTET_STRING_VALUE;
+
+#define AUTHZ_SECURITY_ATTRIBUTE_NON_INHERITABLE 0x0001
+#define AUTHZ_SECURITY_ATTRIBUTE_VALUE_CASE_SENSITIVE 0x0002
+
+typedef struct _AUTHZ_SECURITY_ATTRIBUTE_V1 {
+  PWSTR  pName;
+  USHORT ValueType;
+  ULONG  Flags;
+  ULONG  ValueCount;
+  union {
+    PLONG64                                      pInt64;
+    PULONG64                                     pUint64;
+    PWSTR                                        ppString;
+    PAUTHZ_SECURITY_ATTRIBUTE_FQBN_VALUE         pFqbn;
+    PAUTHZ_SECURITY_ATTRIBUTE_OCTET_STRING_VALUE pOctetString;
+  } Values;
+} AUTHZ_SECURITY_ATTRIBUTE_V1, *PAUTHZ_SECURITY_ATTRIBUTE_V1;
+
+typedef struct _AUTHZ_SECURITY_ATTRIBUTES_INFORMATION {
+  USHORT Version;
+  USHORT Reserved;
+  ULONG  AttributeCount;
+  union {
+    PAUTHZ_SECURITY_ATTRIBUTE_V1 pAttributeV1;
+  } Attribute;
+} AUTHZ_SECURITY_ATTRIBUTES_INFORMATION, *PAUTHZ_SECURITY_ATTRIBUTES_INFORMATION;
+
+AUTHZAPI WINBOOL WINAPI AuthzModifySecurityAttributes(
+  AUTHZ_CLIENT_CONTEXT_HANDLE hAuthzClientContext,
+  PAUTHZ_SECURITY_ATTRIBUTE_OPERATION pOperations,
+  PAUTHZ_SECURITY_ATTRIBUTES_INFORMATION pAttributes
+);
+#endif /*(_WIN32_WINNT >= 0x0601)*/
 
 #ifdef __cplusplus
 }

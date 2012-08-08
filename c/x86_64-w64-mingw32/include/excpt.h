@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_EXCPT
 #define _INC_EXCPT
@@ -23,6 +23,7 @@ extern "C" {
 #define ExceptionContinueSearch 1
 #define ExceptionNestedException 2
 #define ExceptionCollidedUnwind 3
+#define ExceptionExecuteHandler 4
 
 #if (defined(_X86_) && !defined(__x86_64))
   struct _EXCEPTION_RECORD;
@@ -78,14 +79,14 @@ extern "C" {
 
   /*
   * The type of function that is expected as an exception handler to be
-  * installed with _try1.
+  * installed with __try1.
   */
   typedef EXCEPTION_DISPOSITION (*PEXCEPTION_HANDLER)(struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
 
 #ifndef HAVE_NO_SEH
   /*
   * This is not entirely necessary, but it is the structure installed by
-  * the _try1 primitive below.
+  * the __try1 primitive below.
   */
   typedef struct _EXCEPTION_REGISTRATION {
     struct _EXCEPTION_REGISTRATION *prev;

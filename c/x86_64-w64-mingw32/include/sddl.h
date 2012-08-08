@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __SDDL_H__
 #define __SDDL_H__
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -118,17 +120,10 @@ extern "C" {
 #define SDDL_ACE_BEGIN TEXT("(")
 #define SDDL_ACE_END TEXT(")")
 
-#ifdef UNICODE
-#define ConvertSidToStringSid ConvertSidToStringSidW
-#define ConvertStringSidToSid ConvertStringSidToSidW
-#define ConvertStringSecurityDescriptorToSecurityDescriptor ConvertStringSecurityDescriptorToSecurityDescriptorW
-#define ConvertSecurityDescriptorToStringSecurityDescriptor ConvertSecurityDescriptorToStringSecurityDescriptorW
-#else
-#define ConvertSidToStringSid ConvertSidToStringSidA
-#define ConvertStringSidToSid ConvertStringSidToSidA
-#define ConvertStringSecurityDescriptorToSecurityDescriptor ConvertStringSecurityDescriptorToSecurityDescriptorA
-#define ConvertSecurityDescriptorToStringSecurityDescriptor ConvertSecurityDescriptorToStringSecurityDescriptorA
-#endif
+#define ConvertSidToStringSid __MINGW_NAME_AW(ConvertSidToStringSid)
+#define ConvertStringSidToSid __MINGW_NAME_AW(ConvertStringSidToSid)
+#define ConvertStringSecurityDescriptorToSecurityDescriptor __MINGW_NAME_AW(ConvertStringSecurityDescriptorToSecurityDescriptor)
+#define ConvertSecurityDescriptorToStringSecurityDescriptor __MINGW_NAME_AW(ConvertSecurityDescriptorToStringSecurityDescriptor)
 
   WINADVAPI WINBOOL WINAPI ConvertSidToStringSidA(PSID Sid,LPSTR *StringSid);
   WINADVAPI WINBOOL WINAPI ConvertSidToStringSidW(PSID Sid,LPWSTR *StringSid);

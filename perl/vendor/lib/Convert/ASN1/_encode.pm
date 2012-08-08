@@ -3,6 +3,9 @@
 # modify it under the same terms as Perl itself.
 
 package Convert::ASN1;
+{
+  $Convert::ASN1::VERSION = '0.23';
+}
 
 BEGIN {
   unless (CHECK_UTF8) {
@@ -42,6 +45,7 @@ sub _encode {
   my $var;
 
   foreach my $op (@{$ops}) {
+    next if $op->[cTYPE] == opEXTENSIONS;
     if (defined(my $opt = $op->[cOPT])) {
       next unless defined $stash->{$opt};
     }

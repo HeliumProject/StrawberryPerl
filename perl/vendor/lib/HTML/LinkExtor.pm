@@ -2,7 +2,7 @@ package HTML::LinkExtor;
 
 require HTML::Parser;
 @ISA = qw(HTML::Parser);
-$VERSION = "3.60";
+$VERSION = "3.69";
 
 =head1 NAME
 
@@ -83,8 +83,8 @@ sub _start_tag
     my $a;
     for $a (@$links) {
 	next unless exists $attr->{$a};
-	push(@links, $a, $base ? URI->new($attr->{$a}, $base)->abs($base)
-                               : $attr->{$a});
+	(my $link = $attr->{$a}) =~ s/^\s+//; $link =~ s/\s+$//; # HTML5
+	push(@links, $a, $base ? URI->new($link, $base)->abs($base) : $link);
     }
     return unless @links;
     $self->_found_link($tag, @links);

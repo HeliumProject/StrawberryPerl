@@ -638,10 +638,18 @@ No parameters.
 
 =item to_rgb16()
 
-You can convert a paletted image (or any image) to an 16-bit/channel
-RGB image with:
+Convert a paletted image (or any image) to a 16-bit/channel RGB image.
 
   $rgbimg = $img->to_rgb16;
+
+No parameters.
+
+=item to_rgb_double()
+
+Convert a paletted image (or any image) to an double/channel direct
+color image.
+
+  $rgbimg = $img->to_rgb_double;
 
 No parameters.
 
@@ -720,6 +728,18 @@ the region without specifying a mask.  For example:
   # just work with a 100x100 region of $img
   my $maskedimg = $img->masked(left => 100, top=>100,
                                right=>200, bottom=>200);
+
+=item make_palette()
+
+This doesn't perform an image conversion, but it can be used to
+construct a common palette for use in several images:
+
+  my @colors = Imager->make_palette(\%opts, @images);
+
+You must supply at least one image, even if the C<make_colors>
+parameter produces a fixed palette.
+
+On failure returns no colors and you can check C<< Imager->errstr >>.
 
 =back
 
@@ -865,6 +885,12 @@ alpha channels.  The C<write> method will convert a normal color
 specification like "#FF0000" into a color object for you, but if you
 set this as a tag you will need to format it like
 C<color(>I<red>C<,>I<green>C<,>I<blue>C<)>, eg color(255,0,0).
+
+=item *
+
+X<i_comment>C<i_comment> - used when reading or writing several image
+formats.  If the format has only one text field it will be read into
+the C<i_comment> tag or written to the file.
 
 =back
 
@@ -1012,6 +1038,11 @@ as good a result.
 C<mono>, C<monochrome> - a fixed black and white palette, suitable for
 producing bi-level images (eg. facsimile)
 
+=item *
+
+C<gray>, C<gray4>, C<gray16> - make fixed gray palette with 256, 4 or
+16 entries respectively.
+
 =back
 
 Other methods may be added in the future.
@@ -1039,7 +1070,8 @@ Possible values are:
 
 =item *
 
-C<giflib> - the C<giflib> native quantization function is used.
+C<giflib> - this is a historical equivalent for C<closest> that also
+forces C<make_colors> to C<mediancut>.
 
 =item *
 
@@ -1052,7 +1084,9 @@ closest color is chosen.
 
 =item *
 
-C<errdiff> - an error diffusion dither is performed.
+C<errdiff> - an error diffusion dither is performed.  If the supplied
+(or generated) palette contains only grays the source colors are
+converted to gray before error diffusion is performed.
 
 =back
 
@@ -1120,9 +1154,10 @@ This function is a mess, it can take the following named parameters:
 
 =item *
 
-C<log> - name of a log file to log Imager's actions to.  Not all actions
-are logged, but the debugging memory allocator does log allocations
-here.  Ignored if Imager has been built without logging support.
+C<log> - name of a log file to log Imager's actions to.  Not all
+actions are logged, but the debugging memory allocator does log
+allocations here.  Ignored if Imager has been built without logging
+support.  Preferably use the open_log() method instead.
 
 =item *
 
@@ -1144,6 +1179,69 @@ file.  This will fail if there are any existing T1lib font objects.
 Example:
 
   Imager::init(log => 'trace.log', loglevel => 9);
+
+=back
+
+=head1 LOGGING METHODS
+
+Imager can open an internal log to send debugging information to.
+This log is extensively used in Imager's tests, but you're unlikely to
+use it otherwise.
+
+If Imager has been built with logging disabled, the methods fail
+quietly.
+
+=over
+
+=item open_log()
+
+Open the Imager debugging log file.
+
+=over
+
+=item *
+
+C<log> - the file name to log to.  If this is undef logging information
+is sent to the standard error stream.
+
+=item *
+
+C<loglevel> the level of logging to produce.  Default: 1.
+
+=back
+
+Returns a true value if the log file was opened successfully.
+
+  # send debug output to test.log
+  Imager->open_log(log => "test.log");
+
+  # send debug output to stderr
+  Imager->open_log();
+
+=item close_log()
+
+Close the Imager debugging log file and disable debug logging.
+
+No parameters.
+
+  Imager->close_log();
+
+=item log()
+
+ Imager->log($message)
+ Imager->log($message, $level)
+
+This method does not use named parameters.
+
+The default for C<$level> is 1.
+
+Send a message to the debug log.
+
+  Imager->log("My code got here!");
+
+=item is_logging()
+
+Returns a true value if logging is enabled.
 
 =back
 

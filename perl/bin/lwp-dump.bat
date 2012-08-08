@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -16,8 +16,10 @@ goto endofperl
 use strict;
 use LWP::UserAgent ();
 use Getopt::Long qw(GetOptions);
+use Encode;
+use Encode::Locale;
 
-my $VERSION = "5.827";
+my $VERSION = "6.00";
 
 GetOptions(\my %opt,
     'parse-head',
@@ -25,6 +27,7 @@ GetOptions(\my %opt,
     'keep-client-headers',
     'method=s',
     'agent=s',
+    'request',
 ) || usage();
 
 my $url = shift || usage();
@@ -41,6 +44,7 @@ Recognized options are:
    --max-length <n>
    --method <str>
    --parse-head
+   --request
 
 EOT
 }
@@ -52,11 +56,16 @@ my $ua = LWP::UserAgent->new(
     agent => $opt{agent} || "lwp-dump/$VERSION ",
 );
 
-my $req = HTTP::Request->new($opt{method} || 'GET' => $url);
+my $req = HTTP::Request->new($opt{method} || 'GET' => decode(locale => $url));
 my $res = $ua->simple_request($req);
 $res->remove_header(grep /^Client-/, $res->header_field_names)
     unless $opt{'keep-client-headers'} or
         ($res->header("Client-Warning") || "") eq "Internal response";
+
+if ($opt{request}) {
+    $res->request->dump;
+    print "\n";
+}
 
 $res->dump(maxlength => $opt{'max-length'});
 
@@ -111,6 +120,10 @@ Use the given method for the request instead of the default "GET".
 By default B<lwp-dump> will not try to initialize headers by looking at the
 head section of HTML documents.  This option enables this.  This corresponds to
 L<LWP::UserAgent/"parse_head">.
+
+=item B<--request>
+
+Also dump the request sent.
 
 =back
 

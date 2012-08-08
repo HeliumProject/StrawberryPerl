@@ -7,7 +7,7 @@
 #   Win32.
 #
 # COPYRIGHT
-#   Copyright (C) 2003-2008 Steve Hay.  All rights reserved.
+#   Copyright (C) 2003-2008, 2012 Steve Hay.  All rights reserved.
 #
 # LICENCE
 #   You may distribute under the terms of either the GNU General Public License
@@ -51,7 +51,7 @@ BEGIN {
         alt_stat
     );
     
-    $VERSION = '1.52';
+    $VERSION = '1.55';
 
     XSLoader::load(__PACKAGE__, $VERSION);
 }
@@ -594,6 +594,12 @@ as follows (a la L<perldiag>):
 after failing to obtain the associated operating-system file handle from it.
 The system error message corresponding to the standard C library C<errno>
 variable is also given.
+
+=item Can't close file descriptor '%d' for file '%s' after updating: %s
+
+(W) The specified file descriptor for the specified file could not be closed
+after updating the file times using it.  The system error message corresponding
+to the standard C library C<errno> variable is also given.
 
 =item Can't close file object handle '%lu' for file '%s' after reading: %s
 
@@ -1528,7 +1534,7 @@ Steve Hay E<lt>shay@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2003-2008 Steve Hay.  All rights reserved.
+Copyright (C) 2003-2008, 2012 Steve Hay.  All rights reserved.
 
 Portions Copyright (C) 2001 Jonathan M Gilligan.  Used with permission.
 
@@ -1542,11 +1548,11 @@ License or the Artistic License, as specified in the F<LICENCE> file.
 
 =head1 VERSION
 
-Version 1.52
+Version 1.55
 
 =head1 DATE
 
-25 Oct 2009
+20 Mar 2012
 
 =head1 HISTORY
 

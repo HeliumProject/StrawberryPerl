@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MQMAIL_H
 #define _MQMAIL_H
@@ -95,7 +95,7 @@ extern "C" {
     LPFILETIME pftDate;
     LPMQMailRecipList pRecips;
     MQMailEMailType iType;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       MQMailFormData form;
       MQMailMessageData message;
       MQMailTnefData tnef;

@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _SHFOLDER_H_
 #define _SHFOLDER_H_
+
+#include <_mingw_unicode.h>
 
 #ifndef SHFOLDERAPI
 #if defined(_SHFOLDER_)
@@ -48,13 +50,8 @@
 #define CSIDL_ADMINTOOLS 0x0030
 #endif
 
-#ifdef UNICODE
-#define SHGetFolderPath SHGetFolderPathW
-#define PFNSHGETFOLDERPATH PFNSHGETFOLDERPATHW
-#else
-#define SHGetFolderPath SHGetFolderPathA
-#define PFNSHGETFOLDERPATH PFNSHGETFOLDERPATHA
-#endif
+#define SHGetFolderPath __MINGW_NAME_AW(SHGetFolderPath)
+#define PFNSHGETFOLDERPATH __MINGW_NAME_AW(PFNSHGETFOLDERPATH)
 
 SHFOLDERAPI SHGetFolderPathA(HWND hwnd,int csidl,HANDLE hToken,DWORD dwFlags,LPSTR pszPath);
 SHFOLDERAPI SHGetFolderPathW(HWND hwnd,int csidl,HANDLE hToken,DWORD dwFlags,LPWSTR pszPath);

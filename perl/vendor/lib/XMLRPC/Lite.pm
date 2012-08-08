@@ -4,7 +4,7 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Lite.pm 374 2010-05-14 08:12:25Z kutterma $
+# $Id: Lite.pm 386 2011-08-18 19:48:31Z kutterma $
 #
 # ======================================================================
 
@@ -13,7 +13,7 @@ package XMLRPC::Lite;
 use SOAP::Lite;
 use strict;
 
-our $VERSION = 0.712;
+our $VERSION = 0.714;
 
 # ======================================================================
 
@@ -364,7 +364,7 @@ sub new {
         serializer => XMLRPC::Serializer->new,
         deserializer => XMLRPC::Deserializer->new,
         on_action => sub {return},
-        uri => 'http://unspecified/',
+        default_ns => 'http://unspecified/',
         @_
     );
 }

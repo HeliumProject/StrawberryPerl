@@ -1,3 +1,5 @@
+# $Id: META.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::META;
 require CPAN::SQLite;
 use strict;
@@ -6,12 +8,15 @@ use base qw(Exporter);
 our @EXPORT_OK;
 @EXPORT_OK = qw(setup update);
 our $global_id;
-our $VERSION = '0.199';
+our $VERSION = '0.202';
+
+# This is usually already defined in real life, but tests need it to be set
+$CPAN::FrontEnd ||= "CPAN::Shell";
 
 sub new {
   my ($class, $cpan_meta) = @_;
   my $cpan_sqlite = CPAN::SQLite->new();
-  bless {cpan_meta => $cpan_meta, cpan_sqlite => $cpan_sqlite}, $class;
+  return bless {cpan_meta => $cpan_meta, cpan_sqlite => $cpan_sqlite}, $class;
 }
 
 sub set {
@@ -23,7 +28,7 @@ sub set {
 sub search {
   my ($self, $class, $regex) = @_;
   my $sqlite_obj = $self->make_obj(class => $class, regex => $regex);
-  $sqlite_obj->set_many();
+  return $sqlite_obj->set_many();
 }
 
 sub make_obj {
@@ -33,11 +38,11 @@ sub make_obj {
     unless ($class and $class =~ /^CPAN::/);
   (my $type = $class) =~ s/^CPAN//;
   my $package = __PACKAGE__ . $type;
-  bless {cpan_meta => $self->{cpan_meta},
-	cpan_sqlite => $self->{cpan_sqlite},
-	class => $class,
-	id => $args{id}, regex => $args{regex},
-	}, $package;
+  return bless {cpan_meta => $self->{cpan_meta},
+        cpan_sqlite => $self->{cpan_sqlite},
+        class => $class,
+        id => $args{id}, regex => $args{regex},
+        }, $package;
 }
 
 package CPAN::SQLite::META::Author;
@@ -52,7 +57,7 @@ sub set_one {
   $cpan_sqlite->{results} = {};
   $cpan_sqlite->query(mode => 'author', name => $id, meta_obj => $self);
   my $cpan_meta = $self->{cpan_meta};
-  $cpan_meta->{readonly}{$class}{$id};
+  return $cpan_meta->{readonly}{$class}{$id};
 }
 
 sub set_many {
@@ -60,12 +65,12 @@ sub set_many {
   my $cpan_sqlite = $self->{cpan_sqlite};
   my $regex = $self->{regex};
   $cpan_sqlite->{results} = [];
-  $cpan_sqlite->query(mode => 'author', query => $regex, meta_obj => $self);
+  return $cpan_sqlite->query(mode => 'author', query => $regex, meta_obj => $self);
 }
 
 sub set_data {
   my ($self, $results) = @_;
-  $self->set_author($results->{cpanid}, $results);
+  return $self->set_author($results->{cpanid}, $results);
 }
 
 package CPAN::SQLite::META::Distribution;
@@ -87,7 +92,7 @@ sub set_one {
   $cpan_sqlite->{results} = {};
   $cpan_sqlite->query(mode => 'dist', name => $dist_name, meta_obj => $self);
   my $cpan_meta = $self->{cpan_meta};
-  $cpan_meta->{readonly}{$class}{$dist_id};
+  return $cpan_meta->{readonly}{$class}{$dist_id};
 }
 
 sub set_many {
@@ -95,13 +100,13 @@ sub set_many {
   my $cpan_sqlite = $self->{cpan_sqlite};
   my $regex = $self->{regex};
   $cpan_sqlite->{results} = [];
-  $cpan_sqlite->query(mode => 'dist', query => $regex, meta_obj => $self);
+  return $cpan_sqlite->query(mode => 'dist', query => $regex, meta_obj => $self);
 }
 
 sub set_data {
   my ($self, $results) = @_;
   $global_id = $results->{download};
-  $self->set_dist($results->{download}, $results);
+  return $self->set_dist($results->{download}, $results);
 }
 
 sub set_list_data {
@@ -109,6 +114,7 @@ sub set_list_data {
   $global_id = $download;
   $self->set_containsmods($results);
   $global_id = undef;
+  return;
 }
 
 package CPAN::SQLite::META::Module;
@@ -124,7 +130,7 @@ sub set_one {
   $cpan_sqlite->{results} = {};
   $cpan_sqlite->query(mode => 'module', name => $id, meta_obj => $self);
   my $cpan_meta = $self->{cpan_meta};
-  $cpan_meta->{readonly}{$class}{$id};
+  return $cpan_meta->{readonly}{$class}{$id};
 }
 
 sub set_many {
@@ -132,14 +138,14 @@ sub set_many {
   my $cpan_sqlite = $self->{cpan_sqlite};
   my $regex = $self->{regex};
   $cpan_sqlite->{results} = [];
-  $cpan_sqlite->query(mode => 'module', query => $regex, meta_obj => $self);
+  return $cpan_sqlite->query(mode => 'module', query => $regex, meta_obj => $self);
 }
 
 sub set_data {
   my ($self, $results) = @_;
   $self->set_module($results->{mod_name}, $results);
   $global_id = $results->{download};
-  $self->set_dist($results->{download}, $results);
+  return $self->set_dist($results->{download}, $results);
 }
 
 sub set_list_data {
@@ -147,6 +153,7 @@ sub set_list_data {
   $global_id = $download;
   $self->set_containsmods($results);
   $global_id = undef;
+  return;
 }
 
 package CPAN::SQLite::META::Bundle;
@@ -164,7 +171,7 @@ sub set_one {
   $cpan_sqlite->{results} = {};
   $cpan_sqlite->query(mode => 'module', name => $id, meta_obj => $self);
   my $cpan_meta = $self->{cpan_meta};
-  $cpan_meta->{readonly}{$class}{$id};
+  return $cpan_meta->{readonly}{$class}{$id};
 }
 
 sub set_many {
@@ -176,14 +183,14 @@ sub set_many {
   }
   $regex = '^Bundle::' if $regex eq '^';
   $cpan_sqlite->{results} = [];
-  $cpan_sqlite->query(mode => 'module', query => $regex, meta_obj => $self);
+  return $cpan_sqlite->query(mode => 'module', query => $regex, meta_obj => $self);
 }
 
 sub set_data {
   my ($self, $results) = @_;
   $self->set_bundle($results->{mod_name}, $results);
   $global_id = $results->{download};
-  $self->set_dist($results->{download}, $results);
+  return $self->set_dist($results->{download}, $results);
 }
 
 sub set_list_data {
@@ -191,6 +198,7 @@ sub set_list_data {
   $global_id = $download;
   $self->set_containsmods($results);
   $global_id = undef;
+  return;
 }
 
 package CPAN::SQLite::META;
@@ -203,12 +211,12 @@ sub set_author {
   my ($self, $id, $results) = @_;
   my $class = 'CPAN::Author';
   my $cpan_meta = $self->{cpan_meta};
-  $cpan_meta->instance(
-		       $class => $id
-		      )->set(
-			     'FULLNAME' => $results->{fullname},
-			     'EMAIL' => $results->{email},
-			    );
+  return $cpan_meta->instance(
+                       $class => $id
+                      )->set(
+                             'FULLNAME' => $results->{fullname},
+                             'EMAIL' => $results->{email},
+                            );
 }
 
 sub set_module {
@@ -223,17 +231,17 @@ sub set_module {
     }
   }
   my $d = $cpan_meta->instance(
-			       $class => $id
-			      );
-  $d->set(
-	  'description' => $results->{mod_abs},
-	  'userid' => $results->{cpanid},
-	  'CPAN_VERSION' => $results->{mod_vers},
-	  'CPAN_FILE' => $results->{download},
-	  'CPAN_USERID' => $results->{cpanid},
-	  'chapterid' => $results->{chapterid},
-	  %dslip,
-	 );
+                               $class => $id
+                              );
+  return $d->set(
+          'description' => $results->{mod_abs},
+          'userid' => $results->{cpanid},
+          'CPAN_VERSION' => $results->{mod_vers},
+          'CPAN_FILE' => $results->{download},
+          'CPAN_USERID' => $results->{cpanid},
+          'chapterid' => $results->{chapterid},
+          %dslip,
+         );
 }
 
 sub set_bundle {
@@ -248,17 +256,17 @@ sub set_bundle {
     }
   }
   my $d = $cpan_meta->instance(
-			       $class => $id
-			      );
-  $d->set(
-	  'description' => $results->{mod_abs},
-	  'userid' => $results->{cpanid},
-	  'CPAN_VERSION' => $results->{mod_vers},
-	  'CPAN_FILE' => $results->{download},
-	  'CPAN_USERID' => $results->{cpanid},
-	  'chapterid' => $results->{chapterid},
-	  %dslip,
-	 );
+                               $class => $id
+                              );
+  return $d->set(
+          'description' => $results->{mod_abs},
+          'userid' => $results->{cpanid},
+          'CPAN_VERSION' => $results->{mod_vers},
+          'CPAN_FILE' => $results->{download},
+          'CPAN_USERID' => $results->{cpanid},
+          'chapterid' => $results->{chapterid},
+          %dslip,
+         );
 }
 
 sub set_dist {
@@ -266,13 +274,13 @@ sub set_dist {
   my $class = 'CPAN::Distribution';
   my $cpan_meta = $self->{cpan_meta};
   my $d = $cpan_meta->instance(
-			       $class => $id
-			      );
-  $d->set(
-	  'DESCRIPTION' => $results->{dist_abs},
-	  'CPAN_USERID' => $results->{cpanid},
-	  'CPAN_VERSION' => $results->{dist_vers},
-	 );
+                               $class => $id
+                              );
+  return $d->set(
+          'DESCRIPTION' => $results->{dist_abs},
+          'CPAN_USERID' => $results->{cpanid},
+          'CPAN_VERSION' => $results->{dist_vers},
+         );
 }
 
 sub set_containsmods {
@@ -284,36 +292,37 @@ sub set_containsmods {
     %containsmods = map {$_->{mod_name} => 1} @$mods;
   }
   my $d = $cpan_meta->instance(
-			       $class => $global_id
-			      );
-  $d->{CONTAINSMODS} =  \%containsmods;
+                               $class => $global_id
+                              );
+  return $d->{CONTAINSMODS} =  \%containsmods;
 }
 
 sub reload {
   my($self, %args) = @_;
+
   my $time = $args{'time'} || time;
   my $force = $args{force};
   my $db_name = $CPAN::SQLite::db_name;
   my $db = File::Spec->catfile($CPAN::Config->{cpan_home}, $db_name);
   my $journal_file = $db . '-journal';
   if (-e $journal_file) {
-    warn qq{Database locked - cannot update.};
+    $CPAN::FrontEnd->mywarn('Database locked - cannot update.');
     return;
   }
   my @args = ($^X, '-MCPAN::SQLite::META=setup,update', '-e');
   if (-e $db && -s _) {
     my $mtime_db = (stat(_))[9];
     my $time_string = gmtime_string($mtime_db);
-    warn "Database was generated on $time_string\n";
+    $CPAN::FrontEnd->myprint("Database was generated on $time_string\n");
     unless ($force) {
       return if (($time - $mtime_db) < $CPAN::Config->{index_expire}*86400);
     }
-    warn "Updating database file ...\n";
+    $CPAN::FrontEnd->myprint('Updating database file ... ');
     push @args, q{update};
   }
   else {
     unlink($db) if -e _;
-    warn "Creating database file ...\n";
+    $CPAN::FrontEnd->myprint('Creating database file ... ');
     push @args, q{setup};
   }
   if ($CPAN::SQLite::DBI::dbh) {
@@ -321,17 +330,20 @@ sub reload {
     $CPAN::SQLite::DBI::dbh = undef;
   }
   system(@args) == 0 or die qq{system @args failed: $?};
-  warn "Done!\n";
+  $CPAN::FrontEnd->myprint('Done!');
+  return 1;
 }
 
 sub setup {
   my $obj = CPAN::SQLite->new(setup => 1);
   $obj->index() or die qq{CPAN::SQLite setup failed};
+  return;
 }
 
 sub update {
   my $obj = CPAN::SQLite->new();
   $obj->index() or die qq{CPAN::SQLite update failed};
+  return;
 }
 
 sub gmtime_string {
@@ -339,8 +351,8 @@ sub gmtime_string {
   return unless $time;
   my @a = gmtime($time);
   my $string = sprintf("%s, %02d %s %d %02d:%02d:%02d GMT",
-		      $days[$a[6]], $a[3], $months[$a[4]],
-		      $a[5] + 1900, $a[2], $a[1], $a[0]);
+                      $days[$a[6]], $a[3], $months[$a[4]],
+                      $a[5] + 1900, $a[2], $a[1], $a[0]);
   return $string;
 }
 
@@ -389,10 +401,10 @@ database by name using the appropriate C<author>, C<dist>,
 or C<module> mode, and if a result is found, calls
 
     $CPAN::META->instance(
-		         $class => $id
-		         )->set(
+                         $class => $id
+                         )->set(
                           %attributes
-		         );
+                         );
 
 to register an instance of this class within C<CPAN.pm>.
 
@@ -409,10 +421,10 @@ database by C<query> using the appropriate C<author>, C<dist>,
 or C<module> mode, and if results are found, calls
 
     $CPAN::META->instance(
-		         $class => $id
-		         )->set(
+                         $class => $id
+                         )->set(
                           %attributes
-		         );
+                         );
 
 for each match to register an instance of this class 
 within C<CPAN.pm>.
@@ -437,13 +449,13 @@ where C<$results> are the results returned from C<CPAN::SQLite>.
 
 The attributes are
 
-	'description' => $results->{mod_abs},
-	'userid' => $results->{cpanid},
-	'CPAN_VERSION' => $results->{mod_vers},
-	'CPAN_FILE' => $results->{download},
-	'CPAN_USERID' => $results->{cpanid},
-	'chapterid' => $results->{chapterid},
-	%dslip,
+        'description' => $results->{mod_abs},
+        'userid' => $results->{cpanid},
+        'CPAN_VERSION' => $results->{mod_vers},
+        'CPAN_FILE' => $results->{download},
+        'CPAN_USERID' => $results->{cpanid},
+        'chapterid' => $results->{chapterid},
+        %dslip,
 
 where C<$results> are the results returned from C<CPAN::SQLite>.
 Here, C<%dslip> is a hash containing keys C<statd>, C<stats>,

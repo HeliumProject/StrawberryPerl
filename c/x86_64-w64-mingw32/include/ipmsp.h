@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
@@ -206,7 +206,7 @@ extern "C"{
 
   typedef struct tagTAPI_STREAM_CONFIG_CAPS {
     StreamConfigCapsType CapsType;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       TAPI_VIDEO_STREAM_CONFIG_CAPS VideoCap;
       TAPI_AUDIO_STREAM_CONFIG_CAPS AudioCap;
     };

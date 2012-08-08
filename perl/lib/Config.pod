@@ -41,7 +41,7 @@ http://perl5.git.perl.org/perl.git/blob/HEAD:/Porting/Glossary
 =item myconfig()
 
 Returns a textual summary of the major perl configuration values.
-See also C<-V> in L<perlrun/Switches>.
+See also C<-V> in L<perlrun/Command Switches>.
 
 =item config_sh()
 
@@ -61,7 +61,34 @@ printed on a separate line in the form:
   name='value';
 
 Names which are unknown are output as C<name='UNKNOWN';>.
-See also C<-V:name> in L<perlrun/Switches>.
+See also C<-V:name> in L<perlrun/Command Switches>.
+
+=item bincompat_options()
+
+Returns a list of C pre-processor options used when compiling this F<perl>
+binary, which affect its binary compatibility with extensions.
+C<bincompat_options()> and C<non_bincompat_options()> are shown together in
+the output of C<perl -V> as I<Compile-time options>.
+
+=item non_bincompat_options()
+
+Returns a list of C pre-processor options used when compiling this F<perl>
+binary, which do not affect binary compatibility with extensions.
+
+=item compile_date()
+
+Returns the compile date (as a string), equivalent to what is shown by
+C<perl -V>
+
+=item local_patches()
+
+Returns a list of the names of locally applied patches, equivalent to what
+is shown by C<perl -V>.
+
+=item header_files()
+
+Returns a list of the header files that should be used as dependencies for
+XS code, for this version of Perl on this platform.
 
 =back
 
@@ -592,10 +619,10 @@ command, as reported by the shell in the $0 variable.
 
 From F<Options.U>:
 
-This variable countains the number of command-line arguments
+This variable contains the number of command-line arguments
 passed to Configure, as reported by the shell in the $# variable.
-The individual arguments are stored as variables config_argc1,
-config_argc2, etc.
+The individual arguments are stored as variables config_arg1,
+config_arg2, etc.
 
 =item C<config_args>
 
@@ -982,7 +1009,7 @@ whether the C compiler can cast large floats to 32-bit ints.
 From F<d_castneg.U>:
 
 This variable conditionally defines C<CASTNEG>, which indicates
-wether the C compiler can cast negative float to unsigned.
+whether the C compiler can cast negative float to unsigned.
 
 =item C<d_charvspr>
 
@@ -1347,7 +1374,7 @@ when reading from a non-blocking I/O source.
 From F<Guess.U>:
 
 This variable conditionally defines the symbols C<EUNICE> and C<VAX>, which
-alerts the C program that it must deal with ideosyncracies of C<VMS>.
+alerts the C program that it must deal with idiosyncrasies of C<VMS>.
 
 =item C<d_faststdio>
 
@@ -1653,7 +1680,7 @@ to get the current working directory.
 From F<d_getespwnam.U>:
 
 This variable conditionally defines C<HAS_GETESPWNAM> if getespwnam() is
-available to retrieve enchanced (shadow) password entries by name.
+available to retrieve enhanced (shadow) password entries by name.
 
 =item C<d_getfsstat>
 
@@ -2187,12 +2214,26 @@ From F<d_int64_t.U>:
 
 This symbol will be defined if the C compiler supports int64_t.
 
+=item C<d_ipv6_mreq>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the HAS_IPV6_MREQ symbol, which
+indicates the availability of a struct ipv6_mreq.
+
 =item C<d_isascii>
 
 From F<d_isascii.U>:
 
 This variable conditionally defines the C<HAS_ISASCII> constant,
 which indicates to the C program that isascii() is available.
+
+=item C<d_isblank>
+
+From F<d_isblank.U>:
+
+This variable conditionally defines the C<HAS_ISBLANK> constant,
+which indicates to the C program that isblank() is available.
 
 =item C<d_isfinite>
 
@@ -2402,7 +2443,7 @@ From F<d_memmove.U>:
 
 This variable conditionally defines the C<HAS_MEMMOVE> symbol, which
 indicates to the C program that the memmove() routine is available
-to copy potentatially overlapping blocks of memory.
+to copy potentially overlapping blocks of memory.
 
 =item C<d_memset>
 
@@ -2755,26 +2796,41 @@ This variable conditionally defines the C<PORTABLE> symbol, which
 indicates to the C program that it should not assume that it is
 running on the machine it was compiled on.
 
+=item C<d_prctl>
+
+From F<d_prctl.U>:
+
+This variable conditionally defines the C<HAS_PRCTL> symbol, which
+indicates to the C program that the prctl() routine is available.
+
+=item C<d_prctl_set_name>
+
+From F<d_prctl.U>:
+
+This variable conditionally defines the C<HAS_PRCTL_SET_NAME> symbol,
+which indicates to the C program that the prctl() routine supports
+the C<PR_SET_NAME> option.
+
 =item C<d_PRId64>
 
 From F<quadfio.U>:
 
 This variable conditionally defines the PERL_PRId64 symbol, which
-indiciates that stdio has a symbol to print 64-bit decimal numbers.
+indicates that stdio has a symbol to print 64-bit decimal numbers.
 
 =item C<d_PRIeldbl>
 
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to print long doubles.
+indicates that stdio has a symbol to print long doubles.
 
 =item C<d_PRIEUldbl>
 
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to print long doubles.
+indicates that stdio has a symbol to print long doubles.
 The C<U> in the name is to separate this from d_PRIeldbl so that even
 case-blind systems can see the difference.
 
@@ -2783,14 +2839,14 @@ case-blind systems can see the difference.
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to print long doubles.
+indicates that stdio has a symbol to print long doubles.
 
 =item C<d_PRIFUldbl>
 
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to print long doubles.
+indicates that stdio has a symbol to print long doubles.
 The C<U> in the name is to separate this from d_PRIfldbl so that even
 case-blind systems can see the difference.
 
@@ -2799,14 +2855,14 @@ case-blind systems can see the difference.
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to print long doubles.
+indicates that stdio has a symbol to print long doubles.
 
 =item C<d_PRIGUldbl>
 
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to print long doubles.
+indicates that stdio has a symbol to print long doubles.
 The C<U> in the name is to separate this from d_PRIgldbl so that even
 case-blind systems can see the difference.
 
@@ -2815,7 +2871,7 @@ case-blind systems can see the difference.
 From F<quadfio.U>:
 
 This variable conditionally defines the PERL_PRIi64 symbol, which
-indiciates that stdio has a symbol to print 64-bit decimal numbers.
+indicates that stdio has a symbol to print 64-bit decimal numbers.
 
 =item C<d_printf_format_null>
 
@@ -2829,14 +2885,14 @@ indicates the C compiler allows printf-like formats to be null.
 From F<quadfio.U>:
 
 This variable conditionally defines the PERL_PRIo64 symbol, which
-indiciates that stdio has a symbol to print 64-bit octal numbers.
+indicates that stdio has a symbol to print 64-bit octal numbers.
 
 =item C<d_PRIu64>
 
 From F<quadfio.U>:
 
 This variable conditionally defines the PERL_PRIu64 symbol, which
-indiciates that stdio has a symbol to print 64-bit unsigned decimal
+indicates that stdio has a symbol to print 64-bit unsigned decimal
 numbers.
 
 =item C<d_PRIx64>
@@ -2844,14 +2900,14 @@ numbers.
 From F<quadfio.U>:
 
 This variable conditionally defines the PERL_PRIx64 symbol, which
-indiciates that stdio has a symbol to print 64-bit hexadecimal numbers.
+indicates that stdio has a symbol to print 64-bit hexadecimal numbers.
 
 =item C<d_PRIXU64>
 
 From F<quadfio.U>:
 
 This variable conditionally defines the PERL_PRIXU64 symbol, which
-indiciates that stdio has a symbol to print 64-bit hExADECimAl numbers.
+indicates that stdio has a symbol to print 64-bit hExADECimAl numbers.
 The C<U> in the name is to separate this from d_PRIx64 so that even
 case-blind systems can see the difference.
 
@@ -3100,7 +3156,7 @@ not enough because it may be an enum, glibc has been known to do this.
 From F<longdblfio.U>:
 
 This variable conditionally defines the PERL_PRIfldbl symbol, which
-indiciates that stdio has a symbol to scan long doubles.
+indicates that stdio has a symbol to scan long doubles.
 
 =item C<d_seekdir>
 
@@ -3494,6 +3550,14 @@ This variable conditionally defines the C<HAS_SIGSETJMP> symbol,
 which indicates that the sigsetjmp() routine is available to
 call setjmp() and optionally save the process's signal mask.
 
+=item C<d_sin6_scope_id>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the HAS_SIN6_SCOPE_ID symbol, which
+indicates that a struct sockaddr_in6 structure has the sin6_scope_id
+member.
+
 =item C<d_sitearch>
 
 From F<sitearch.U>:
@@ -3509,6 +3573,21 @@ From F<d_snprintf.U>:
 This variable conditionally defines the C<HAS_SNPRINTF> symbol, which
 indicates to the C program that the snprintf () library function
 is available.
+
+=item C<d_sockaddr_in6>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the HAS_SOCKADDR_IN6 symbol, which
+indicates the availability of a struct sockaddr_in6.
+
+=item C<d_sockaddr_sa_len>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the C<HAS_SOCKADDR_SA_LEN> symbol,
+which indicates that a struct sockaddr structure has the sa_len
+member.
 
 =item C<d_sockatmark>
 
@@ -3626,6 +3705,15 @@ From F<d_statfs_s.U>:
 
 This variable conditionally defines the C<HAS_STRUCT_STATFS> symbol,
 which indicates that the struct statfs is supported.
+
+=item C<d_static_inline>
+
+From F<d_static_inline.U>:
+
+This variable conditionally defines the C<HAS_STATIC_INLINE> symbol,
+which indicates that the C compiler supports C99-style static
+inline.  That is, the function can't be called from another
+translation unit.
 
 =item C<d_statvfs>
 
@@ -3916,7 +4004,7 @@ up to the program to supply one.
 From F<d_time.U>:
 
 This variable conditionally defines the C<HAS_TIME> symbol, which indicates
-that the time() routine exists.  The time() routine is normaly
+that the time() routine exists.  The time() routine is normally
 provided on C<UNIX> systems.
 
 =item C<d_timegm>
@@ -3931,7 +4019,7 @@ indicates to the C program that the timegm () routine is available.
 From F<d_times.U>:
 
 This variable conditionally defines the C<HAS_TIMES> symbol, which indicates
-that the times() routine exists.  The times() routine is normaly
+that the times() routine exists.  The times() routine is normally
 provided on C<UNIX> systems. You may have to include <sys/times.h>.
 
 =item C<d_tm_tm_gmtoff>
@@ -4105,7 +4193,7 @@ From F<i_sysioctl.U>:
 This variable conditionally defines C<USE_IOCNOTTY> to indicate that the
 ioctl() call with C<TIOCNOTTY> should be used to void tty association.
 Otherwise (on C<USG> probably), it is enough to close the standard file
-decriptors and do a setpgrp().
+descriptors and do a setpgrp().
 
 =item C<d_volatile>
 
@@ -4421,7 +4509,7 @@ From F<Extensions.U>:
 
 This variable holds a list of all extension files (both C<XS> and
 non-xs linked into the package.  It is propagated to F<Config.pm>
-and is typically used to test whether a particular extesion
+and is typically used to test whether a particular extension
 is available.
 
 =item C<extern_C>
@@ -5311,6 +5399,14 @@ This variable conditionally defines the C<I_STDARG> symbol, which
 indicates to the C program that <stdarg.h> exists and should
 be included.
 
+=item C<i_stdbool>
+
+From F<i_stdbool.U>:
+
+This variable conditionally defines the C<I_STDBOOL> symbol, which
+indicates to the C program that <stdbool.h> exists and should
+be included.
+
 =item C<i_stddef>
 
 From F<i_stddef.U>:
@@ -5662,7 +5758,7 @@ suitable for use in the C<PERL_INC_VERSION_LIST> initialization.
 
 From F<usrinc.U>:
 
-This variable must preceed the normal include path to get hte
+This variable must precede the normal include path to get the
 right one, as in F<$F<incpath/usr/include>> or F<$F<incpath/usr/lib>>.
 Value can be "" or F</bsd43> on mips.
 
@@ -5697,7 +5793,7 @@ should be used in makefiles.
 From F<bin.U>:
 
 This variable is the same as binexp unless C<AFS> is running in which case
-the user is explicitely prompted for it. This variable should always
+the user is explicitly prompted for it. This variable should always
 be used in your makefiles for maximum portability.
 
 =item C<installhtml1dir>
@@ -6023,6 +6119,14 @@ This variable indicates the program to be used to link
 libraries for dynamic loading.  On some systems, it is C<ld>.
 On C<ELF> systems, it should be $cc.  Mostly, we'll try to respect
 the hint file setting.
+
+=item C<ld_can_script>
+
+From F<dlsrc.U>:
+
+This variable shows if the loader accepts scripts in the form of
+-Wl,--version-script=F<ld.script>. This is currently only supported
+for C<GNU> ld on C<ELF> in dynamic loading builds.
 
 =item C<lddlflags>
 
@@ -6827,8 +6931,9 @@ used to separate elements in the command shell search C<PATH>.
 
 From F<Loc.U>:
 
-This variable is defined but not used by Configure.
-The value is the empty string and is not useful.
+This variable is used internally by Configure to determine the
+full pathname (if any) of the perl program.  After Configure runs,
+the value is reset to a plain C<perl> and is not useful.
 
 =item C<perl5>
 
@@ -6910,6 +7015,19 @@ From F<Oldsyms.U>:
 
 In a Perl version number such as 5.6.2, this is the 5.
 This value is manually set in F<patchlevel.h>
+
+=item C<perl_static_inline>
+
+From F<d_static_inline.U>:
+
+This variable defines the C<PERL_STATIC_INLINE> symbol to
+the best-guess incantation to use for static inline functions.
+Possibilities include
+static inline       (c99)
+static __inline__   (gcc -ansi)
+static __inline     (C<MSVC>)
+static _inline      (older C<MSVC>)
+static              (c89 compilers)
 
 =item C<PERL_SUBVERSION>
 
@@ -7895,6 +8013,19 @@ long or int.  It is used by functions that return a count
 of bytes or an error condition.  It must be a signed type.
 We will pick a type such that sizeof(SSize_t) == sizeof(Size_t).
 
+=item C<st_ino_sign>
+
+From F<st_ino_def.U>:
+
+This variable contains the signedness of struct stat's st_ino.
+1 for unsigned, -1 for signed.
+
+=item C<st_ino_size>
+
+From F<st_ino_def.U>:
+
+This variable contains the size of struct stat's st_ino in bytes.
+
 =item C<startperl>
 
 From F<startperl.U>:
@@ -7906,7 +8037,7 @@ perl idiom:
 eval 'exec perl -S $0 ${1+C<$@>}'
 if $running_under_some_shell;
 to guarantee perl startup should the shell execute the script. Note
-that this magic incatation is not understood by csh.
+that this magic incantation is not understood by csh.
 
 =item C<startsh>
 
@@ -8330,6 +8461,14 @@ This variable conditionally defines the C<USE_ITHREADS> symbol,
 and indicates that Perl should be built to use the interpreter-based
 threading implementation.
 
+=item C<usekernprocpathname>
+
+From F<usekernprocpathname.U>:
+
+This variable, indicates that we can use sysctl with
+C<KERN_PROC_PATHNAME> to get a full path for the executable, and hence
+convert $^X to an absolute path.
+
 =item C<uselargefiles>
 
 From F<uselfs.U>:
@@ -8373,7 +8512,7 @@ From F<mallocsrc.U>:
 
 This variable contains y if the malloc that comes with this package
 is desired over the system's version of malloc.  People often include
-special versions of malloc for effiency, but such versions are often
+special versions of malloc for efficiency, but such versions are often
 less portable.  See also mallocsrc and mallocobj.
 If this is C<y>, then -lmalloc is removed from $libs.
 
@@ -8383,6 +8522,14 @@ From F<usenm.U>:
 
 This variable contains C<true> or C<false> depending whether the
 nm extraction is wanted or not.
+
+=item C<usensgetexecutablepath>
+
+From F<usensgetexecutablepath.U>:
+
+This symbol, if defined, indicates that we can use _NSGetExecutablePath
+and realpath to get a full path for the executable, and hence convert
+$^X to an absolute path.
 
 =item C<useopcode>
 
@@ -8438,7 +8585,7 @@ From F<d_sfio.U>:
 
 This variable is set to true when the user agrees to use sfio.
 It is set to false when sfio is not available or when the user
-explicitely requests not to use sfio.  It is here primarily so
+explicitly requests not to use sfio.  It is here primarily so
 that command-line settings can override the auto-detection of
 d_sfio without running into a "WHOA THERE".
 
@@ -8484,7 +8631,7 @@ From F<d_vfork.U>:
 
 This variable is set to true when the user accepts to use vfork.
 It is set to false when no vfork is available or when the user
-explicitely requests not to use vfork.
+explicitly requests not to use vfork.
 
 =item C<usrinc>
 

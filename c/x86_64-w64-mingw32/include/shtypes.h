@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
@@ -72,7 +72,7 @@ extern "C" {
 #include <pshpack8.h>
   typedef struct _STRRET {
     UINT uType;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LPWSTR pOleStr;
       UINT uOffset;
       char cStr[260 ];
@@ -92,6 +92,24 @@ extern "C" {
   typedef struct _SHELLDETAILS *LPSHELLDETAILS;
 
 #include <poppack.h>
+
+  typedef enum tagSHCOLSTATE {
+    SHCOLSTATE_TYPE_STR = 0x1,
+    SHCOLSTATE_TYPE_INT = 0x2,
+    SHCOLSTATE_TYPE_DATE = 0x3,
+    SHCOLSTATE_TYPEMASK = 0xf,
+    SHCOLSTATE_ONBYDEFAULT = 0x10,
+    SHCOLSTATE_SLOW = 0x20,
+    SHCOLSTATE_EXTENDED = 0x40,
+    SHCOLSTATE_SECONDARYUI = 0x80,
+    SHCOLSTATE_HIDDEN = 0x100,
+    SHCOLSTATE_PREFER_VARCMP = 0x200
+  } SHCOLSTATE;
+
+  typedef DWORD SHCOLSTATEF;
+
+  typedef PROPERTYKEY SHCOLUMNID;
+  typedef const SHCOLUMNID *LPCSHCOLUMNID;
 
   extern RPC_IF_HANDLE __MIDL_itf_shtypes_0000_v0_0_c_ifspec;
   extern RPC_IF_HANDLE __MIDL_itf_shtypes_0000_v0_0_s_ifspec;

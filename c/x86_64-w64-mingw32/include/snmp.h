@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_SNMP
 #define _INC_SNMP
@@ -216,7 +216,7 @@ extern "C" {
 #define SNMP_OUTPUT_TO_EVENTLOG 0x4
 #define SNMP_OUTPUT_TO_DEBUGGER 0x8
 
-  VOID SNMP_FUNC_TYPE SnmpUtilDbgPrint(INT nLogLevel,LPSTR szFormat,...);
+  VOID WINAPIV SnmpUtilDbgPrint(INT nLogLevel,LPSTR szFormat,...);
 
 #define SNMPDBG(_x_)
 
@@ -295,4 +295,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif
+
+#endif /* _INC_SNMP */
+

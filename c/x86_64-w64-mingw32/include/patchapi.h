@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _PATCHAPI_H_
 #define _PATCHAPI_H_
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,7 +101,7 @@ extern "C" {
 
   typedef struct _PATCH_OLD_FILE_INFO {
     ULONG SizeOfThisStruct;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LPCSTR OldFileNameA;
       LPCWSTR OldFileNameW;
       HANDLE OldFileHandle;
@@ -148,23 +150,13 @@ extern "C" {
   WINBOOL PATCHAPI GetFilePatchSignatureW(LPCWSTR FileName,ULONG OptionFlags,PVOID OptionData,ULONG IgnoreRangeCount,PPATCH_IGNORE_RANGE IgnoreRangeArray,ULONG RetainRangeCount,PPATCH_RETAIN_RANGE RetainRangeArray,ULONG SignatureBufferSizeInBytes,PVOID SignatureBuffer);
   WINBOOL PATCHAPI GetFilePatchSignatureByHandle(HANDLE FileHandle,ULONG OptionFlags,PVOID OptionData,ULONG IgnoreRangeCount,PPATCH_IGNORE_RANGE IgnoreRangeArray,ULONG RetainRangeCount,PPATCH_RETAIN_RANGE RetainRangeArray,ULONG SignatureBufferSize,PVOID SignatureBuffer);
 
-#ifdef UNICODE
-#define CreatePatchFile CreatePatchFileW
-#define CreatePatchFileEx CreatePatchFileExW
-#define TestApplyPatchToFile TestApplyPatchToFileW
-#define ApplyPatchToFile ApplyPatchToFileW
-#define ApplyPatchToFileEx ApplyPatchToFileExW
-#define ExtractPatchHeaderToFile ExtractPatchHeaderToFileW
-#define GetFilePatchSignature GetFilePatchSignatureW
-#else
-#define CreatePatchFile CreatePatchFileA
-#define CreatePatchFileEx CreatePatchFileExA
-#define TestApplyPatchToFile TestApplyPatchToFileA
-#define ApplyPatchToFile ApplyPatchToFileA
-#define ApplyPatchToFileEx ApplyPatchToFileExA
-#define ExtractPatchHeaderToFile ExtractPatchHeaderToFileA
-#define GetFilePatchSignature GetFilePatchSignatureA
-#endif
+#define CreatePatchFile __MINGW_NAME_AW(CreatePatchFile)
+#define CreatePatchFileEx __MINGW_NAME_AW(CreatePatchFileEx)
+#define TestApplyPatchToFile __MINGW_NAME_AW(TestApplyPatchToFile)
+#define ApplyPatchToFile __MINGW_NAME_AW(ApplyPatchToFile)
+#define ApplyPatchToFileEx __MINGW_NAME_AW(ApplyPatchToFileEx)
+#define ExtractPatchHeaderToFile __MINGW_NAME_AW(ExtractPatchHeaderToFile)
+#define GetFilePatchSignature __MINGW_NAME_AW(GetFilePatchSignature)
 
 #ifdef __cplusplus
 }

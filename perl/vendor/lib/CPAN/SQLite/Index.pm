@@ -1,3 +1,5 @@
+# $Id: Index.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::Index;
 use strict;
 use warnings;
@@ -10,13 +12,16 @@ use File::Basename;
 use File::Path;
 use LWP::Simple qw(getstore is_success);
 
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 unless ($ENV{CPAN_SQLITE_NO_LOG_FILES}) {
   $ENV{CPAN_SQLITE_DEBUG} = 1;
 }
 
 our ($oldout);
 my $log_file = 'cpan_sqlite_log.' . time;
+
+# This is usually already defined in real life, but tests need it to be set
+$CPAN::FrontEnd ||= "CPAN::Shell";
 
 sub new {
   my ($class, %args) = @_;
@@ -25,66 +30,84 @@ sub new {
   }
 
   my $self = {index => undef, state => undef, %args};
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub index {
-  my ($self, %args) = @_;
-  my $setup = $self->{setup};
+    my $self = shift;
+    my $setup = $self->{'setup'};
 
-  if ($setup) {
-    my $db_name = catfile($self->{db_dir}, $self->{db_name});
-    if (-f $db_name) {
-      warn qq{Removing existing $db_name\n};
-      unlink $db_name or warn qq{Cannot unlink $db_name: $!};
+    if ($setup) {
+        my $db_name = catfile($self->{'db_dir'}, $self->{db_name});
+        if (-f $db_name) {
+            $CPAN::FrontEnd->myprint("Removing existing $db_name ... ");
+            if (unlink $db_name) {
+                $CPAN::FrontEnd->myprint("Done.\n");
+            } else {
+                $CPAN::FrontEnd->mywarn("Failed: $!\n");
+            }
+        }
     }
-  }
-  my $log = catfile($self->{log_dir}, $log_file);
-  unless ($ENV{CPAN_SQLITE_NO_LOG_FILES}) {
-    $oldout = error_fh($log);
-  }
 
-  if ($self->{update_indices}) {
-    warn qq{Fetching index files ...\n};
-    $self->fetch_cpan_indices() or do {
-      warn qq{fetch_cpan_indices() failed};
-      return;
+    my $log = catfile($self->{'log_dir'}, $log_file);
+
+    unless ($ENV{'CPAN_SQLITE_NO_LOG_FILES'}) {
+        $oldout = error_fh($log);
     }
-  }
 
-  warn qq{Gathering information from index files ...\n};
-  $self->fetch_info or do {
-    warn qq{fetch_info() failed!};
-    return;
-  };
-  unless ($setup) {
-    warn qq{Obtaining current state of database ...\n};
-    $self->state or do {
-      warn qq{state() failed!};
-      return;
-    };
-  }
-  warn qq{Populating database tables ...\n};
-  $self->populate or do {
-    warn qq{populate() failed!};
-    return;
-  };
-  return 1;
+    if ($self->{'update_indices'}) {
+        $CPAN::FrontEnd->myprint('Fetching index files ... ');
+        if ($self->fetch_cpan_indices()) {
+            $CPAN::FrontEnd->myprint("Done.\n");
+        } else {
+            $CPAN::FrontEnd->mywarn("Failed\n");
+            return;
+        }
+    }
+
+    $CPAN::FrontEnd->myprint('Gathering information from index files ... ');
+    if ($self->fetch_info()) {
+        $CPAN::FrontEnd->myprint("Done.\n");
+    } else {
+        $CPAN::FrontEnd->mywarn("Failed\n");
+        return;
+    }
+
+    unless ($setup) {
+        $CPAN::FrontEnd->myprint('Obtaining current state of database ... ');
+        if ($self->state()) {
+            $CPAN::FrontEnd->myprint("Done.\n");
+        } else {
+            $CPAN::FrontEnd->mywarn("Failed\n");
+            return;
+        }
+    }
+
+    $CPAN::FrontEnd->myprint('Populating database tables ... ');
+    if ($self->populate()) {
+        $CPAN::FrontEnd->myprint("Done.\n");
+    } else {
+        $CPAN::FrontEnd->mywarn("Failed\n");
+        return;
+    }
+    
+    return 1;
 }
 
 sub fetch_cpan_indices {
-  my ($self, %args) = @_;
+  my $self = shift;
+
   my $CPAN = $self->{CPAN};
   my $indices = {'01mailrc.txt.gz' => 'authors',
-		 '02packages.details.txt.gz' => 'modules',
-		 '03modlist.data.gz' => 'modules',
-		};
+         '02packages.details.txt.gz' => 'modules',
+         '03modlist.data.gz' => 'modules',
+        };
   foreach my $index (keys %$indices) {
     my $file = catfile($CPAN, $indices->{$index}, $index);
     next if (-e $file and -M $file < 1);
     my $dir = dirname($file);
     unless (-d $dir) {
-      mkpath($dir, 1, 0755) or die "Cannot mkpath $dir: $!";
+      mkpath($dir, 1, oct(755)) or die "Cannot mkpath $dir: $!";
     }
     my @urllist = @{$self->{urllist}};
     foreach my $cpan(@urllist) {
@@ -92,7 +115,7 @@ sub fetch_cpan_indices {
       last if is_success(getstore($from, $file));
     }
     unless (-f $file) {
-      warn qq{Cannot retrieve '$file'};
+      $CPAN::FrontEnd->mywarn("Cannot retrieve '$file'");
       return;
     }
   }
@@ -139,6 +162,7 @@ sub error_fh {
   my $file = shift;
   open(my $tmp, '>', $file) or die "Cannot open $file: $!";
   close $tmp;
+# Should be open(my $oldout, '>&', \*STDOUT); but it fails on 5.6.2
   open(my $oldout, '>&STDOUT');
   open(STDOUT, '>', $file) or die "Cannot tie STDOUT to $file: $!";
   select STDOUT; $| = 1;
@@ -148,8 +172,9 @@ sub error_fh {
 sub DESTROY {
   unless ($ENV{CPAN_SQLITE_NO_LOG_FILES}) {
     close STDOUT;
-    open(STDOUT, ">&$oldout");
+    open(STDOUT, '>&', $oldout);
   }
+  return;
 }
 
 1;
@@ -255,10 +280,18 @@ and L<CPAN::SQLite::Util>.
 Development takes place on the CPAN-SQLite project
 at L<http://sourceforge.net/projects/cpan-search/>.
 
+=head1 AUTHORS
+
+Randy Kobes (passed away on September 18, 2010)
+
+Serguei Trouchelle E<lt>stro@cpan.orgE<gt>
+
 =head1 COPYRIGHT
 
-This software is copyright 2006 by Randy Kobes
-E<lt>r.kobes@uwinnipeg.caE<gt>. Use and
-redistribution are under the same terms as Perl itself.
+Copyright 2006 by Randy Kobes E<lt>r.kobes@uwinnipeg.caE<gt>. 
+
+Copyright 2011 by Serguei Trouchelle E<lt>stro@cpan.orgE<gt>.
+
+Use and redistribution are under the same terms as Perl itself.
 
 =cut

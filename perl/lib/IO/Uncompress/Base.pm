@@ -9,12 +9,12 @@ our (@ISA, $VERSION, @EXPORT_OK, %EXPORT_TAGS);
 @ISA    = qw(Exporter IO::File);
 
 
-$VERSION = '2.034';
+$VERSION = '2.052';
 
 use constant G_EOF => 0 ;
 use constant G_ERR => -1 ;
 
-use IO::Compress::Base::Common 2.034 ;
+use IO::Compress::Base::Common 2.052 ;
 
 use IO::File ;
 use Symbol;
@@ -140,16 +140,36 @@ sub smartSeek
     my $self   = shift ;
     my $offset = shift ;
     my $truncate = shift;
+    my $position = shift || SEEK_SET;
 
     # TODO -- need to take prime into account
     if (defined *$self->{FH})
-      { *$self->{FH}->seek($offset, SEEK_SET) }
+      { *$self->{FH}->seek($offset, $position) }
     else {
-        *$self->{BufferOffset} = $offset ;
+        if ($position == SEEK_END) {
+            *$self->{BufferOffset} = length ${ *$self->{Buffer} } + $offset ;
+        }
+        elsif ($position == SEEK_CUR) {
+            *$self->{BufferOffset} += $offset ;
+        }
+        else {
+            *$self->{BufferOffset} = $offset ;
+        }
+
         substr(${ *$self->{Buffer} }, *$self->{BufferOffset}) = ''
             if $truncate;
         return 1;
     }
+}
+
+sub smartTell
+{
+    my $self   = shift ;
+
+    if (defined *$self->{FH})
+      { return *$self->{FH}->tell() }
+    else 
+      { return *$self->{BufferOffset} }
 }
 
 sub smartWrite
@@ -190,7 +210,8 @@ sub smartEof
         #
         # here, but this can cause trouble if
         # the filehandle is itself a tied handle, but it uses sysread.
-        # Then we get into mixing buffered & non-buffered IO, which will cause trouble
+        # Then we get into mixing buffered & non-buffered IO, 
+        # which will cause trouble
 
         my $info = $self->getErrInfo();
         
@@ -710,7 +731,7 @@ sub _rd2
 
         while (($status = $z->read($x->{buff})) > 0) {
             if ($fh) {
-                print $fh ${ $x->{buff} }
+                syswrite $fh, ${ $x->{buff} }
                     or return $z->saveErrorString(undef, "Error writing to output file: $!", $!);
                 ${ $x->{buff} } = '' ;
             }
@@ -882,7 +903,7 @@ sub _raw_read
         *$self->{TotalInflatedBytesRead} += $buf_len ;
         *$self->{UnCompSize}->add($buf_len) ;
 
-        $self->filterUncompressed($buffer);
+        $self->filterUncompressed($buffer, $before_len);
 
         if (*$self->{Encoding}) {
             $$buffer = *$self->{Encoding}->decode($$buffer);
@@ -981,6 +1002,8 @@ sub gotoNextStream
 
     *$self->{NewStream} = 0 ;
     *$self->{EndStream} = 0 ;
+    *$self->{CompressedInputLengthDone} = undef ;
+    *$self->{CompressedInputLength} = undef ;
     $self->reset();
     *$self->{UnCompSize}->reset();
     *$self->{CompSize}->reset();
@@ -1020,6 +1043,13 @@ sub streamCount
     return 1 if ! defined *$self->{InfoList};
     return scalar @{ *$self->{InfoList} }  ;
 }
+
+#sub read
+#{
+#    my $status = myRead(@_);
+#    return undef if $status < 0;
+#    return $status;
+#}
 
 sub read
 {
@@ -1474,7 +1504,7 @@ purpose if to to be sub-classed by IO::Uncompress modules.
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -1490,7 +1520,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2011 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

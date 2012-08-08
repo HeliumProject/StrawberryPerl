@@ -1,14 +1,12 @@
 package YAML::Dumper;
+use YAML::Mo;
+extends 'YAML::Dumper::Base';
 
-use strict;
-use warnings;
-use YAML::Base;
+our $VERSION = '0.81';
+
 use YAML::Dumper::Base;
 use YAML::Node;
 use YAML::Types;
-
-our $VERSION = '0.72';
-our @ISA     = 'YAML::Dumper::Base';
 
 # Context constants
 use constant KEY       => 3;
@@ -581,7 +579,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006. Ingy döt Net. All rights reserved.
+Copyright (c) 2006, 2011-2012. Ingy döt Net. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

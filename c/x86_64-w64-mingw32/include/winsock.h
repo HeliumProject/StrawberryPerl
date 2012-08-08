@@ -1,12 +1,163 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
-#if 0
 #ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_
 
+#ifndef _INC_WINDOWS
+#include <windows.h>
+#endif
+
+/* define WINSOCK_API_LINKAGE and WSAAPI for less
+ * diff output between winsock.h and winsock2.h, but
+ * remember to undefine them at the end of file */
+#ifndef WINSOCK_API_LINKAGE
+#define UNDEF_WINSOCK_API_LINKAGE
+#ifdef  DECLSPEC_IMPORT
+#define WINSOCK_API_LINKAGE	DECLSPEC_IMPORT
+#else
+#define WINSOCK_API_LINKAGE
+#endif
+#endif /* WINSOCK_API_LINKAGE */
+#define WSAAPI			WINAPI
+
+#include <_timeval.h>
+#include <_bsd_types.h>
+#include <inaddr.h>
+#include <psdk_inc/_socket_types.h>
+#include <psdk_inc/_fd_types.h>
+#include <psdk_inc/_ip_types.h>
+#include <psdk_inc/_ip_mreq1.h>
+#include <psdk_inc/_wsadata.h>
+#include <psdk_inc/_xmitfile.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
+
+#define FD_CLR(fd,set)							\
+  do {									\
+	u_int __i;							\
+	for(__i = 0; __i < ((fd_set *)(set))->fd_count; __i++) {	\
+		if (((fd_set *)(set))->fd_array[__i] == fd) {		\
+			while (__i < ((fd_set *)(set))->fd_count - 1) {	\
+				((fd_set *)(set))->fd_array[__i] =	\
+				 ((fd_set *)(set))->fd_array[__i + 1];	\
+				__i++;					\
+			}						\
+			((fd_set *)(set))->fd_count--;			\
+			break;						\
+		}							\
+	}								\
+} while(0)
+
+#define FD_ZERO(set)		(((fd_set *)(set))->fd_count = 0)
+
+#define FD_ISSET(fd,set)	__WSAFDIsSet((SOCKET)(fd),(fd_set *)(set))
+
+#define FD_SET(fd,set)							\
+  do {									\
+	if (((fd_set *)(set))->fd_count < FD_SETSIZE)			\
+	    ((fd_set *)(set))->fd_array[((fd_set *)(set))->fd_count++] =\
+								   (fd);\
+} while(0)
+
+#define IOCPARM_MASK 0x7f
+#define IOC_VOID 0x20000000
+#define IOC_OUT 0x40000000
+#define IOC_IN 0x80000000
+#define IOC_INOUT (IOC_IN|IOC_OUT)
+
+#define _IO(x,y) (IOC_VOID|((x)<<8)|(y))
+#define _IOR(x,y,t) (IOC_OUT|(((long)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
+#define _IOW(x,y,t) (IOC_IN|(((long)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
+
+#define FIONREAD _IOR('f',127,u_long)
+#define FIONBIO _IOW('f',126,u_long)
+#define FIOASYNC _IOW('f',125,u_long)
+
+#define SIOCSHIWAT _IOW('s',0,u_long)
+#define SIOCGHIWAT _IOR('s',1,u_long)
+#define SIOCSLOWAT _IOW('s',2,u_long)
+#define SIOCGLOWAT _IOR('s',3,u_long)
+#define SIOCATMARK _IOR('s',7,u_long)
+
+#define IPPROTO_IP 0
+#define IPPROTO_ICMP 1
+#define IPPROTO_IGMP 2
+#define IPPROTO_GGP 3
+#define IPPROTO_TCP 6
+#define IPPROTO_PUP 12
+#define IPPROTO_UDP 17
+#define IPPROTO_IDP 22
+#define IPPROTO_ND 77
+
+#define IPPROTO_RAW 255
+#define IPPROTO_MAX 256
+
+#define IPPORT_ECHO 7
+#define IPPORT_DISCARD 9
+#define IPPORT_SYSTAT 11
+#define IPPORT_DAYTIME 13
+#define IPPORT_NETSTAT 15
+#define IPPORT_FTP 21
+#define IPPORT_TELNET 23
+#define IPPORT_SMTP 25
+#define IPPORT_TIMESERVER 37
+#define IPPORT_NAMESERVER 42
+#define IPPORT_WHOIS 43
+#define IPPORT_MTP 57
+
+#define IPPORT_TFTP 69
+#define IPPORT_RJE 77
+#define IPPORT_FINGER 79
+#define IPPORT_TTYLINK 87
+#define IPPORT_SUPDUP 95
+
+#define IPPORT_EXECSERVER 512
+#define IPPORT_LOGINSERVER 513
+#define IPPORT_CMDSERVER 514
+#define IPPORT_EFSSERVER 520
+
+#define IPPORT_BIFFUDP 512
+#define IPPORT_WHOSERVER 513
+#define IPPORT_ROUTESERVER 520
+
+#define IPPORT_RESERVED 1024
+
+#define IMPLINK_IP 155
+#define IMPLINK_LOWEXPER 156
+#define IMPLINK_HIGHEXPER 158
+
+
+#define IN_CLASSA(i) (((long)(i) & 0x80000000)==0)
+#define IN_CLASSA_NET 0xff000000
+#define IN_CLASSA_NSHIFT 24
+#define IN_CLASSA_HOST 0x00ffffff
+#define IN_CLASSA_MAX 128
+
+#define IN_CLASSB(i) (((long)(i) & 0xc0000000)==0x80000000)
+#define IN_CLASSB_NET 0xffff0000
+#define IN_CLASSB_NSHIFT 16
+#define IN_CLASSB_HOST 0x0000ffff
+#define IN_CLASSB_MAX 65536
+
+#define IN_CLASSC(i) (((long)(i) & 0xe0000000)==0xc0000000)
+#define IN_CLASSC_NET 0xffffff00
+#define IN_CLASSC_NSHIFT 8
+#define IN_CLASSC_HOST 0x000000ff
+
+#define INADDR_ANY (u_long)0x00000000
+#define INADDR_LOOPBACK 0x7f000001
+#define INADDR_BROADCAST (u_long)0xffffffff
+#define INADDR_NONE 0xffffffff
+
+
+#define IP_OPTIONS 1
 #define IP_MULTICAST_IF 2
 #define IP_MULTICAST_TTL 3
 #define IP_MULTICAST_LOOP 4
@@ -19,14 +170,6 @@
 #define IP_DEFAULT_MULTICAST_TTL 1
 #define IP_DEFAULT_MULTICAST_LOOP 1
 #define IP_MAX_MEMBERSHIPS 20
-
-struct ip_mreq {
-  struct in_addr imr_multiaddr;
-  struct in_addr imr_interface;
-};
-
-#define INVALID_SOCKET(SOCKET)(~0)
-#define SOCKET_ERROR (-1)
 
 #define SOCK_STREAM 1
 #define SOCK_DGRAM 2
@@ -64,6 +207,13 @@ struct ip_mreq {
 #define SO_DISCDATALEN 0x7006
 #define SO_DISCOPTLEN 0x7007
 
+#define SO_OPENTYPE 0x7008
+
+#define SO_SYNCHRONOUS_ALERT 0x10
+#define SO_SYNCHRONOUS_NONALERT 0x20
+
+#define SO_MAXDG 0x7009
+#define SO_MAXPATHDG 0x700A
 #define SO_UPDATE_ACCEPT_CONTEXT 0x700B
 #define SO_CONNECT_TIME 0x700C
 
@@ -97,16 +247,6 @@ struct ip_mreq {
 
 #define AF_MAX 22
 
-struct sockaddr {
-  u_short sa_family;
-  char sa_data[14];
-};
-
-struct sockproto {
-  u_short sp_family;
-  u_short sp_protocol;
-};
-
 #define PF_UNSPEC AF_UNSPEC
 #define PF_UNIX AF_UNIX
 #define PF_INET AF_INET
@@ -133,11 +273,6 @@ struct sockproto {
 
 #define PF_MAX AF_MAX
 
-struct linger {
-  u_short l_onoff;
-  u_short l_linger;
-};
-
 #define SOL_SOCKET 0xffff
 
 #define SOMAXCONN 5
@@ -159,174 +294,59 @@ struct linger {
 #define FD_CONNECT 0x10
 #define FD_CLOSE 0x20
 
-#ifndef WSABASEERR
+#include <psdk_inc/_wsa_errnos.h>
 
-#define WSABASEERR 10000
+/* these 46 functions have the same prototypes as in winsock2 */
+  WINSOCK_API_LINKAGE SOCKET WSAAPI accept(SOCKET s,struct sockaddr *addr,int *addrlen);
+  WINSOCK_API_LINKAGE int WSAAPI bind(SOCKET s,const struct sockaddr *name,int namelen);
+  WINSOCK_API_LINKAGE int WSAAPI closesocket(SOCKET s);
+  WINSOCK_API_LINKAGE int WSAAPI connect(SOCKET s,const struct sockaddr *name,int namelen);
+  WINSOCK_API_LINKAGE int WSAAPI ioctlsocket(SOCKET s,long cmd,u_long *argp);
+  WINSOCK_API_LINKAGE int WSAAPI getpeername(SOCKET s,struct sockaddr *name,int *namelen);
+  WINSOCK_API_LINKAGE int WSAAPI getsockname(SOCKET s,struct sockaddr *name,int *namelen);
+  WINSOCK_API_LINKAGE int WSAAPI getsockopt(SOCKET s,int level,int optname,char *optval,int *optlen);
+  WINSOCK_API_LINKAGE u_long WSAAPI htonl(u_long hostlong);
+  WINSOCK_API_LINKAGE u_short WSAAPI htons(u_short hostshort);
+  WINSOCK_API_LINKAGE unsigned long WSAAPI inet_addr(const char *cp);
+  WINSOCK_API_LINKAGE char *WSAAPI inet_ntoa(struct in_addr in);
+  WINSOCK_API_LINKAGE int WSAAPI listen(SOCKET s,int backlog);
+  WINSOCK_API_LINKAGE u_long WSAAPI ntohl(u_long netlong);
+  WINSOCK_API_LINKAGE u_short WSAAPI ntohs(u_short netshort);
+  WINSOCK_API_LINKAGE int WSAAPI recv(SOCKET s,char *buf,int len,int flags);
+  WINSOCK_API_LINKAGE int WSAAPI recvfrom(SOCKET s,char *buf,int len,int flags,struct sockaddr *from,int *fromlen);
+  WINSOCK_API_LINKAGE int WSAAPI select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const struct timeval *timeout);
+  WINSOCK_API_LINKAGE int WSAAPI send(SOCKET s,const char *buf,int len,int flags);
+  WINSOCK_API_LINKAGE int WSAAPI sendto(SOCKET s,const char *buf,int len,int flags,const struct sockaddr *to,int tolen);
+  WINSOCK_API_LINKAGE int WSAAPI setsockopt(SOCKET s,int level,int optname,const char *optval,int optlen);
+  WINSOCK_API_LINKAGE int WSAAPI shutdown(SOCKET s,int how);
+  WINSOCK_API_LINKAGE SOCKET WSAAPI socket(int af,int type,int protocol);
+  WINSOCK_API_LINKAGE struct hostent *WSAAPI gethostbyaddr(const char *addr,int len,int type);
+  WINSOCK_API_LINKAGE struct hostent *WSAAPI gethostbyname(const char *name);
+  WINSOCK_API_LINKAGE int WSAAPI gethostname(char *name,int namelen);
+  WINSOCK_API_LINKAGE struct servent *WSAAPI getservbyport(int port,const char *proto);
+  WINSOCK_API_LINKAGE struct servent *WSAAPI getservbyname(const char *name,const char *proto);
+  WINSOCK_API_LINKAGE struct protoent *WSAAPI getprotobynumber(int number);
+  WINSOCK_API_LINKAGE struct protoent *WSAAPI getprotobyname(const char *name);
+  WINSOCK_API_LINKAGE int WSAAPI WSAStartup(WORD wVersionRequested,LPWSADATA lpWSAData);
+  WINSOCK_API_LINKAGE int WSAAPI WSACleanup(void);
+  WINSOCK_API_LINKAGE void WSAAPI WSASetLastError(int iError);
+  WINSOCK_API_LINKAGE int WSAAPI WSAGetLastError(void);
+  WINSOCK_API_LINKAGE WINBOOL WSAAPI WSAIsBlocking(void);
+  WINSOCK_API_LINKAGE int WSAAPI WSAUnhookBlockingHook(void);
+  WINSOCK_API_LINKAGE FARPROC WSAAPI WSASetBlockingHook(FARPROC lpBlockFunc);
+  WINSOCK_API_LINKAGE int WSAAPI WSACancelBlockingCall(void);
+  WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetServByName(HWND hWnd,u_int wMsg,const char *name,const char *proto,char *buf,int buflen);
+  WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetServByPort(HWND hWnd,u_int wMsg,int port,const char *proto,char *buf,int buflen);
+  WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetProtoByName(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
+  WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetProtoByNumber(HWND hWnd,u_int wMsg,int number,char *buf,int buflen);
+  WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetHostByName(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
+  WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetHostByAddr(HWND hWnd,u_int wMsg,const char *addr,int len,int type,char *buf,int buflen);
+  WINSOCK_API_LINKAGE int WSAAPI WSACancelAsyncRequest(HANDLE hAsyncTaskHandle);
+  WINSOCK_API_LINKAGE int WSAAPI WSAAsyncSelect(SOCKET s,HWND hWnd,u_int wMsg,long lEvent);
+#define __WINSOCK_WS1_SHARED	/* avoid redefinitions in winsock2.h */
 
-#define WSAEINTR (WSABASEERR+4)
-#define WSAEBADF (WSABASEERR+9)
-#define WSAEACCES (WSABASEERR+13)
-#define WSAEFAULT (WSABASEERR+14)
-#define WSAEINVAL (WSABASEERR+22)
-#define WSAEMFILE (WSABASEERR+24)
-
-#define WSAEWOULDBLOCK (WSABASEERR+35)
-#define WSAEINPROGRESS (WSABASEERR+36)
-#define WSAEALREADY (WSABASEERR+37)
-#define WSAENOTSOCK (WSABASEERR+38)
-#define WSAEDESTADDRREQ (WSABASEERR+39)
-#define WSAEMSGSIZE (WSABASEERR+40)
-#define WSAEPROTOTYPE (WSABASEERR+41)
-#define WSAENOPROTOOPT (WSABASEERR+42)
-#define WSAEPROTONOSUPPORT (WSABASEERR+43)
-#define WSAESOCKTNOSUPPORT (WSABASEERR+44)
-#define WSAEOPNOTSUPP (WSABASEERR+45)
-#define WSAEPFNOSUPPORT (WSABASEERR+46)
-#define WSAEAFNOSUPPORT (WSABASEERR+47)
-#define WSAEADDRINUSE (WSABASEERR+48)
-#define WSAEADDRNOTAVAIL (WSABASEERR+49)
-#define WSAENETDOWN (WSABASEERR+50)
-#define WSAENETUNREACH (WSABASEERR+51)
-#define WSAENETRESET (WSABASEERR+52)
-#define WSAECONNABORTED (WSABASEERR+53)
-#define WSAECONNRESET (WSABASEERR+54)
-#define WSAENOBUFS (WSABASEERR+55)
-#define WSAEISCONN (WSABASEERR+56)
-#define WSAENOTCONN (WSABASEERR+57)
-#define WSAESHUTDOWN (WSABASEERR+58)
-#define WSAETOOMANYREFS (WSABASEERR+59)
-#define WSAETIMEDOUT (WSABASEERR+60)
-#define WSAECONNREFUSED (WSABASEERR+61)
-#define WSAELOOP (WSABASEERR+62)
-#define WSAENAMETOOLONG (WSABASEERR+63)
-#define WSAEHOSTDOWN (WSABASEERR+64)
-#define WSAEHOSTUNREACH (WSABASEERR+65)
-#define WSAENOTEMPTY (WSABASEERR+66)
-#define WSAEPROCLIM (WSABASEERR+67)
-#define WSAEUSERS (WSABASEERR+68)
-#define WSAEDQUOT (WSABASEERR+69)
-#define WSAESTALE (WSABASEERR+70)
-#define WSAEREMOTE (WSABASEERR+71)
-
-#define WSASYSNOTREADY (WSABASEERR+91)
-#define WSAVERNOTSUPPORTED (WSABASEERR+92)
-#define WSANOTINITIALISED (WSABASEERR+93)
-
-#define WSAEDISCON (WSABASEERR+101)
-
-#define WSAHOST_NOT_FOUND (WSABASEERR+1001)
-#define WSATRY_AGAIN (WSABASEERR+1002)
-#define WSANO_RECOVERY (WSABASEERR+1003)
-#define WSANO_DATA (WSABASEERR+1004)
-#endif
-
-#define h_errno WSAGetLastError()
-#define HOST_NOT_FOUND WSAHOST_NOT_FOUND
-#define TRY_AGAIN WSATRY_AGAIN
-#define NO_RECOVERY WSANO_RECOVERY
-#define NO_DATA WSANO_DATA
-
-#define WSANO_ADDRESS WSANO_DATA
-#define NO_ADDRESS WSANO_ADDRESS
-
-#if 0
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define EINPROGRESS WSAEINPROGRESS
-#define EALREADY WSAEALREADY
-#define ENOTSOCK WSAENOTSOCK
-#define EDESTADDRREQ WSAEDESTADDRREQ
-#define EMSGSIZE WSAEMSGSIZE
-#define EPROTOTYPE WSAEPROTOTYPE
-#define ENOPROTOOPT WSAENOPROTOOPT
-#define EPROTONOSUPPORT WSAEPROTONOSUPPORT
-#define ESOCKTNOSUPPORT WSAESOCKTNOSUPPORT
-#define EOPNOTSUPP WSAEOPNOTSUPP
-#define EPFNOSUPPORT WSAEPFNOSUPPORT
-#define EAFNOSUPPORT WSAEAFNOSUPPORT
-#define EADDRINUSE WSAEADDRINUSE
-#define EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#define ENETDOWN WSAENETDOWN
-#define ENETUNREACH WSAENETUNREACH
-#define ENETRESET WSAENETRESET
-#define ECONNABORTED WSAECONNABORTED
-#define ECONNRESET WSAECONNRESET
-#define ENOBUFS WSAENOBUFS
-#define EISCONN WSAEISCONN
-#define ENOTCONN WSAENOTCONN
-#define ESHUTDOWN WSAESHUTDOWN
-#define ETOOMANYREFS WSAETOOMANYREFS
-#define ETIMEDOUT WSAETIMEDOUT
-#define ECONNREFUSED WSAECONNREFUSED
-#define ELOOP WSAELOOP
-#define ENAMETOOLONG WSAENAMETOOLONG
-#define EHOSTDOWN WSAEHOSTDOWN
-#define EHOSTUNREACH WSAEHOSTUNREACH
-#define ENOTEMPTY WSAENOTEMPTY
-#define EPROCLIM WSAEPROCLIM
-#define EUSERS WSAEUSERS
-#define EDQUOT WSAEDQUOT
-#define ESTALE WSAESTALE
-#define EREMOTE WSAEREMOTE
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SOCKET WINAPI accept(SOCKET s,struct sockaddr *addr,int *addrlen);
-  int WINAPI bind(SOCKET s,const struct sockaddr *addr,int namelen);
-  int WINAPI closesocket(SOCKET s);
-  int WINAPI connect(SOCKET s,const struct sockaddr *name,int namelen);
-  int WINAPI ioctlsocket(SOCKET s,long cmd,u_long *argp);
-  int WINAPI getpeername(SOCKET s,struct sockaddr *name,int *namelen);
-  int WINAPI getsockname(SOCKET s,struct sockaddr *name,int *namelen);
-  int WINAPI getsockopt(SOCKET s,int level,int optname,char *optval,int *optlen);
-  u_long WINAPI htonl(u_long hostlong);
-  u_short WINAPI htons(u_short hostshort);
-  unsigned long WINAPI inet_addr(const char *cp);
-  char *WINAPI inet_ntoa(struct in_addr in);
-  int WINAPI listen(SOCKET s,int backlog);
-  u_long WINAPI ntohl(u_long netlong);
-  u_short WINAPI ntohs(u_short netshort);
-  int WINAPI recv(SOCKET s,char *buf,int len,int flags);
-  int WINAPI recvfrom(SOCKET s,char *buf,int len,int flags,struct sockaddr *from,int *fromlen);
-  int WINAPI select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const struct timeval *timeout);
-  int WINAPI send(SOCKET s,const char *buf,int len,int flags);
-  int WINAPI sendto(SOCKET s,const char *buf,int len,int flags,const struct sockaddr *to,int tolen);
-  int WINAPI setsockopt(SOCKET s,int level,int optname,const char *optval,int optlen);
-  int WINAPI shutdown(SOCKET s,int how);
-  SOCKET WINAPI socket(int af,int type,int protocol);
-  struct hostent *WINAPI gethostbyaddr(const char *addr,int len,int type);
-  struct hostent *WINAPI gethostbyname(const char *name);
-  int WINAPI gethostname(char *name,int namelen);
-  struct servent *WINAPI getservbyport(int port,const char *proto);
-  struct servent *WINAPI getservbyname(const char *name,const char *proto);
-  struct protoent *WINAPI getprotobynumber(int proto);
-  struct protoent *WINAPI getprotobyname(const char *name);
-  int WINAPI WSAStartup(WORD wVersionRequired,LPWSADATA lpWSAData);
-  int WINAPI WSACleanup(void);
-  void WINAPI WSASetLastError(int iError);
-  int WINAPI WSAGetLastError(void);
-  WINBOOL WINAPI WSAIsBlocking(void);
-  int WINAPI WSAUnhookBlockingHook(void);
-  FARPROC WINAPI WSASetBlockingHook(FARPROC lpBlockFunc);
-  int WINAPI WSACancelBlockingCall(void);
-  HANDLE WINAPI WSAAsyncGetServByName(HWND hWnd,u_int wMsg,const char *name,const char *proto,char *buf,int buflen);
-  HANDLE WINAPI WSAAsyncGetServByPort(HWND hWnd,u_int wMsg,int port,const char *proto,char *buf,int buflen);
-  HANDLE WINAPI WSAAsyncGetProtoByName(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
-  HANDLE WINAPI WSAAsyncGetProtoByNumber(HWND hWnd,u_int wMsg,int number,char *buf,int buflen);
-  HANDLE WINAPI WSAAsyncGetHostByName(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
-  HANDLE WINAPI WSAAsyncGetHostByAddr(HWND hWnd,u_int wMsg,const char *addr,int len,int type,char *buf,int buflen);
-  int WINAPI WSACancelAsyncRequest(HANDLE hAsyncTaskHandle);
-  int WINAPI WSAAsyncSelect(SOCKET s,HWND hWnd,u_int wMsg,long lEvent);
+/* these four functions are in mswsock.h in the new api */
   int WINAPI WSARecvEx(SOCKET s,char *buf,int len,int *flags);
-
-  typedef struct _TRANSMIT_FILE_BUFFERS {
-    PVOID Head;
-    DWORD HeadLength;
-    PVOID Tail;
-    DWORD TailLength;
-  } TRANSMIT_FILE_BUFFERS,*PTRANSMIT_FILE_BUFFERS,*LPTRANSMIT_FILE_BUFFERS;
 
 #define TF_DISCONNECT 0x01
 #define TF_REUSE_SOCKET 0x02
@@ -334,39 +354,8 @@ extern "C" {
 
   WINBOOL WINAPI TransmitFile(SOCKET hSocket,HANDLE hFile,DWORD nNumberOfBytesToWrite,DWORD nNumberOfBytesPerSend,LPOVERLAPPED lpOverlapped,LPTRANSMIT_FILE_BUFFERS lpTransmitBuffers,DWORD dwReserved);
   WINBOOL WINAPI AcceptEx(SOCKET sListenSocket,SOCKET sAcceptSocket,PVOID lpOutputBuffer,DWORD dwReceiveDataLength,DWORD dwLocalAddressLength,DWORD dwRemoteAddressLength,LPDWORD lpdwBytesReceived,LPOVERLAPPED lpOverlapped);
-  VOID WINAPI GetAcceptExSockaddrs (PVOID lpOutputBuffer,DWORD dwReceiveDataLength,DWORD dwLocalAddressLength,DWORD dwRemoteAddressLength,struct sockaddr **LocalSockaddr,LPINT LocalSockaddrLength,struct sockaddr **RemoteSockaddr,LPINT RemoteSockaddrLength);
-
-#ifdef __cplusplus
-}
-#endif
-
-typedef struct sockaddr SOCKADDR;
-typedef struct sockaddr *PSOCKADDR;
-typedef struct sockaddr *LPSOCKADDR;
-typedef struct sockaddr_in SOCKADDR_IN;
-typedef struct sockaddr_in *PSOCKADDR_IN;
-typedef struct sockaddr_in *LPSOCKADDR_IN;
-typedef struct linger LINGER;
-typedef struct linger *PLINGER;
-typedef struct linger *LPLINGER;
-typedef struct in_addr IN_ADDR;
-typedef struct in_addr *PIN_ADDR;
-typedef struct in_addr *LPIN_ADDR;
-typedef struct fd_set FD_SET;
-typedef struct fd_set *PFD_SET;
-typedef struct fd_set *LPFD_SET;
-typedef struct hostent HOSTENT;
-typedef struct hostent *PHOSTENT;
-typedef struct hostent *LPHOSTENT;
-typedef struct servent SERVENT;
-typedef struct servent *PSERVENT;
-typedef struct servent *LPSERVENT;
-typedef struct protoent PROTOENT;
-typedef struct protoent *PPROTOENT;
-typedef struct protoent *LPPROTOENT;
-typedef struct timeval TIMEVAL;
-typedef struct timeval *PTIMEVAL;
-typedef struct timeval *LPTIMEVAL;
+  VOID WINAPI GetAcceptExSockaddrs(PVOID lpOutputBuffer,DWORD dwReceiveDataLength,DWORD dwLocalAddressLength,DWORD dwRemoteAddressLength,struct sockaddr **LocalSockaddr,LPINT LocalSockaddrLength,struct sockaddr **RemoteSockaddr,LPINT RemoteSockaddrLength);
+#define __MSWSOCK_WS1_SHARED	/* avoid redefinitions in mswsock.h */
 
 #define WSAMAKEASYNCREPLY(buflen,error) MAKELONG(buflen,error)
 #define WSAMAKESELECTREPLY(event,error) MAKELONG(event,error)
@@ -375,13 +364,19 @@ typedef struct timeval *LPTIMEVAL;
 #define WSAGETSELECTEVENT(lParam) LOWORD(lParam)
 #define WSAGETSELECTERROR(lParam) HIWORD(lParam)
 
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef UNDEF_WINSOCK_API_LINKAGE
+#undef WINSOCK_API_LINKAGE
+#undef UNDEF_WINSOCK_API_LINKAGE
+#endif
+
+#undef WSAAPI
+
 #ifdef IPV6STRICT
 #error WINSOCK2 required.
 #endif
-#endif
-#else
-#ifndef _INC_WINSOCK_H
-#define _INC_WINSOCK_H
-#endif
-#include <winsock2.h>
-#endif
+
+#endif /* _WINSOCKAPI_ */

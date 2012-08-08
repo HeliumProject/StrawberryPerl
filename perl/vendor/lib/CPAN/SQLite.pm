@@ -1,3 +1,5 @@
+# $Id: SQLite.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite;
 use strict;
 use warnings;
@@ -6,7 +8,7 @@ require File::Spec;
 use Cwd;
 require CPAN::SQLite::META;
 
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 
 # an array ref of distributions to ignore indexing
 my $ignore = [qw(SpreadSheet-WriteExcel-WebPivot)];
@@ -15,38 +17,44 @@ our $db_name = 'cpandb.sql';
 use constant WIN32 => $^O eq 'MSWin32';
 
 sub new {
-  my ($class, %args) = @_;
-  my ($CPAN, $update_indices);
-  my $db_dir = $args{db_dir};
-  my $urllist = [];
-  my $keep_source_where;
-  # for testing undr Darwin, must load CPAN::MyConfig contained
-  # in PERL5LIB, as File::HomeDir doesn't use this
-  if ($ENV{CPAN_SQLITE_TESTING}) {
-    eval {require CPAN::MyConfig;};
-  }
-  eval {require CPAN; CPAN::HandleConfig->load;};
-  if ( not $@ and not defined $args{CPAN} ) {
-    $CPAN = $CPAN::Config->{cpan_home};
-    $db_dir = $CPAN;
-    $keep_source_where = $CPAN::Config->{keep_source_where};
-    $urllist = $CPAN::Config->{urllist};
-    die qq{The '$CPAN' directory doesn't exist} unless -d $CPAN;
-    $update_indices = 0;
-  }
-  else {
-    $CPAN = $args{CPAN} || '';
-    die qq{Please specify the CPAN location} unless defined $CPAN;
-    die qq{The '$CPAN' directory doesn't exist} unless (-d $CPAN);
-    $update_indices = (-f File::Spec->catfile($CPAN, 'MIRRORING.FROM')) ?
-      0 : 1;
-  }
-  push @$urllist, q{http://www.cpan.org/};
-  $db_dir ||= cwd;
-  my $self = {%args, CPAN => $CPAN, update_indices => $update_indices,
-	      db_name => $db_name, urllist => $urllist,
-              keep_source_where => $keep_source_where, db_dir => $db_dir};
-  bless $self, $class;
+    my $class = shift;
+    my %args = @_;
+
+    my ($CPAN, $update_indices);
+    my $db_dir = $args{db_dir};
+    my $urllist = [];
+    my $keep_source_where;
+    # for testing undr Darwin, must load CPAN::MyConfig contained
+    # in PERL5LIB, as File::HomeDir doesn't use this
+    if ($ENV{CPAN_SQLITE_TESTING}) {
+      eval {require CPAN::MyConfig;};
+    }
+    eval {require CPAN; CPAN::HandleConfig->load;};
+    if ( not $@ and not defined $args{CPAN} ) {
+      $CPAN = $CPAN::Config->{cpan_home};
+      $db_dir = $CPAN;
+      $keep_source_where = $CPAN::Config->{keep_source_where};
+      $urllist = $CPAN::Config->{urllist};
+      # Sometimes this directory dosn't exist (like on new installations)
+      unless (-d $CPAN) {
+          eval { File::Path::mkpath($CPAN); }; # copied from CPAN.pm
+      }
+      die qq{The '$CPAN' directory doesn't exist} unless -d $CPAN;
+      $update_indices = 0;
+    }
+    else {
+      $CPAN = $args{CPAN} || '';
+      die qq{Please specify the CPAN location} unless defined $CPAN;
+      die qq{The '$CPAN' directory doesn't exist} unless (-d $CPAN);
+      $update_indices = (-f File::Spec->catfile($CPAN, 'MIRRORING.FROM')) ?
+        0 : 1;
+    }
+    push @$urllist, q{http://www.cpan.org/};
+    $db_dir ||= cwd;
+    my $self = {%args, CPAN => $CPAN, update_indices => $update_indices,
+                db_name => $db_name, urllist => $urllist,
+                keep_source_where => $keep_source_where, db_dir => $db_dir};
+    return bless $self, $class;
 }
 
 sub index {
@@ -67,7 +75,6 @@ sub index {
 
 sub query {
   my ($self, %args) = @_;
-  my $cwd = $self->{cwd};
   require CPAN::SQLite::Search;
   my %wanted = map {$_ => $self->{$_}} 
     qw(max_results CPAN db_name db_dir meta_obj);
@@ -130,7 +137,7 @@ configured, and are updated if they are more than one
 day old.
 
 If the C<CPAN> option is not given, it will default
-to C<cpan_home> of L<CPAN>, if this is configured,
+to C<cpan_home> of L<CPAN::>, if this is configured,
 with the index files found under C<keep_source_where>.
 A fatal error results if such a directory isn't found.
 Updates to these index files are assumed here to be
@@ -251,7 +258,7 @@ directory as the database file.
 L<CPAN::SQLite::Index>, for setting up and maintaining
 the database, and L<CPAN::SQLite::Search> for an
 interface to querying the database. Some details
-of the interaction with L<CPAN> is available from
+of the interaction with L<CPAN::> is available from
 L<CPAN::SQLite::META>. See also the L<cpandb> script for a
 command-line interface to the
 indexing and querying of the database.
@@ -300,7 +307,7 @@ distribution will not be present in the database; for example,
 at this time, the latest version of the I<libwww-perl> distribution
 on CPAN is 5.805, but there are modules such as I<URI::URL::finger>
 contained in version 5.10 of libwww-perl that are not present in 5.805.
-This behaviour differs from that of L<CPAN> without CPAN::SQLite.
+This behaviour differs from that of L<CPAN::> without CPAN::SQLite.
 This may change in the future.
 
 Please report bugs and feature requests via
@@ -314,10 +321,18 @@ is set. This is automatically set within L<CPAN::SQLite::Index>.
 If CPAN_SQLITE_NO_LOG_FILES is set, no log files will be created
 during the indexing procedures.
 
+=head1 AUTHORS
+
+Randy Kobes (passed away on September 18, 2010)
+
+Serguei Trouchelle E<lt>stro@cpan.orgE<gt>
+
 =head1 COPYRIGHT
 
-This software is copyright 2006,2008 by Randy Kobes
-E<lt>r.kobes@uwinnipeg.caE<gt>. Use and
-redistribution are under the same terms as Perl itself.
+Copyright 2006,2008 by Randy Kobes E<lt>r.kobes@uwinnipeg.caE<gt>. 
+
+Copyright 2011 by Serguei Trouchelle E<lt>stro@cpan.orgE<gt>.
+
+Use and redistribution are under the same terms as Perl itself.
 
 =cut

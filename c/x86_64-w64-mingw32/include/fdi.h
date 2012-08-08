@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef INCLUDED_TYPES_FCI_FDI
 #define INCLUDED_TYPES_FCI_FDI 1
@@ -166,7 +166,7 @@ extern "C" {
   typedef struct {
     FDIDECRYPTTYPE fdidt;
     void *pvUser;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       struct {
 	void *pHeaderReserve;
 	USHORT cbHeaderReserve;

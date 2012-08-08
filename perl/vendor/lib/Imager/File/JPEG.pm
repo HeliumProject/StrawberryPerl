@@ -4,23 +4,16 @@ use Imager;
 use vars qw($VERSION @ISA);
 
 BEGIN {
-  $VERSION = "0.78";
+  $VERSION = "0.83";
 
-  eval {
-    require XSLoader;
-    XSLoader::load('Imager::File::JPEG', $VERSION);
-    1;
-  } or do {
-    require DynaLoader;
-    push @ISA, 'DynaLoader';
-    bootstrap Imager::File::JPEG $VERSION;
-  };
+  require XSLoader;
+  XSLoader::load('Imager::File::JPEG', $VERSION);
 }
 
 Imager->register_reader
   (
    type=>'jpeg',
-   single => 
+   single =>
    sub { 
      my ($im, $io, %hsh) = @_;
 
@@ -80,7 +73,7 @@ Imager's JPEG support is documented in L<Imager::Files>.
 
 =head1 AUTHOR
 
-Tony Cook <tony@imager.perl.org>
+Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

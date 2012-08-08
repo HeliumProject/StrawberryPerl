@@ -5,7 +5,6 @@ Imager::ImgRaw          T_IMAGER_IMAGE
 Imager::Font::TT	T_PTROBJ
 Imager::IO              T_PTROBJ
 Imager::FillHandle      T_PTROBJ
-Imager::Internal::Hlines T_PTROBJ
 const char *		T_PV
 float			T_FLOAT
 float*			T_ARRAY
@@ -30,13 +29,6 @@ INPUT
 T_PTR_NULL
 	if (SvOK($arg)) $var = INT2PTR($type,SvIV($arg));
 	else $var = NULL
-
-# the pre-5.8.0 T_AVREF input map was fixed in 5.8.0
-T_AVREF
-        if (SvROK($arg) && SvTYPE(SvRV($arg))==SVt_PVAV)
-            $var = (AV*)SvRV($arg);
-        else
-            Perl_croak(aTHX_ \"$var is not an array reference\")
 
 # handles Imager objects rather than just raw objects
 T_IMAGER_IMAGE
@@ -83,7 +75,6 @@ T_PTROBJ_INV
         }
         else
             croak(\"$var is not of type ${(my $ntt=$ntype)=~s/__/::/g;\$ntt}\");
-
 
 #############################################################################
 OUTPUT

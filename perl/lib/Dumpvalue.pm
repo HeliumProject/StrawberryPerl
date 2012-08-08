@@ -1,7 +1,7 @@
 use 5.006_001;			# for (defined ref) and $#$v and our
 package Dumpvalue;
 use strict;
-our $VERSION = '1.15';
+our $VERSION = '1.17';
 our(%address, $stab, @stab, %stab, %subs);
 
 # documentation nits, handle complex data structures better by chromatic
@@ -15,7 +15,7 @@ our(%address, $stab, @stab, %stab, %subs);
 # (IZ) changes for objectification:
 #   c) quote() renamed to method set_quote();
 #   d) unctrlSet() renamed to method set_unctrl();
-#   f) Compiles with `use strict', but in two places no strict refs is needed:
+#   f) Compiles with 'use strict', but in two places no strict refs is needed:
 #      maybe more problems are waiting...
 
 my %defaults = (
@@ -299,7 +299,7 @@ sub set_unctrl {
     if ($in eq 'unctrl' or $in eq 'quote') {
       $self->{unctrl} = $in;
     } else {
-      print "Unknown value for `unctrl'.\n";
+      print "Unknown value for 'unctrl'.\n";
     }
   }
   $self->{unctrl};
@@ -541,7 +541,7 @@ I<as is>.  If C<quoteHighBit> is set, they will be quoted.
 
 =item C<usageOnly>
 
-rudimentally per-package memory usage dump.  If set,
+rudimentary per-package memory usage dump.  If set,
 C<dumpvars> calculates total size of strings in variables in the package.
 
 =item unctrl

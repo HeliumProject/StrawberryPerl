@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _ROUTPROT_H_
 #define _ROUTPROT_H_
@@ -36,9 +36,9 @@ extern "C" {
 #define IR_PROMISCUOUS_MULTICAST 1
 
   typedef struct _SUPPORT_FUNCTIONS {
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       ULONGLONG _Align8;
-      __MINGW_EXTENSION struct {
+      __C89_NAMELESS struct {
 	DWORD dwVersion;
 	DWORD dwReserved;
       };

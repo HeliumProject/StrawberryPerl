@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_WTSAPI
 #define _INC_WTSAPI
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,13 +44,8 @@ extern "C" {
     LPSTR pServerName;
   } WTS_SERVER_INFOA,*PWTS_SERVER_INFOA;
 
-#ifdef UNICODE
-#define WTS_SERVER_INFO WTS_SERVER_INFOW
-#define PWTS_SERVER_INFO PWTS_SERVER_INFOW
-#else
-#define WTS_SERVER_INFO WTS_SERVER_INFOA
-#define PWTS_SERVER_INFO PWTS_SERVER_INFOA
-#endif
+#define WTS_SERVER_INFO __MINGW_NAME_AW(WTS_SERVER_INFO)
+#define PWTS_SERVER_INFO __MINGW_NAME_AW(PWTS_SERVER_INFO)
 
   typedef struct _WTS_SESSION_INFOW {
     DWORD SessionId;
@@ -59,17 +56,11 @@ extern "C" {
   typedef struct _WTS_SESSION_INFOA {
     DWORD SessionId;
     LPSTR pWinStationName;
-
     WTS_CONNECTSTATE_CLASS State;
   } WTS_SESSION_INFOA,*PWTS_SESSION_INFOA;
 
-#ifdef UNICODE
-#define WTS_SESSION_INFO WTS_SESSION_INFOW
-#define PWTS_SESSION_INFO PWTS_SESSION_INFOW
-#else
-#define WTS_SESSION_INFO WTS_SESSION_INFOA
-#define PWTS_SESSION_INFO PWTS_SESSION_INFOA
-#endif
+#define WTS_SESSION_INFO __MINGW_NAME_AW(WTS_SESSION_INFO)
+#define PWTS_SESSION_INFO __MINGW_NAME_AW(PWTS_SESSION_INFO)
 
   typedef struct _WTS_PROCESS_INFOW {
     DWORD SessionId;
@@ -85,22 +76,39 @@ extern "C" {
     PSID pUserSid;
   } WTS_PROCESS_INFOA,*PWTS_PROCESS_INFOA;
 
-#ifdef UNICODE
-#define WTS_PROCESS_INFO WTS_PROCESS_INFOW
-#define PWTS_PROCESS_INFO PWTS_PROCESS_INFOW
-#else
-#define WTS_PROCESS_INFO WTS_PROCESS_INFOA
-#define PWTS_PROCESS_INFO PWTS_PROCESS_INFOA
-#endif
+#define WTS_PROCESS_INFO __MINGW_NAME_AW(WTS_PROCESS_INFO)
+#define PWTS_PROCESS_INFO __MINGW_NAME_AW(PWTS_PROCESS_INFO)
 
 #define WTS_PROTOCOL_TYPE_CONSOLE 0
 #define WTS_PROTOCOL_TYPE_ICA 1
 #define WTS_PROTOCOL_TYPE_RDP 2
 
   typedef enum _WTS_INFO_CLASS {
-    WTSInitialProgram,WTSApplicationName,WTSWorkingDirectory,WTSOEMId,WTSSessionId,WTSUserName,WTSWinStationName,WTSDomainName,WTSConnectState,
-    WTSClientBuildNumber,WTSClientName,WTSClientDirectory,WTSClientProductId,WTSClientHardwareId,WTSClientAddress,WTSClientDisplay,
-    WTSClientProtocolType
+    WTSInitialProgram       = 0,
+    WTSApplicationName      = 1,
+    WTSWorkingDirectory     = 2,
+    WTSOEMId                = 3,
+    WTSSessionId            = 4,
+    WTSUserName             = 5,
+    WTSWinStationName       = 6,
+    WTSDomainName           = 7,
+    WTSConnectState         = 8,
+    WTSClientBuildNumber    = 9,
+    WTSClientName           = 10,
+    WTSClientDirectory      = 11,
+    WTSClientProductId      = 12,
+    WTSClientHardwareId     = 13,
+    WTSClientAddress        = 14,
+    WTSClientDisplay        = 15,
+    WTSClientProtocolType   = 16,
+    WTSIdleTime             = 17,
+    WTSLogonTime            = 18,
+    WTSIncomingBytes        = 19,
+    WTSOutgoingBytes        = 20,
+    WTSIncomingFrames       = 21,
+    WTSOutgoingFrames       = 22,
+    WTSClientInfo           = 23,
+    WTSSessionInfo          = 24
   } WTS_INFO_CLASS;
 
   typedef struct _WTS_CLIENT_ADDRESS {
@@ -140,25 +148,14 @@ extern "C" {
     WTSVirtualClientData,WTSVirtualFileHandle
   } WTS_VIRTUAL_CLASS;
 
-#ifdef UNICODE
-#define WTSEnumerateServers WTSEnumerateServersW
-#define WTSOpenServer WTSOpenServerW
-#define WTSEnumerateSessions WTSEnumerateSessionsW
-#define WTSEnumerateProcesses WTSEnumerateProcessesW
-#define WTSQuerySessionInformation WTSQuerySessionInformationW
-#define WTSQueryUserConfig WTSQueryUserConfigW
-#define WTSSetUserConfig WTSSetUserConfigW
-#define WTSSendMessage WTSSendMessageW
-#else
-#define WTSEnumerateServers WTSEnumerateServersA
-#define WTSOpenServer WTSOpenServerA
-#define WTSEnumerateSessions WTSEnumerateSessionsA
-#define WTSEnumerateProcesses WTSEnumerateProcessesA
-#define WTSQuerySessionInformation WTSQuerySessionInformationA
-#define WTSQueryUserConfig WTSQueryUserConfigA
-#define WTSSetUserConfig WTSSetUserConfigA
-#define WTSSendMessage WTSSendMessageA
-#endif
+#define WTSEnumerateServers __MINGW_NAME_AW(WTSEnumerateServers)
+#define WTSOpenServer __MINGW_NAME_AW(WTSOpenServer)
+#define WTSEnumerateSessions __MINGW_NAME_AW(WTSEnumerateSessions)
+#define WTSEnumerateProcesses __MINGW_NAME_AW(WTSEnumerateProcesses)
+#define WTSQuerySessionInformation __MINGW_NAME_AW(WTSQuerySessionInformation)
+#define WTSQueryUserConfig __MINGW_NAME_AW(WTSQueryUserConfig)
+#define WTSSetUserConfig __MINGW_NAME_AW(WTSSetUserConfig)
+#define WTSSendMessage __MINGW_NAME_AW(WTSSendMessage)
 
   WINBOOL WINAPI WTSEnumerateServersW(LPWSTR pDomainName,DWORD Reserved,DWORD Version,PWTS_SERVER_INFOW *ppServerInfo,DWORD *pCount);
   WINBOOL WINAPI WTSEnumerateServersA(LPSTR pDomainName,DWORD Reserved,DWORD Version,PWTS_SERVER_INFOA *ppServerInfo,DWORD *pCount);
@@ -197,6 +194,152 @@ extern "C" {
   WINBOOL WINAPI WTSRegisterSessionNotification(HWND hWnd,DWORD dwFlags);
   WINBOOL WINAPI WTSUnRegisterSessionNotification(HWND hWnd);
   WINBOOL WINAPI WTSQueryUserToken(ULONG SessionId,PHANDLE phToken);
+
+
+#define USERNAME_LENGTH         20
+#define CLIENTNAME_LENGTH       20
+#define CLIENTADDRESS_LENGTH    30
+#define WINSTATIONNAME_LENGTH   32
+#define DOMAIN_LENGTH           17
+
+#if (_WIN32_WINNT >= 0x0600)
+typedef struct _WTSCLIENTW {
+  WCHAR   ClientName[CLIENTNAME_LENGTH + 1];
+  WCHAR   Domain[DOMAIN_LENGTH + 1 ];
+  WCHAR   UserName[USERNAME_LENGTH + 1];
+  WCHAR   WorkDirectory[MAX_PATH + 1];
+  WCHAR   InitialProgram[MAX_PATH + 1];
+  BYTE    EncryptionLevel;
+  ULONG   ClientAddressFamily;
+  USHORT  ClientAddress[CLIENTADDRESS_LENGTH + 1];
+  USHORT  HRes;
+  USHORT  VRes;
+  USHORT  ColorDepth;
+  WCHAR   ClientDirectory[MAX_PATH + 1];
+  ULONG   ClientBuildNumber;
+  ULONG   ClientHardwareId;
+  USHORT  ClientProductId;
+  USHORT  OutBufCountHost;
+  USHORT  OutBufCountClient;
+  USHORT  OutBufLength;
+  WCHAR     DeviceId[MAX_PATH + 1];
+} WTSCLIENTW, *PWTSCLIENTW;
+
+typedef struct _WTSCLIENTA {
+  CHAR   ClientName[CLIENTNAME_LENGTH + 1];
+  CHAR   Domain[DOMAIN_LENGTH + 1 ];
+  CHAR   UserName[USERNAME_LENGTH + 1];
+  CHAR   WorkDirectory[MAX_PATH + 1];
+  CHAR   InitialProgram[MAX_PATH + 1];
+  BYTE    EncryptionLevel;
+  ULONG   ClientAddressFamily;
+  USHORT  ClientAddress[CLIENTADDRESS_LENGTH + 1];
+  USHORT  HRes;
+  USHORT  VRes;
+  USHORT  ColorDepth;
+  CHAR   ClientDirectory[MAX_PATH + 1];
+  ULONG   ClientBuildNumber;
+  ULONG   ClientHardwareId;
+  USHORT  ClientProductId;
+  USHORT  OutBufCountHost;
+  USHORT  OutBufCountClient;
+  USHORT  OutBufLength;
+  CHAR     DeviceId[MAX_PATH + 1];
+} WTSCLIENTA, *PWTSCLIENTA;
+
+__MINGW_TYPEDEF_AW(WTSCLIENT)
+__MINGW_TYPEDEF_AW(PWTSCLIENT)
+
+typedef struct _WTSINFOW {
+  WTS_CONNECTSTATE_CLASS State;
+  DWORD                  SessionId;
+  DWORD                  IncomingBytes;
+  DWORD                  OutgoingBytes;
+  DWORD                  IncomingCompressedBytes;
+  DWORD                  OutgoingCompressedBytes;
+  WCHAR                  WinStationName[WINSTATIONNAME_LENGTH];
+  WCHAR                  Domain[DOMAIN_LENGTH];
+  WCHAR                  UserName[USERNAME_LENGTH+1];
+  LARGE_INTEGER          ConnectTime;
+  LARGE_INTEGER          DisconnectTime;
+  LARGE_INTEGER          LastInputTime;
+  LARGE_INTEGER          LogonTime;
+  LARGE_INTEGER          CurrentTime;
+} WTSINFOW, *PWTSINFOW;
+
+typedef struct _WTSINFOA {
+  WTS_CONNECTSTATE_CLASS State;
+  DWORD                  SessionId;
+  DWORD                  IncomingBytes;
+  DWORD                  OutgoingBytes;
+  DWORD                  IncomingCompressedBytes;
+  DWORD                  OutgoingCompressedBytes;
+  CHAR                   WinStationName[WINSTATIONNAME_LENGTH];
+  CHAR                   Domain[DOMAIN_LENGTH];
+  CHAR                   UserName[USERNAME_LENGTH+1];
+  LARGE_INTEGER          ConnectTime;
+  LARGE_INTEGER          DisconnectTime;
+  LARGE_INTEGER          LastInputTime;
+  LARGE_INTEGER          LogonTime;
+  LARGE_INTEGER          CurrentTime;
+} WTSINFOA, *PWTSINFOA;
+
+__MINGW_TYPEDEF_AW(WTSINFO)
+__MINGW_TYPEDEF_AW(PWTSINFO)
+
+WINBOOL WINAPI WTSConnectSessionA(
+  ULONG LogonId,
+  ULONG TargetLogonId,
+  PSTR   pPassword,
+  WINBOOL bWait
+);
+
+WINBOOL WINAPI WTSConnectSessionW(
+  ULONG LogonId,
+  ULONG TargetLogonId,
+  PWSTR  pPassword,
+  WINBOOL bWait
+);
+
+WINBOOL WTSRegisterSessionNotificationEx(
+  HANDLE hServer,
+  HWND hWnd,
+  DWORD dwFlags
+);
+
+WINBOOL WINAPI WTSStartRemoteControlSessionA(
+  LPSTR pTargetServerName,
+  ULONG TargetLogonId,
+  BYTE HotkeyVk,
+  USHORT HotkeyModifiers
+);
+
+WINBOOL WINAPI WTSStartRemoteControlSessionW(
+  LPWSTR pTargetServerName,
+  ULONG TargetLogonId,
+  BYTE HotkeyVk,
+  USHORT HotkeyModifiers
+);
+
+#define WTSStartRemoteControlSession __MINGW_NAME_AW(WTSStartRemoteControlSession)
+#define WTSConnectSession __MINGW_NAME_AW(WTSConnectSession)
+
+WINBOOL WINAPI WTSStopRemoteControlSession(
+  ULONG LogonId
+);
+
+WINBOOL WINAPI WTSUnRegisterSessionNotificationEx(
+  HANDLE hServer,
+  HWND hWnd
+);
+
+HANDLE WINAPI WTSVirtualChannelOpenEx(
+  DWORD SessionId,
+  LPSTR pVirtualName,
+  DWORD flags
+);
+
+#endif /*(_WIN32_WINNT >= 0x0600)*/
 
 #ifdef __cplusplus
 }

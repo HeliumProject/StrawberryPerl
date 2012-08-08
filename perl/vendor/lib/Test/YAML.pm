@@ -3,7 +3,8 @@ package Test::YAML;
 use Test::Base 0.47 -Base;
 use lib 'lib';
 
-our $VERSION = '0.72';
+our $VERSION = '0.81';
+
 our $YAML    = 'YAML';
 our @EXPORT  = qw(
     no_diff
@@ -117,13 +118,6 @@ sub dumper() {
     $Data::Dumper::Terse = 1;
     $Data::Dumper::Indent = 1;
     return Data::Dumper::Dumper(@_);
-}
-
-{
-    no warnings;
-    sub XXX {
-        YAML::Base::XXX(@_);
-    }
 }
 
 sub _count_tests() {
@@ -260,7 +254,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006. Ingy döt Net. All rights reserved.
+Copyright (c) 2006, 2011-2012. Ingy döt Net.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

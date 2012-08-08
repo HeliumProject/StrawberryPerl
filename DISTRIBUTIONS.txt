@@ -1,210 +1,253 @@
-Strawberry Perl 5.12.3.0 includes these distributions installed
-on top of perl 5.12.3:
+Strawberry Perl (64-bit) 5.16.0.1-64bit includes these distributions
+installed on top of perl 5.16.0:
 
-    ExtUtils-Command 1.17
-    ExtUtils-Manifest 1.58
-    Test-Harness 3.23
-    Test-Simple 0.98
-    ExtUtils-CBuilder 0.280202
-    ExtUtils-ParseXS 2.2206
-    version 0.88
-    Scalar-List-Utils 1.23
-    Compress-Raw-Zlib 2.034
-    Compress-Raw-Bzip2 2.034
-    IO-Compress 2.034
-    Compress-Bzip2 2.09
-    PathTools 3.33
-    Win32-WinError 0.03
-    Win32API-Registry 0.32
-    Win32-TieRegistry 0.26
-    IPC-Run3 0.044
-    Probe-Perl 0.01
-    Test-Script 1.07
-    File-Which 1.09
-    File-HomeDir 0.97
-    Archive-Zip 1.30
-    IO-String 1.08
-    Archive-Tar 1.76
-    Win32-UTCFileTime 1.52
-    CPAN-Meta-YAML 0.003
-    JSON-PP 2.27105
-    Parse-CPAN-Meta 1.4401
-    YAML 0.73
-    Digest-MD5 2.51
-    Digest-SHA1 2.13
-    Digest-SHA 5.61
-    Module-Metadata 1.000004
-    Perl-OSType 1.002
-    Version-Requirements 0.101020
-    CPAN-Meta 2.110930
-    Module-Build 0.3800
-    CPAN 1.9600
-    TermReadKey 2.30.02
-    Term-ReadLine-Perl 1.0303
-    Text-Glob 0.09
-    Data-Dumper 2.128
-    podlators 2.4.0
-    URI 1.58
-    HTML-Tagset 3.20
-    HTML-Parser 3.68
-    libwww-perl 5.837
-    Archive-Extract 0.52
-    Attribute-Handlers 0.88
-    AutoLoader 5.71
-    B-Debug 1.16
-    B-Lint 1.12
-    CPANPLUS 0.9105
-    Devel-SelfStubber 1.05
-    Dumpvalue 1.15
-    Encode 2.42
-    Env 1.02
-    ExtUtils-Constant 0.23
-    Filter-Simple 0.85
-    IPC-Cmd 0.70
-    Locale-Maketext 1.17
-    Log-Message 0.04
-    Log-Message-Simple 0.08
-    MIME-Base64 3.13
-    Math-BigInt 1.993
-    Math-BigInt-FastCalc 0.28
-    Math-BigRat 0.2602
-    Math-Complex 1.57
-    Memoize 1.02
-    Module-CoreList 2.46
-    Module-Load 0.18
-    Module-Load-Conditional 0.44
-    NEXT 0.65
-    Object-Accessor 0.38
-    Params-Check 0.28
-    Pod-LaTeX 0.59
-    Pod-Plainer 1.03
-    Pod-Simple 3.16
-    Safe 2.29
-    SelfLoader 1.18
-    Storable 2.25
-    Term-UI 0.26
-    Thread-Semaphore 2.12
-    Tie-RefHash 1.39
-    Time-HiRes 1.9721
-    Time-Local 1.2000
-    Time-Piece 1.20
-    Unicode-Collate 0.74
-    Unicode-Normalize-1.10 
-    Win32 0.44
-    XSLoader 0.15
-    autodie 2.10
-    bignum 0.25
-    constant 1.21
-    if 0.0601
-    parent 0.225
-    threads 1.83
-    threads-shared 1.37
-    FCGI 0.71
-    CGI.pm 3.54
-    Filter 1.39
-    Locale-Codes 3.16
-    ANSIColor 3.00
-    Thread-Queue 2.12
-    File-Fetch 0.32
-    CPANPLUS-Dist-Build 0.56
-    Win32-Process 0.14
-    IPC-System-Simple 1.21
-    LWP-Online 1.07
-    Win32-File 0.06
-    File-Remove 1.49
-    Win32-File-Object 0.02
-    Parse-Binary 0.11
-    Win32-EventLog 0.076
-    Math-BigInt-GMP 1.36
-    XML-Parser 2.40
-    XML-NamespaceSupport 1.11
-    XML-SAX 0.96
-    XML-LibXML 1.70
-    XML-LibXSLT 1.70
-    XML-Simple 2.18
-    Win32-Exe 0.15
-    PAR-Dist 0.47
-    PAR-Dist-FromPPD 0.03
-    PAR-Dist-InstallPPD 0.02
-    Tree-DAG_Node 1.06
-    Sub-Uplevel 0.22
-    Test-Warn 0.23
-    Test-Tester 0.107
-    Test-NoWarnings 1.02
-    Test-Deep 0.108
-    IO-stringy 2.110
-    Test-Exception 0.31
-    DBM-Deep 2.0004
-    YAML-Tiny 1.48
-    PAR 1.002
-    PAR-Repository-Query 0.14
-    PAR-Repository-Client 0.25
-    Number-Compare 0.01
-    File-Find-Rule 0.32
-    Data-Compare 1.22
-    File-chmod 0.32
-    Params-Util 1.04
-    CPAN-Checksums 2.07
-    CPAN-Inject 1.13
-    File-pushd 1.00
-    pler 1.06
-    pip 1.19
-    DBI 1.616
-    DBD-SQLite 1.31
-    CPAN-DistnameInfo 0.12
-    CPAN-SQLite 0.199
-    DBIx-Simple 1.35
-    DB_File 1.822
-    Win32-OLE 0.1709
-    BerkeleyDB 0.43
-    DBD-ODBC 1.29
-    DBD-ADO 2.99
-    DBD-mysql 4.018
-    DBD-Pg 2.18.0
-    common-sense 3.4
-    JSON-XS 2.3
-    JSON 2.51
-    local-lib 1.008004
-    Imager 0.82
-    GD 2.46
-    Crypt-SSLeay 0.58
-    Digest-HMAC 1.02
-    Data-Random 0.05
-    Math-GMP 2.06
-    Data-Buffer 0.04
-    Class-ErrorHandler 0.01
-    Convert-ASN1 0.22
-    Crypt-CBC 2.30
-    Crypt-DES 2.05
-    Crypt-DES_EDE3 0.01
-    Convert-PEM 0.08
-    Crypt-DH 0.06
-    Crypt-Blowfish 2.12
-    Tie-EncryptedHash 1.24
-    Class-Loader 2.03
-    Convert-ASCII-Armour 1.4
-    Digest-MD2 2.03
-    Sort-Versions 1.5
-    Digest-BubbleBabble 0.02
-    String-CRC32 1.4
-    Net-SSH2 0.33
-    Test-Manifest 1.23
-    Crypt-Rijndael 1.09
-    Crypt-CAST5_PP 1.04
-    Crypt-RIPEMD160 0.05
-    Crypt-Twofish 2.14
-    Algorithm-Diff 1.1902
-    Text-Diff 1.41
-    File-Slurp 9999.16
-    Task-Weaken 1.04
-    Class-Inspector 1.25
-    SOAP-Lite 0.712
-    File-ShareDir 1.03
-    Alien-Tidyp 1.4.6
-    IO-Interactive 0.0.6
-    App-local-lib-Win32Helper 0.990
-    Compress-Raw-Lzma 2.034
-    IO-Compress-Lzma 2.034
-    Math-MPFR 3.0
-    Math-MPC 0.90
-
+1/250: Algorithm-Diff-1.1902
+2/250: aliased-0.30
+3/250: Alien-Tidyp-v1.4.7
+4/250: Any-Moose-0.18
+5/250: App-Cpan-1.5902
+6/250: App-cpanminus-1.5013_fixed_issue132
+7/250: App-local-lib-Win32Helper-0.990
+8/250: App-module-version-1.004
+9/250: AppConfig-1.66
+10/250: Archive-Extract-0.60
+11/250: Archive-Tar-1.84
+12/250: Archive-Zip-1.30
+13/250: autodie-2.11
+14/250: B-Hooks-EndOfScope-0.11
+15/250: B-Hooks-OP-Check-0.19
+16/250: BerkeleyDB-0.51
+17/250: Capture-Tiny-0.18
+18/250: Carp-Clan-6.04
+19/250: Class-Accessor-0.34
+20/250: Class-ErrorHandler-0.01
+21/250: Class-Inspector-1.27
+22/250: Class-Load-0.19
+23/250: Class-Load-XS-0.04
+24/250: Class-Loader-2.03
+25/250: Class-Singleton-1.4
+26/250: Clone-0.31
+27/250: common-sense-3.5
+28/250: Compress-Bzip2-2.09
+29/250: Compress-Raw-Bzip2-2.052
+30/250: Compress-Raw-Lzma-2.052
+31/250: Compress-Raw-Zlib-2.054
+32/250: Compress-unLZMA-0.04
+33/250: Context-Preserve-0.01
+34/250: Convert-ASCII-Armour-1.4
+35/250: Convert-ASN1-0.23
+36/250: Convert-PEM-0.08
+37/250: CPAN-Checksums-2.08
+38/250: CPAN-DistnameInfo-0.12
+39/250: CPAN-Inject-1.13
+40/250: CPAN-Meta-2.120921
+41/250: CPAN-Meta-Requirements-2.122
+42/250: CPAN-Meta-YAML-0.008
+43/250: CPAN-SQLite-0.202
+44/250: CPANPLUS-0.9129
+45/250: Crypt-Blowfish-2.12_patched
+46/250: Crypt-CAST5_PP-1.04
+47/250: Crypt-CBC-2.30
+48/250: Crypt-DES-2.05
+49/250: Crypt-DES_EDE3-0.01
+50/250: Crypt-DH-0.06
+51/250: Crypt-DSA-1.17
+52/250: Crypt-IDEA-1.08_patched
+53/250: Crypt-Rijndael-1.09
+54/250: Crypt-RIPEMD160-0.05
+55/250: Crypt-SSLeay-0.58
+56/250: Crypt-Twofish-2.14
+57/250: Data-Buffer-0.04
+58/250: Data-Compare-1.22
+59/250: Data-OptList-0.107
+60/250: Data-Random-0.06
+61/250: DateTime-0.74
+62/250: DateTime-Locale-0.45
+63/250: DateTime-TimeZone-1.46
+64/250: DB_File-1.826
+65/250: DBD-ADO-2.99
+66/250: DBD-mysql-4.020_patched_h
+67/250: DBD-ODBC-1.37
+68/250: DBD-Pg-2.19.2
+69/250: DBD-SQLite-1.35
+70/250: DBI-1.618
+71/250: DBIx-Simple-1.35
+72/250: DBM-Deep-2.0006
+73/250: Devel-Declare-0.006011
+74/250: Devel-GlobalDestruction-0.05
+75/250: Devel-PartialDump-0.15
+76/250: Digest-BubbleBabble-0.02
+77/250: Digest-HMAC-1.03
+78/250: Digest-MD2-2.03
+79/250: Digest-SHA1-2.13
+80/250: Dist-CheckConflicts-0.02
+81/250: Encode-Locale-1.03
+82/250: Eval-Closure-0.08
+83/250: ExtUtils-Depends-0.304
+84/250: ExtUtils-F77-1.17
+85/250: FCGI-0.74
+86/250: File-chmod-0.32
+87/250: File-Copy-Recursive-0.38
+88/250: File-Fetch-0.34
+89/250: File-Find-Rule-0.33
+90/250: File-HomeDir-0.99
+91/250: File-Listing-6.04
+92/250: File-pushd-1.002
+93/250: File-Remove-1.52
+94/250: File-ShareDir-1.03
+95/250: File-Slurp-9999.19
+96/250: File-Which-1.09
+97/250: Filter-1.43
+98/250: GD-2.46_patched
+99/250: Hook-LexWrap-0.24
+100/250: HTML-Form-6.03
+101/250: HTML-Parser-3.69
+102/250: HTML-Tagset-3.20
+103/250: HTML-Tree-4.2
+104/250: HTTP-Cookies-6.01
+105/250: HTTP-Daemon-6.01
+106/250: HTTP-Date-6.02
+107/250: HTTP-Message-6.03
+108/250: HTTP-Negotiate-6.01
+109/250: HTTP-Server-Simple-0.44
+110/250: HTTP-Tiny-0.021
+111/250: Imager-0.90
+112/250: IO-Compress-2.052
+113/250: IO-Compress-Lzma-2.052
+114/250: IO-Interactive-0.0.6
+115/250: IO-Socket-IP-0.10
+116/250: IO-Socket-SSL-1.74
+117/250: IO-String-1.08
+118/250: IO-stringy-2.110
+119/250: IPC-Cmd-0.78
+120/250: IPC-Run-0.91
+121/250: IPC-Run3-0.045
+122/250: IPC-System-Simple-1.21
+123/250: JSON-2.53
+124/250: JSON-XS-2.32
+125/250: libwww-perl-6.04
+126/250: List-MoreUtils-0.33
+127/250: local-lib-1.008004
+128/250: LWP-MediaTypes-6.02
+129/250: LWP-Online-1.08
+130/250: LWP-Protocol-https-6.03
+131/250: Math-BigInt-GMP-1.37
+132/250: Math-GMP-2.06
+133/250: Math-MPC-0.93
+134/250: Math-MPFR-3.12
+135/250: Math-Round-0.06
+136/250: Memoize-1.03
+137/250: Module-Build-0.40
+138/250: Module-Implementation-0.06
+139/250: Module-Load-Conditional-0.50
+140/250: Module-Runtime-0.013
+141/250: Moose-2.0602
+142/250: MooseX-AuthorizedMethods-0.006
+143/250: MooseX-ClassAttribute-0.26
+144/250: MooseX-Declare-0.35
+145/250: MooseX-LazyRequire-0.07
+146/250: MooseX-Meta-TypeConstraint-ForceCoercion-0.01
+147/250: MooseX-Method-Signatures-0.42
+148/250: MooseX-NonMoose-0.22
+149/250: MooseX-Role-Parameterized-1.00
+150/250: MooseX-Traits-0.11
+151/250: MooseX-TransactionalMethods-0.008
+152/250: MooseX-Types-0.31
+153/250: MooseX-Types-DateTime-0.07
+154/250: MooseX-Types-Structured-0.28
+155/250: Mozilla-CA-20120309
+156/250: MRO-Compat-0.11
+157/250: namespace-autoclean-0.13
+158/250: namespace-clean-0.23
+159/250: Net-HTTP-6.03
+160/250: Net-SMTP-TLS-0.12
+161/250: Net-SSH2-0.44
+162/250: Net-SSLeay-1.48
+163/250: Net-Telnet-3.03
+164/250: Number-Compare-0.03
+165/250: Object-Accessor-0.44
+166/250: Package-DeprecationManager-0.13
+167/250: Package-Stash-0.33
+168/250: Package-Stash-XS-0.25
+169/250: PAR-1.005
+170/250: PAR-Dist-0.48
+171/250: PAR-Dist-FromPPD-0.03
+172/250: PAR-Dist-InstallPPD-0.02
+173/250: PAR-Repository-Client-0.25
+174/250: PAR-Repository-Query-0.14
+175/250: Params-Check-0.36
+176/250: Params-Util-1.07
+177/250: Params-Validate-1.06
+178/250: Parse-Binary-0.11
+179/250: Parse-CPAN-Meta-1.4404
+180/250: Parse-Method-Signatures-1.003014
+181/250: PerlIO-via-QuotedPrint-0.07
+182/250: pip-1.19
+183/250: pler-1.06
+184/250: PPI-1.215
+185/250: PPM-11.11_01
+186/250: Probe-Perl-0.01
+187/250: Safe-2.33
+188/250: Scalar-List-Utils-1.25
+189/250: Search-Dict-1.07
+190/250: SOAP-Lite-0.714
+191/250: Sort-Versions-1.5
+192/250: String-CRC32-1.4
+193/250: Sub-Exporter-0.982
+194/250: Sub-Install-0.926
+195/250: Sub-Name-0.05
+196/250: Sub-Uplevel-0.24
+197/250: Task-Weaken-1.04
+198/250: Template-Tiny-1.12
+199/250: Template-Toolkit-2.24
+200/250: Term-ANSIColor-3.02
+201/250: Term-ReadLine-Perl-1.0303
+202/250: TermReadKey-2.30.02
+203/250: Test-Deep-0.109
+204/250: Test-Differences-0.61
+205/250: Test-Exception-0.31
+206/250: Test-Fatal-0.010
+207/250: Test-Manifest-1.23
+208/250: Test-NoWarnings-1.04
+209/250: Test-Object-0.07
+210/250: Test-Output-1.01
+211/250: Test-Pod-1.45
+212/250: Test-Requires-0.06
+213/250: Test-Script-1.07
+214/250: Test-SubCalls-1.09
+215/250: Test-Tester-0.108
+216/250: Test-use-ok-0.02
+217/250: Test-Warn-0.24
+218/250: Text-Diff-1.41
+219/250: Text-Glob-0.09
+220/250: Text-Patch-1.8
+221/250: Tie-EncryptedHash-1.24
+222/250: TimeDate-1.20
+223/250: Tree-DAG_Node-1.06
+224/250: Try-Tiny-0.11
+225/250: URI-1.60
+226/250: Variable-Magic-0.48
+227/250: Win32-API-0.68
+228/250: Win32-EventLog-0.076
+229/250: Win32-Exe-0.17
+230/250: Win32-File-0.06
+231/250: Win32-File-Object-0.02
+232/250: Win32-OLE-0.1709
+233/250: Win32-Process-0.14
+234/250: Win32-TieRegistry-0.26
+235/250: Win32-UTCFileTime-1.55
+236/250: Win32-WinError-0.03
+237/250: Win32API-Registry-0.32
+238/250: WWW-Mechanize-1.72
+239/250: WWW-RobotRules-6.02
+240/250: XML-LibXML-1.98
+241/250: XML-LibXSLT-1.77
+242/250: XML-NamespaceSupport-1.11
+243/250: XML-Parser-2.41
+244/250: XML-SAX-0.99
+245/250: XML-SAX-Base-1.08
+246/250: XML-Simple-2.18
+247/250: YAML-0.81
+248/250: YAML-LibYAML-0.38
+249/250: YAML-Syck-1.20
+250/250: YAML-Tiny-1.51

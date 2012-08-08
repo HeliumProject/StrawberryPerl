@@ -4,17 +4,10 @@ use Imager;
 use vars qw($VERSION @ISA);
 
 BEGIN {
-  $VERSION = "0.78";
+  $VERSION = "0.84";
 
-  eval {
-    require XSLoader;
-    XSLoader::load('Imager::File::PNG', $VERSION);
-    1;
-  } or do {
-    require DynaLoader;
-    push @ISA, 'DynaLoader';
-    bootstrap Imager::File::PNG $VERSION;
-  };
+  require XSLoader;
+  XSLoader::load('Imager::File::PNG', $VERSION);
 }
 
 Imager->register_reader
@@ -74,7 +67,7 @@ Imager's PNG support is documented in L<Imager::Files>.
 
 =head1 AUTHOR
 
-Tony Cook <tony@imager.perl.org>
+Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

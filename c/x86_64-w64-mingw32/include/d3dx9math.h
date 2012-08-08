@@ -1,3 +1,4 @@
+#undef INTERFACE
 /*
  * Copyright (C) 2007 David Adam
  * Copyright (C) 2007 Tony Wasserka
@@ -57,8 +58,8 @@ typedef struct D3DXVECTOR2
 
     friend D3DXVECTOR2 operator * (FLOAT, CONST D3DXVECTOR2&);
 
-    BOOL operator == (CONST D3DXVECTOR2&) const;
-    BOOL operator != (CONST D3DXVECTOR2&) const;
+    WINBOOL operator == (CONST D3DXVECTOR2&) const;
+    WINBOOL operator != (CONST D3DXVECTOR2&) const;
 #endif /* __cplusplus */
     FLOAT x, y;
 } D3DXVECTOR2, *LPD3DXVECTOR2;
@@ -89,8 +90,8 @@ typedef struct D3DXVECTOR3 : public D3DVECTOR
 
     friend D3DXVECTOR3 operator * (FLOAT, CONST struct D3DXVECTOR3&);
 
-    BOOL operator == (CONST D3DXVECTOR3&) const;
-    BOOL operator != (CONST D3DXVECTOR3&) const;
+    WINBOOL operator == (CONST D3DXVECTOR3&) const;
+    WINBOOL operator != (CONST D3DXVECTOR3&) const;
 } D3DXVECTOR3, *LPD3DXVECTOR3;
 #else /* !__cplusplus */
 typedef struct _D3DVECTOR D3DXVECTOR3, *LPD3DXVECTOR3;
@@ -121,8 +122,8 @@ typedef struct D3DXVECTOR4
 
     friend D3DXVECTOR4 operator * (FLOAT, CONST D3DXVECTOR4&);
 
-    BOOL operator == (CONST D3DXVECTOR4&) const;
-    BOOL operator != (CONST D3DXVECTOR4&) const;
+    WINBOOL operator == (CONST D3DXVECTOR4&) const;
+    WINBOOL operator != (CONST D3DXVECTOR4&) const;
 #endif /* __cplusplus */
     FLOAT x, y, z, w;
 } D3DXVECTOR4, *LPD3DXVECTOR4;
@@ -161,8 +162,8 @@ typedef struct D3DXMATRIX : public D3DMATRIX
 
     friend D3DXMATRIX operator * (FLOAT, CONST D3DXMATRIX&);
 
-    BOOL operator == (CONST D3DXMATRIX&) const;
-    BOOL operator != (CONST D3DXMATRIX&) const;
+    WINBOOL operator == (CONST D3DXMATRIX&) const;
+    WINBOOL operator != (CONST D3DXMATRIX&) const;
 } D3DXMATRIX, *LPD3DXMATRIX;
 #else /* !__cplusplus */
 typedef struct _D3DMATRIX D3DXMATRIX, *LPD3DXMATRIX;
@@ -195,8 +196,8 @@ typedef struct D3DXQUATERNION
 
     friend D3DXQUATERNION operator * (FLOAT, CONST D3DXQUATERNION&);
 
-    BOOL operator == (CONST D3DXQUATERNION&) const;
-    BOOL operator != (CONST D3DXQUATERNION&) const;
+    WINBOOL operator == (CONST D3DXQUATERNION&) const;
+    WINBOOL operator != (CONST D3DXQUATERNION&) const;
 #endif /* __cplusplus */
     FLOAT x, y, z, w;
 } D3DXQUATERNION, *LPD3DXQUATERNION;
@@ -214,8 +215,8 @@ typedef struct D3DXPLANE
     D3DXPLANE operator + () const;
     D3DXPLANE operator - () const;
 
-    BOOL operator == (CONST D3DXPLANE&) const;
-    BOOL operator != (CONST D3DXPLANE&) const;
+    WINBOOL operator == (CONST D3DXPLANE&) const;
+    WINBOOL operator != (CONST D3DXPLANE&) const;
 #endif /* __cplusplus */
     FLOAT a, b, c, d;
 } D3DXPLANE, *LPD3DXPLANE;
@@ -255,11 +256,26 @@ typedef struct D3DXCOLOR
 
     friend D3DXCOLOR operator * (FLOAT, CONST D3DXCOLOR&);
 
-    BOOL operator == (CONST D3DXCOLOR&) const;
-    BOOL operator != (CONST D3DXCOLOR&) const;
+    WINBOOL operator == (CONST D3DXCOLOR&) const;
+    WINBOOL operator != (CONST D3DXCOLOR&) const;
 #endif /* __cplusplus */
     FLOAT r, g, b, a;
 } D3DXCOLOR, *LPD3DXCOLOR;
+
+typedef struct D3DXFLOAT16
+{
+#ifdef __cplusplus
+    D3DXFLOAT16();
+    D3DXFLOAT16(FLOAT f);
+    D3DXFLOAT16(CONST D3DXFLOAT16 &f);
+
+    operator FLOAT ();
+
+    WINBOOL operator == (CONST D3DXFLOAT16 &) const;
+    WINBOOL operator != (CONST D3DXFLOAT16 &) const;
+#endif /* __cplusplus */
+    WORD value;
+} D3DXFLOAT16, *LPD3DXFLOAT16;
 
 #ifdef __cplusplus
 extern "C" {
@@ -282,7 +298,6 @@ D3DXMATRIX* WINAPI D3DXMatrixMultiplyTranspose(D3DXMATRIX *pout, CONST D3DXMATRI
 D3DXMATRIX* WINAPI D3DXMatrixOrthoLH(D3DXMATRIX *pout, FLOAT w, FLOAT h, FLOAT zn, FLOAT zf);
 D3DXMATRIX* WINAPI D3DXMatrixOrthoOffCenterLH(D3DXMATRIX *pout, FLOAT l, FLOAT r, FLOAT b, FLOAT t, FLOAT zn, FLOAT zf);
 D3DXMATRIX* WINAPI D3DXMatrixOrthoOffCenterRH(D3DXMATRIX *pout, FLOAT l, FLOAT r, FLOAT b, FLOAT t, FLOAT zn, FLOAT zf);
-D3DXMATRIX* WINAPI D3DXMatrixOrthoLH(D3DXMATRIX *pout, FLOAT w, FLOAT h, FLOAT zn, FLOAT zf);
 D3DXMATRIX* WINAPI D3DXMatrixOrthoRH(D3DXMATRIX *pout, FLOAT w, FLOAT h, FLOAT zn, FLOAT zf);
 D3DXMATRIX* WINAPI D3DXMatrixPerspectiveFovLH(D3DXMATRIX *pout, FLOAT fovy, FLOAT aspect, FLOAT zn, FLOAT zf);
 D3DXMATRIX* WINAPI D3DXMatrixPerspectiveFovRH(D3DXMATRIX *pout, FLOAT fovy, FLOAT aspect, FLOAT zn, FLOAT zf);
@@ -357,6 +372,9 @@ D3DXVECTOR4* WINAPI D3DXVec4Hermite(D3DXVECTOR4 *pout, CONST D3DXVECTOR4 *pv1, C
 D3DXVECTOR4* WINAPI D3DXVec4Normalize(D3DXVECTOR4 *pout, CONST D3DXVECTOR4 *pv);
 D3DXVECTOR4* WINAPI D3DXVec4Transform(D3DXVECTOR4 *pout, CONST D3DXVECTOR4 *pv, CONST D3DXMATRIX *pm);
 D3DXVECTOR4* WINAPI D3DXVec4TransformArray(D3DXVECTOR4 *pout, UINT outstride, CONST D3DXVECTOR4 *pv, UINT vstride, CONST D3DXMATRIX *pm, UINT n);
+
+D3DXFLOAT16 *WINAPI D3DXFloat32To16Array(D3DXFLOAT16 *pout, CONST FLOAT *pin, UINT n);
+FLOAT *WINAPI D3DXFloat16To32Array(FLOAT *pout, CONST D3DXFLOAT16 *pin, UINT n);
 
 #ifdef __cplusplus
 }

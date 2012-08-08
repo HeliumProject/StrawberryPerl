@@ -19,17 +19,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __WINE_DDRAWI_H
-#define __WINE_DDRAWI_H
+#ifndef __DDRAWI_INCLUDED__
+#define __DDRAWI_INCLUDED__
 
 #include <_mingw_dxhelper.h>
+#include <ddraw.h>
+#include <dciddi.h> /* the DD HAL is layered onto DCI escapes */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <ddraw.h>
-#include <dciddi.h> /* the DD HAL is layered onto DCI escapes */
 
 typedef struct _DDVIDEOPORTCAPS *LPDDVIDEOPORTCAPS; /* should be in dvp.h */
 typedef struct _DDKERNELCAPS *LPDDKERNELCAPS; /* should be in ddkernel.h */
@@ -169,7 +168,7 @@ typedef struct _VIDMEM {
 #define VIDMEM_ISHEAP		0x00000004
 #define VIDMEM_ISNONLOCAL	0x00000008
 #define VIDMEM_ISWC		0x00000010
-#define VIDMEM_ISDISABLED	0x00000020
+#define VIDMEM_HEAPDISABLED	0x00000020
 
 typedef struct _VIDMEMINFO {
     FLATPTR		fpPrimary;
@@ -268,12 +267,6 @@ typedef struct _DDNONLOCALVIDMEMCAPS {
     DWORD	dwNLVBFXCaps;
     DWORD	dwNLVBRops[DD_ROP_SPACE];
 } DDNONLOCALVIDMEMCAPS,*LPDDNONLOCALVIDMEMCAPS;
-
-typedef struct _DDSCAPSEX {
-    DWORD	dwCaps2;
-    DWORD	dwCaps3;
-    DWORD	dwCaps4;
-} DDSCAPSEX,*LPDDSCAPSEX;
 
 #define DDSCAPS_EXECUTEBUFFER	DDSCAPS_RESERVED2
 #define DDSCAPS2_VERTEXBUFFER	DDSCAPS2_RESERVED1
@@ -1069,4 +1062,4 @@ typedef struct _DDRAWI_DDRAWPALETTE_LCL {
 } /* extern "C" */
 #endif
 
-#endif /* __WINE_DDRAWI_H */
+#endif /* __DDRAWI_INCLUDED__ */

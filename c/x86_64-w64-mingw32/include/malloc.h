@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MALLOC_H_
 #define _MALLOC_H_
@@ -9,10 +9,6 @@
 #include <_mingw.h>
 
 #pragma pack(push,_CRT_PACKING)
-
-#ifndef _MM_MALLOC_H_INCLUDED
-#define _MM_MALLOC_H_INCLUDED
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,7 +21,11 @@ extern "C" {
 #endif
 
 #ifndef _STATIC_ASSERT
+#if defined(_MSC_VER)
 #define _STATIC_ASSERT(expr) typedef char __static_assert_t[(expr)]
+#else
+#define _STATIC_ASSERT(expr) extern void __static_assert_t(int [(expr)?1:-1])
+#endif
 #endif
 
 /* Return codes for _heapwalk()  */
@@ -53,10 +53,20 @@ extern "C" {
   extern unsigned int _amblksiz;
 
 /* Make sure that X86intrin.h doesn't produce here collisions.  */
+#if (!defined (_XMMINTRIN_H_INCLUDED) && !defined (_MM_MALLOC_H_INCLUDED)) || defined(_aligned_malloc)
+#define __DO_ALIGN_DEFINES
+#endif
+
+#ifndef _MM_MALLOC_H_INCLUDED
+#define _MM_MALLOC_H_INCLUDED
+#endif
+
+#ifdef __DO_ALIGN_DEFINES
 #pragma push_macro("_aligned_free")
 #pragma push_macro("_aligned_malloc")
 #undef _aligned_free
 #undef _aligned_malloc
+#endif
 
 #define _mm_free(a) _aligned_free(a)
 #define _mm_malloc(a,b) _aligned_malloc(a,b)
@@ -69,8 +79,10 @@ extern "C" {
   void *__cdecl realloc(void *_Memory,size_t _NewSize);
   _CRTIMP void *__cdecl _recalloc(void *_Memory,size_t _Count,size_t _Size);
 
+#ifdef __DO_ALIGN_DEFINES
   _CRTIMP void __cdecl _aligned_free(void *_Memory);
   _CRTIMP void *__cdecl _aligned_malloc(size_t _Size,size_t _Alignment);
+#endif
 
   _CRTIMP void *__cdecl _aligned_offset_malloc(size_t _Size,size_t _Alignment,size_t _Offset);
   _CRTIMP void *__cdecl _aligned_realloc(void *_Memory,size_t _Size,size_t _Alignment);
@@ -79,8 +91,19 @@ extern "C" {
   _CRTIMP void *__cdecl _aligned_offset_recalloc(void *_Memory,size_t _Count,size_t _Size,size_t _Alignment,size_t _Offset);
 #endif
 
+#ifdef __DO_ALIGN_DEFINES
+#undef __DO_ALIGN_DEFINES
+
 #pragma pop_macro("_aligned_malloc")
 #pragma pop_macro("_aligned_free")
+
+#endif
+
+/* Users should really use MS provided versions */
+void * __mingw_aligned_malloc (size_t _Size, size_t _Alignment);
+void __mingw_aligned_free (void *_Memory);
+void * __mingw_aligned_offset_realloc (void *_Memory, size_t _Size, size_t _Alignment, size_t _Offset);
+void * __mingw_aligned_realloc (void *_Memory, size_t _Size, size_t _Offset);
 
 #define _MAX_WAIT_MALLOC_CRT 60000
 
@@ -93,7 +116,7 @@ extern "C" {
 #undef _alloca
 #define _alloca(x) __builtin_alloca((x))
 #else
-  void *__cdecl _alloca(size_t _Size);
+  void *__cdecl _alloca(size_t _Size) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
 #endif
   _CRTIMP size_t __cdecl _get_sbh_threshold(void);
   _CRTIMP int __cdecl _set_sbh_threshold(size_t _NewValue);

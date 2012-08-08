@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_PROFINFO
 #define _INC_PROFINFO
+
+#include <_mingw_unicode.h>
 
 typedef struct _PROFILEINFOA {
   DWORD dwSize;
@@ -28,13 +30,9 @@ typedef struct _PROFILEINFOW {
   HANDLE hProfile;
 } PROFILEINFOW,*LPPROFILEINFOW;
 
-#ifdef UNICODE
-typedef PROFILEINFOW PROFILEINFO;
-typedef LPPROFILEINFOW LPPROFILEINFO;
-#else
-typedef PROFILEINFOA PROFILEINFO;
-typedef LPPROFILEINFOA LPPROFILEINFO;
-#endif
+__MINGW_TYPEDEF_AW(PROFILEINFO)
+__MINGW_TYPEDEF_AW(LPPROFILEINFO)
 
 #define MIDL_STRING
+
 #endif

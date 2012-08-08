@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -317,13 +317,13 @@ $DEFINES = '';
 
 $perl++ if $0 =~ m#/?c2ph$#;
 
-require 'getopts.pl';
+use Getopt::Std qw(getopts);
 
 use File::Temp 'tempdir';
 
 eval '$'.$1.'$2;' while $ARGV[0] =~ /^([A-Za-z_]+=)(.*)/ && shift;
 
-&Getopts('aixdpvtnws:') || &usage(0);
+getopts('aixdpvtnws:') || &usage(0);
 
 $opt_d && $debug++;
 $opt_t && $trace++;
@@ -342,7 +342,7 @@ eval '$'.$1.'$2;' while $ARGV[0] =~ /^([A-Za-z_]+=)(.*)/ && shift;
 
 sub PLUMBER {
     select(STDERR);
-    print "oops, apperent pager foulup\n";
+    print "oops, apparent pager foulup\n";
     $isatty++;
     &usage(1);
 }

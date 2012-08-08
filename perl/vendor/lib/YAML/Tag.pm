@@ -1,9 +1,8 @@
-package YAML::Tag;
-
 use strict;
 use warnings;
+package YAML::Tag;
 
-our $VERSION = '0.72';
+our $VERSION = '0.81';
 
 use overload '""' => sub { ${$_[0]} };
 
@@ -42,7 +41,7 @@ Ingy döt Net <ingy@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2006. Ingy döt Net. All rights reserved.
+Copyright (c) 2006, 2011-2012. Ingy döt Net. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

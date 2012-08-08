@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _YVALS
 #define _YVALS
@@ -160,7 +160,7 @@
 #define _END_EXTERN_C
 #endif
 
-#define _Restrict restrict
+#define _Restrict __restrict__
 
 #ifdef __cplusplus
 _STD_BEGIN

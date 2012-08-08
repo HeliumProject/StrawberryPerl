@@ -13,6 +13,7 @@ SECTIONS
     *(.text)
     *(SORT(.text$*))
      *(.text.*)
+     *(.gnu.linkonce.t.*)
     *(.glue_7t)
     *(.glue_7)
     . = ALIGN(8);
@@ -30,7 +31,7 @@ SECTIONS
      on fork.  This used to be named ".data".  The linker used
      to include this between __data_start__ and __data_end__, but that
      breaks building the cygwin32 dll.  Instead, we name the section
-     ".data_cygwin_nocopy" and explictly include it after __data_end__. */
+     ".data_cygwin_nocopy" and explicitly include it after __data_end__. */
   .data BLOCK(__section_alignment__) :
   {
     __data_start__ = . ;
@@ -45,19 +46,26 @@ SECTIONS
   {
     *(.rdata)
              *(SORT(.rdata$*))
-    ___RUNTIME_PSEUDO_RELOC_LIST__ = .;
-    __RUNTIME_PSEUDO_RELOC_LIST__ = .;
+    __rt_psrelocs_start = .;
     *(.rdata_runtime_pseudo_reloc)
-    ___RUNTIME_PSEUDO_RELOC_LIST_END__ = .;
-    __RUNTIME_PSEUDO_RELOC_LIST_END__ = .;
+    __rt_psrelocs_end = .;
   }
+  __rt_psrelocs_size = __rt_psrelocs_end - __rt_psrelocs_start;
+  ___RUNTIME_PSEUDO_RELOC_LIST_END__ = .;
+  __RUNTIME_PSEUDO_RELOC_LIST_END__ = .;
+  ___RUNTIME_PSEUDO_RELOC_LIST__ = . - __rt_psrelocs_size;
+  __RUNTIME_PSEUDO_RELOC_LIST__ = . - __rt_psrelocs_size;
   .eh_frame BLOCK(__section_alignment__) :
   {
-    *(.eh_frame)
+    *(.eh_frame*)
   }
   .pdata BLOCK(__section_alignment__) :
   {
-    *(.pdata)
+    *(.pdata*)
+  }
+  .xdata BLOCK(__section_alignment__) :
+  {
+    *(.xdata*)
   }
   .bss BLOCK(__section_alignment__) :
   {
@@ -88,7 +96,9 @@ SECTIONS
     /* These zeroes mark the end of the import list.  */
     LONG (0); LONG (0); LONG (0); LONG (0); LONG (0);
     SORT(*)(.idata$4)
+    __IAT_start__ = .;
     SORT(*)(.idata$5)
+    __IAT_end__ = .;
     SORT(*)(.idata$6)
     SORT(*)(.idata$7)
   }
@@ -162,7 +172,7 @@ SECTIONS
   /* DWARF 2.  */
   .debug_info BLOCK(__section_alignment__) (NOLOAD) :
   {
-    *(.debug_info) *(.gnu.linkonce.wi.*)
+    *(.debug_info .gnu.linkonce.wi.*)
   }
   .debug_abbrev BLOCK(__section_alignment__) (NOLOAD) :
   {
@@ -174,7 +184,7 @@ SECTIONS
   }
   .debug_frame BLOCK(__section_alignment__) (NOLOAD) :
   {
-    *(.debug_frame)
+    *(.debug_frame*)
   }
   .debug_str BLOCK(__section_alignment__) (NOLOAD) :
   {
@@ -205,9 +215,18 @@ SECTIONS
   {
     *(.debug_varnames)
   }
+  .debug_macro BLOCK(__section_alignment__) (NOLOAD) :
+  {
+    *(.debug_macro)
+  }
   /* DWARF 3.  */
   .debug_ranges BLOCK(__section_alignment__) (NOLOAD) :
   {
     *(.debug_ranges)
+  }
+  /* DWARF 4.  */
+  .debug_types BLOCK(__section_alignment__) (NOLOAD) :
+  {
+    *(.debug_types .gnu.linkonce.wt.*)
   }
 }

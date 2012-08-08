@@ -19,7 +19,7 @@ use File::Basename qw(dirname);
 ################################################################################
 # - Global Constants and Variables
 ################################################################################
-$Data::Random::WordList::VERSION = '0.05';
+$Data::Random::WordList::VERSION = '0.06';
 
 ################################################################################
 # - Subroutines
@@ -34,7 +34,7 @@ sub new {
 
     # Check if what was passed in was a prototype reference or a class name
     my $class = ref($proto) || $proto;
-    
+
     $options{'wordlist'} ||= dirname($INC{'Data/Random.pm'}).'/Random/dict';
 
     # Create a new filehandle object
@@ -119,19 +119,23 @@ sub get_words {
 
 1;
 
+
+
 =head1 NAME
 
 Data::Random::WordList - Perl module to get random words from a word list
 
+
 =head1 SYNOPSIS
 
   use Data::Random::WordList;
-  
+
   my $wl = new Data::Random::WordList( wordlist => '/usr/dict/words' );
 
   my @rand_words = $wl->get_words(10);
 
   $wl->close();
+
 
 =head1 DESCRIPTION
 
@@ -142,6 +146,7 @@ The module expects each line of the word list file to contain only one word.  It
 The module uses a persistent filehandle so that there isn't a lot of overhead every time you want to fetch a list of random words.  However, it's much more efficient to grab multiple words at a time than it is to fetch one word at a time multiple times.
 
 The module also refrains from reading the whole file into memory, so it can be safer to use with larger files.
+
 
 =head1 METHODS
 
@@ -155,7 +160,7 @@ Returns a reference to a new Data::Random::WordList object.  Use the "wordlist" 
 
 wordlist - the path to the wordlist file.  If a path isn't supplied, the wordlist distributed with this module is used.
 
-=back 4
+=back
 
 =head2 get_words([NUM])
 
@@ -165,21 +170,27 @@ NUM contains the number of words you want from the wordlist.  NUM defaults to 1 
 
 Closes the filehandle associated with the word list.  It's good practice to do this every time you're done with the word list.
 
+
 =head1 VERSION
 
-0.05
+0.06
+
 
 =head1 AUTHOR
 
-Adekunle Olonoh, koolade@users.sourceforge.net
+Originally written by: Adekunle Olonoh
+
+Currently maintained by: Buddy Burden (barefoot@cpan.org), starting with version 0.06
+
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Adekunle Olonoh. All rights reserved. This program is free software; you can redistribute it and/or modify it under the same terms as Perl itself. 
+Copyright (c) 2000-2011 Adekunle Olonoh.  All rights reserved.  This program is free software; you
+can redistribute it and/or modify it under the same terms as Perl itself.
+
 
 =head1 SEE ALSO
 
-Data::Random
+L<Data::Random>
 
 =cut
-

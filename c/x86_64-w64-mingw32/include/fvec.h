@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _FVEC_H_INCLUDED
 #define _FVEC_H_INCLUDED
@@ -11,7 +11,7 @@
 #error ERROR: This file is only supported in C++ compilations!
 #endif
 
-#include <xmmintrin.h>
+#include <intrin.h>
 #include <assert.h>
 #include <ivec.h>
 #include <_mingw.h>
@@ -21,6 +21,9 @@
 #endif
 
 #pragma pack(push,_CRT_PACKING)
+
+#ifdef __SSE__
+
 #pragma pack(push,16)
 
 #define EXPLICIT explicit
@@ -129,6 +132,7 @@ Fvec32s4_SELECT(ngt)
 Fvec32s4_SELECT(nge)
 #undef Fvec32s4_SELECT
 
+#if 0 /* Commented until required types are defined */
 inline Is16vec4 simd_max(const Is16vec4 &a,const Is16vec4 &b) { return _m_pmaxsw(a,b); }
 inline Is16vec4 simd_min(const Is16vec4 &a,const Is16vec4 &b) { return _m_pminsw(a,b); }
 inline Iu8vec8 simd_max(const Iu8vec8 &a,const Iu8vec8 &b) { return _m_pmaxub(a,b); }
@@ -145,6 +149,7 @@ inline Is32vec2 F32vec4ToIs32vec2 (const F32vec4 &a) {
   result = _mm_cvtt_ps2pi(a);
   return Is32vec2(result);
 }
+#endif
 
 inline F32vec4 IntToF32vec4(const F32vec4 &a,int i) {
   __m128 result;
@@ -152,11 +157,13 @@ inline F32vec4 IntToF32vec4(const F32vec4 &a,int i) {
   return F32vec4(result);
 }
 
+#if 0 /* Commented until required types are defined */
 inline F32vec4 Is32vec2ToF32vec4(const F32vec4 &a,const Is32vec2 &b) {
   __m128 result;
   result = _mm_cvt_pi2ps(a,b);
   return F32vec4(result);
 }
+#endif
 
 class F32vec1 {
 protected:
@@ -239,6 +246,8 @@ inline int F32vec1ToInt(const F32vec1 &a)
 }
 
 #pragma pack(pop)
+
+#endif /* #ifdef __SSE__ */
 #pragma pack(pop)
 #endif
 #endif

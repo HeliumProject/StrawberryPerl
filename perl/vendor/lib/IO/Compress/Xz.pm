@@ -5,15 +5,15 @@ use warnings;
 use bytes;
 require Exporter ;
 
-use IO::Compress::Base 2.034 ;
-use IO::Compress::Base::Common  2.034 qw(createSelfTiedObject);
-use IO::Compress::Adapter::Xz 2.020 ;
-use Compress::Raw::Lzma  2.034 ;
+use IO::Compress::Base 2.052 ;
+use IO::Compress::Base::Common  2.052 qw(createSelfTiedObject);
+use IO::Compress::Adapter::Xz 2.052 ;
+use Compress::Raw::Lzma  2.052 ;
 
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $XzError);
 
-$VERSION = '2.034';
+$VERSION = '2.052';
 $XzError = '';
 
 @ISA    = qw(Exporter IO::Compress::Base);
@@ -53,8 +53,8 @@ sub getExtraParams
 {
     my $self = shift ;
 
-    use IO::Compress::Base::Common  2.034 qw(:Parse);
-    use Compress::Raw::Lzma 2.034 qw(LZMA_PRESET_DEFAULT LZMA_CHECK_CRC32) ;
+    use IO::Compress::Base::Common  2.052 qw(:Parse);
+    use Compress::Raw::Lzma 2.052 qw(LZMA_PRESET_DEFAULT LZMA_CHECK_CRC32) ;
     
     return (
         'Preset'        => [1, 1, Parse_unsigned, LZMA_PRESET_DEFAULT],
@@ -541,7 +541,7 @@ compression.
 9 is the slowest compession with the highest memory usage but with the best
 compression.
 
-Defaults to C<LZMA_PRESET_DEFAULT>.
+Defaults to C<LZMA_PRESET_DEFAULT> (6).
 
 =item C<< Extreme => 0|1 >>
 
@@ -769,17 +769,11 @@ Same as doing this
 
 =head1 EXAMPLES
 
-=head2 Apache::GZip Revisited
-
-See L<IO::Compress::Lzma::FAQ|IO::Compress::Lzma::FAQ/"Apache::GZip Revisited">
-
-    
-
 =head1 SEE ALSO
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -795,7 +789,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2011 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

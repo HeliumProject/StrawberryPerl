@@ -17,8 +17,10 @@ extern im_ext_funcs *imager_function_ext_table;
     imager_function_ext_table = INT2PTR(im_ext_funcs *, SvIV(get_sv(PERL_FUNCTION_TABLE_NAME, 1))); \
     if (!imager_function_ext_table) \
       croak("Imager API function table not found!"); \
-    if (imager_function_ext_table->version != IMAGER_API_VERSION) \
-      croak("Imager API version incorrect"); \
+    if (imager_function_ext_table->version != IMAGER_API_VERSION) {  \
+      croak("Imager API version incorrect loaded %d vs expected %d", \
+	    imager_function_ext_table->version, IMAGER_API_VERSION); \
+    } \
     if (imager_function_ext_table->level < IMAGER_MIN_API_LEVEL) \
       croak("API level %d below minimum of %d", imager_function_ext_table->level, IMAGER_MIN_API_LEVEL); \
   } while (0)
@@ -192,7 +194,7 @@ extern im_ext_funcs *imager_function_ext_table;
 
 #define i_set_image_file_limits(max_width, max_height, max_bytes) \
   ((im_extt->f_i_set_image_file_limits)((max_width), (max_height), (max_bytes)))
-#define i_get_image_file_limits(max_width, max_height, max_bytes) \
+#define i_get_image_file_limits(pmax_width, pmax_height, pmax_bytes) \
   ((im_extt->f_i_get_image_file_limits)((pmax_width), (pmax_height), (pmax_bytes)))
 #define i_int_check_image_file_limits(width, height, channels, sample_size) \
   ((im_extt->f_i_int_check_image_file_limits)((width), (height), (channels), (sample_size)))
@@ -231,5 +233,32 @@ extern im_ext_funcs *imager_function_ext_table;
   ((im_extt->f_i_render_line)((r), (x), (y), (width), (src), (line), (combine)))
 #define i_render_linef(r, x, y, width, src, line, combine) \
   ((im_extt->f_i_render_linef)((r), (x), (y), (width), (src), (line), (combine)))
+
+#define i_io_getc_imp (im_extt->f_i_io_getc_imp)
+#define i_io_peekc_imp (im_extt->f_i_io_peekc_imp)
+#define i_io_peekn (im_extt->f_i_io_peekn)
+#define i_io_putc_imp (im_extt->f_i_io_putc_imp)
+#define i_io_read (im_extt->f_i_io_read)
+#define i_io_write (im_extt->f_i_io_write)
+#define i_io_seek (im_extt->f_i_io_seek)
+#define i_io_flush (im_extt->f_i_io_flush)
+#define i_io_close (im_extt->f_i_io_close)
+#define i_io_set_buffered (im_extt->f_i_io_set_buffered)
+#define i_io_gets (im_extt->f_i_io_gets)
+#define io_new_fd(fd) ((im_extt->f_io_new_fd)(fd))
+#define io_new_bufchain() ((im_extt->f_io_new_bufchain)())
+#define io_new_buffer(data, len, closecb, closedata) \
+  ((im_extt->f_io_new_buffer)((data), (len), (closecb), (closedata)))
+#define io_new_cb(p, readcb, writecb, seekcb, closecb, destroycb) \
+  ((im_extt->f_io_new_cb)((p), (readcb), (writecb), (seekcb), (closecb), (destroycb)))
+#define io_slurp(ig, datap) ((im_extt->f_io_slurp)((ig), (datap)))
+#define io_glue_destroy(ig) ((im_extt->f_io_glue_destroy)(ig))
+
+#ifdef IMAGER_LOG
+#define mm_log(x) { i_lhead(__FILE__,__LINE__); i_loog x; } 
+#else
+#define mm_log(x)
+#endif
+
 
 #endif

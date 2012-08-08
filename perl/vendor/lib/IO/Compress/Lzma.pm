@@ -5,16 +5,16 @@ use warnings;
 use bytes;
 require Exporter ;
 
-use IO::Compress::Base 2.034 ;
+use IO::Compress::Base 2.052 ;
 
-use IO::Compress::Base::Common  2.034 qw(createSelfTiedObject);
-use IO::Compress::Adapter::Lzma 2.006 ;
+use IO::Compress::Base::Common  2.052 qw(createSelfTiedObject);
+use IO::Compress::Adapter::Lzma 2.052 ;
 
 
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $LzmaError);
 
-$VERSION = '2.034';
+$VERSION = '2.052';
 $LzmaError = '';
 
 @ISA    = qw(Exporter IO::Compress::Base);
@@ -51,7 +51,7 @@ sub getExtraParams
 {
     my $self = shift ;
 
-    use IO::Compress::Base::Common  2.034 qw(:Parse);
+    use IO::Compress::Base::Common  2.052 qw(:Parse);
     
     return (
         'Filter'     => [0, 1, Parse_any,   [] ],
@@ -741,17 +741,11 @@ Same as doing this
 
 =head1 EXAMPLES
 
-=head2 Apache::GZip Revisited
-
-See L<IO::Compress::Lzma::FAQ|IO::Compress::Lzma::FAQ/"Apache::GZip Revisited">
-
-    
-
 =head1 SEE ALSO
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -767,7 +761,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2011 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

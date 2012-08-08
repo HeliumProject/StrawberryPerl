@@ -2,12 +2,9 @@
 
 package XSLoader;
 
-$VERSION = "0.15";
+$VERSION = "0.16";
 
 #use strict;
-
-# enable debug/trace messages from DynaLoader perl code
-# $dl_debug = $ENV{PERL_DL_DEBUG} || 0 unless defined $dl_debug;
 
 package DynaLoader;
 

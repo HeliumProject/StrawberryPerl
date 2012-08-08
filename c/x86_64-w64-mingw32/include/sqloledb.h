@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _SQLOLEDB_H_
 #define _SQLOLEDB_H_
@@ -197,7 +197,7 @@ struct SSVARIANT {
   SSVARTYPE vt;
   DWORD dwReserved1;
   DWORD dwReserved2;
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     BYTE bTinyIntVal;
     SHORT sShortIntVal;
     LONG lIntVal;

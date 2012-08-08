@@ -1,19 +1,11 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
 /* Define __mingw_<printf> macros.  */
-#if defined(__USE_MINGW_ANSI_STDIO) && defined(_INC_STDIO) && ((__USE_MINGW_ANSI_STDIO + 0) != 0)
-#define fprintf		__mingw_fprintf
-#define printf		__mingw_printf
-#define sprintf		__mingw_sprintf
-#define snprintf	__mingw_snprintf
-#define vfprintf	__mingw_vfprintf
-#define vprintf		__mingw_vprintf
-#define vsprintf	__mingw_vsprintf
-#define vsnprintf	__mingw_vsnprintf
+#if defined(__USE_MINGW_ANSI_STDIO) && (defined(_INC_STDIO) || defined(_WSTDIO_DEFINED)) && ((__USE_MINGW_ANSI_STDIO + 0) != 0)
 
 /* Redefine to GNU specific PRI... and SCN... macros.  */
 #if defined(_INTTYPES_H_) && defined(PRId64)
@@ -41,6 +33,7 @@
 #undef PRIXLEAST64
 #undef PRIXFAST64
 #undef PRIXMAX
+
 #undef SCNd64
 #undef SCNdLEAST64
 #undef SCNdFAST64
@@ -61,6 +54,7 @@
 #undef SCNuLEAST64
 #undef SCNuFAST64
 #undef SCNuMAX
+
 #ifdef _WIN64
 #undef PRIdPTR
 #undef PRIiPTR
@@ -68,12 +62,14 @@
 #undef PRIuPTR
 #undef PRIxPTR
 #undef PRIXPTR
+
 #undef SCNdPTR
 #undef SCNiPTR
 #undef SCNoPTR
 #undef SCNxPTR
 #undef SCNuPTR
-#endif
+
+#endif /* _WIN64 */
 
 #define PRId64 "lld"
 #define PRIdLEAST64 "lld"
@@ -99,6 +95,7 @@
 #define PRIXLEAST64 "llX"
 #define PRIXFAST64 "llX"
 #define PRIXMAX "llX"
+
 #define SCNd64 "lld"
 #define SCNdLEAST64 "lld"
 #define SCNdFAST64 "lld"
@@ -119,6 +116,7 @@
 #define SCNuLEAST64 "llu"
 #define SCNuFAST64 "llu"
 #define SCNuMAX "llu"
+
 #ifdef _WIN64
 #define PRIdPTR "lld"
 #define PRIiPTR "lli"
@@ -126,12 +124,13 @@
 #define PRIuPTR "llu"
 #define PRIxPTR "llx"
 #define PRIXPTR "llX"
+
 #define SCNdPTR "lld"
 #define SCNiPTR "lli"
 #define SCNoPTR "llo"
 #define SCNxPTR "llx"
 #define SCNuPTR "llu"
-#endif
-#endif
+#endif /* _WIN64 */
+#endif /* defined(_INTTYPES_H_) && defined(PRId64) */
 
 #endif /* defined(__USE_MINGW_ANSI_STDIO) && defined(_INC_STDIO) && __USE_MINGW_ANSI_STDIO != 0 */

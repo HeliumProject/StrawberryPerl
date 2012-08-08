@@ -1,12 +1,13 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
+#include <_mingw_unicode.h>
 #include "rpc.h"
 #include "rpcndr.h"
 
@@ -529,13 +530,8 @@ extern "C" {
   int WINAPI SyncMgrResolveConflictW(HWND hWndParent,RFCDLGPARAMW *pdlgParam);
   int WINAPI SyncMgrResolveConflictA(HWND hWndParent,RFCDLGPARAMA *pdlgParam);
 
-#ifdef UNICODE
-#define SyncMgrResolveConflict SyncMgrResolveConflictW
-#define RFCDLGPARAM RFCDLGPARAMW
-#else
-#define SyncMgrResolveConflict SyncMgrResolveConflictA
-#define RFCDLGPARAM RFCDLGPARAMA
-#endif
+#define SyncMgrResolveConflict __MINGW_NAME_AW(SyncMgrResolveConflict)
+#define RFCDLGPARAM __MINGW_NAME_AW(RFCDLGPARAM)
 
   extern RPC_IF_HANDLE __MIDL_itf_mobsync_0122_v0_0_c_ifspec;
   extern RPC_IF_HANDLE __MIDL_itf_mobsync_0122_v0_0_s_ifspec;

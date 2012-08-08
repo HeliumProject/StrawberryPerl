@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _IPXRTDEF_
 #define _IPXRTDEF_
@@ -63,7 +63,7 @@ typedef struct _IPXWAN_IF_INFO {
 } IPXWAN_IF_INFO,*PIPXWAN_IF_INFO;
 
 typedef struct _IPX_STATIC_ROUTE_INFO {
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     ULONG DwordAlign;
     UCHAR Network[4];
   };
@@ -75,7 +75,7 @@ typedef struct _IPX_STATIC_ROUTE_INFO {
 typedef IPX_SERVER_ENTRY IPX_STATIC_SERVICE_INFO,*PIPX_STATIC_SERVICE_INFO;
 
 typedef struct _IPX_STATIC_NETBIOS_NAME_INFO {
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     ULONG DwordAlign;
     UCHAR Name[16];
   };

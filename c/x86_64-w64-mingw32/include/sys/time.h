@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
 #ifndef _SYS_TIME_H_
@@ -13,20 +13,7 @@
 extern "C" {
 #endif
 
-#ifndef __STRICT_ANSI__
-#ifndef _TIMEVAL_DEFINED /* also in winsock[2].h */
-#define _TIMEVAL_DEFINED
-struct timeval {
-  long tv_sec;
-  long tv_usec;
-};
-#define timerisset(tvp)	 ((tvp)->tv_sec || (tvp)->tv_usec)
-#define timercmp(tvp, uvp, cmp) \
-  (((tvp)->tv_sec != (uvp)->tv_sec) ? \
-  ((tvp)->tv_sec cmp (uvp)->tv_sec) : \
-  ((tvp)->tv_usec cmp (uvp)->tv_usec))
-#define timerclear(tvp)	 (tvp)->tv_sec = (tvp)->tv_usec = 0
-#endif /* _TIMEVAL_DEFINED */
+#include <_timeval.h>
 
 #ifndef _TIMEZONE_DEFINED /* also in sys/time.h */
 #define _TIMEZONE_DEFINED
@@ -41,7 +28,7 @@ struct timezone
 
   extern int __cdecl mingw_gettimeofday (struct timeval *p, struct timezone *z);
 
-#endif
+#endif /* _TIMEZONE_DEFINED */
 
 /*
    Implementation as per:
@@ -55,8 +42,6 @@ struct timezone
 int __cdecl gettimeofday(struct timeval *__restrict__,
                          void *__restrict__  /* tzp (unused) */);
 #endif
-
-#endif /* __STRICT_ANSI__ */
 
 #ifdef  __cplusplus
 }

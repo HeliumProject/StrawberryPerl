@@ -1,8 +1,11 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
+
+#include <_mingw_unicode.h>
+
 #ifdef _WCHAR_T_DEFINED
 typedef void (__cdecl *POGOAUTOSWEEPPROCW)(const wchar_t *);
 #else
@@ -23,8 +26,4 @@ extern
 #endif
 POGOAUTOSWEEPPROCA PogoAutoSweepA;
 
-#ifdef UNICODE
-#define PgoAutoSweep PogoAutoSweepW
-#else
-#define PgoAutoSweep PogoAutoSweepA
-#endif
+#define PgoAutoSweep __MINGW_NAME_AW(PogoAutoSweep)

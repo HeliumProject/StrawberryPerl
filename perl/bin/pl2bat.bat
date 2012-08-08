@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -40,7 +40,7 @@ Usage:  $0 [-h]
                             a /^#!.*perl/ line was already present).
         -s stripsuffix  strip this suffix from file before appending ".bat"
                             Not case-sensitive
-                            Can be a regex if it begins with `/'
+                            Can be a regex if it begins with '/'
                             Defaults to "/\.plx?/"
         -h              show this help
 EOT
@@ -58,7 +58,7 @@ if(  defined( $OPT{'a'} )  ) {
     $head = <<EOT;
 	\@rem = '--*-Perl-*--
 	\@echo off
-	perl $OPT{'a'}
+	"%~dp0perl.exe" $OPT{'a'}
 	goto endofperl
 	\@rem ';
 EOT
@@ -67,10 +67,10 @@ EOT
 	\@rem = '--*-Perl-*--
 	\@echo off
 	if "%OS%" == "Windows_NT" goto WinNT
-	perl $OPT{'o'}
+	"%~dp0perl.exe" $OPT{'o'}
 	goto endofperl
 	:WinNT
-	perl $OPT{'n'}
+	"%~dp0perl.exe" $OPT{'n'}
 	if NOT "%COMSPEC%" == "%SystemRoot%\\system32\\cmd.exe" goto endofperl
 	if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 	if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -349,7 +349,7 @@ variable to determine which operating system it is being run from.
 
 Strip a suffix string from file name before appending a ".bat"
 suffix.  The suffix is not case-sensitive.  It can be a regex if
-it begins with `/' (the trailing '/' is optional and a trailing
+it begins with '/' (the trailing '/' is optional and a trailing
 C<$> is always assumed).  Defaults to C</.plx?/>.
 
 =item B<-w>

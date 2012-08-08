@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __RPCNDR_H_VERSION__
 #define __RPCNDR_H_VERSION__ (475)
@@ -94,8 +94,8 @@ extern "C" {
 
 #ifndef __MIDL_user_allocate_free_DEFINED__
 #define __MIDL_user_allocate_free_DEFINED__
-  void *__RPC_API MIDL_user_allocate(size_t);
-  void __RPC_API MIDL_user_free(void *);
+  void *__RPC_USER MIDL_user_allocate(SIZE_T);
+  void __RPC_USER MIDL_user_free(void *);
 #endif
 
 #define RPC_VAR_ENTRY __cdecl
@@ -110,7 +110,7 @@ extern "C" {
 
   typedef void *NDR_CCONTEXT;
 
-  typedef struct {
+  typedef struct _NDR_SCONTEXT {
     void *pad[2];
     void *userContext;
   } *NDR_SCONTEXT;
@@ -177,11 +177,11 @@ typedef unsigned long error_status_t;
 #define _midl_unmarsh_up(p) (*(*(unsigned long **)&p)++)
 
 #define NdrMarshConfStringHdr(p,s,l) (_midl_ma4(p,unsigned long) = s,_midl_ma4(p,unsigned long) = 0,_midl_ma4(p,unsigned long) = l)
-#define NdrUnMarshConfStringHdr(p,s,l) ((s=_midl_unma4(p,unsigned long),(_midl_addp(p,4)),(l=_midl_unma4(p,unsigned long))
+#define NdrUnMarshConfStringHdr(p,s,l) (s=_midl_unma4(p,unsigned long),(_midl_addp(p,4)),(l=_midl_unma4(p,unsigned long)))
 #define NdrMarshCCtxtHdl(pc,p) (NDRCContextMarshall((NDR_CCONTEXT)pc,p),p+20)
-#define NdrUnMarshCCtxtHdl(pc,p,h,drep) (NDRCContextUnmarshall((NDR_CONTEXT)pc,h,p,drep),p+20)
+#define NdrUnMarshCCtxtHdl(pc,p,h,drep) (NDRCContextUnmarshall((NDR_CCONTEXT)pc,h,p,drep),p+20)
 #define NdrUnMarshSCtxtHdl(pc,p,drep) (pc = NdrSContextUnMarshall(p,drep))
-#define NdrMarshSCtxtHdl(pc,p,rd) (NdrSContextMarshall((NDR_SCONTEXT)pc,p,(NDR_RUNDOWN)rd)
+#define NdrMarshSCtxtHdl(pc,p,rd) (NdrSContextMarshall((NDR_SCONTEXT)pc,p,(NDR_RUNDOWN)rd))
 
 #define NdrFieldOffset(s,f) (LONG_PTR)(& (((s *)0)->f))
 #define NdrFieldPad(s,f,p,t) ((unsigned long)(NdrFieldOffset(s,f) - NdrFieldOffset(s,p)) - sizeof(t))
@@ -258,16 +258,16 @@ typedef unsigned long error_status_t;
     struct _FULL_PTR_XLAT_TABLES *FullPtrXlatTables;
     unsigned long FullPtrRefId;
     unsigned long PointerLength;
-    int fInDontFree :1;
-    int fDontCallFreeInst :1;
-    int fInOnlyParam :1;
-    int fHasReturn :1;
-    int fHasExtensions :1;
-    int fHasNewCorrDesc :1;
-    int fIsOicfServer :1;
-    int fHasMemoryValidateCallback: 1;
-    int fUnused :8;
-    int fUnused2 :16;
+    int fInDontFree : 1;
+    int fDontCallFreeInst : 1;
+    int fInOnlyParam : 1;
+    int fHasReturn : 1;
+    int fHasExtensions : 1;
+    int fHasNewCorrDesc : 1;
+    int fIsOicfServer : 1;
+    int fHasMemoryValidateCallback : 1;
+    int fUnused : 8;
+    int fUnused2 : 16;
     unsigned long dwDestContext;
     void *pvDestContext;
     NDR_SCONTEXT *SavedContextHandles;
@@ -747,7 +747,7 @@ typedef unsigned long error_status_t;
 
   typedef struct _NDR_USER_MARSHAL_INFO {
     unsigned long InformationLevel;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       NDR_USER_MARSHAL_INFO_LEVEL1 Level1;
     };
   } NDR_USER_MARSHAL_INFO;

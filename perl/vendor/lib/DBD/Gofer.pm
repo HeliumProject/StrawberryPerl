@@ -8,9 +8,9 @@
     require DBI::Gofer::Response;
     require Carp;
 
-    our $VERSION = sprintf("0.%06d", q$Revision: 14282 $ =~ /(\d+)/o);
+    our $VERSION = sprintf("0.%06d", q$Revision: 15057 $ =~ /(\d+)/o);
 
-#   $Id: Gofer.pm 14282 2010-07-26 00:12:54Z theory $
+#   $Id: Gofer.pm 15057 2012-01-02 13:59:32Z timbo $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -97,7 +97,12 @@
         if (my $warnings = $response->warnings) {
             warn $_ for @$warnings;
         }
-        return $h->set_err($response->err_errstr_state);
+        my ($err, $errstr, $state) = $response->err_errstr_state;
+        # Only set_err() if there's an error else leave the current values
+        # (The current values will normally be set undef by the DBI dispatcher
+        # except for methods marked KEEPERR such as ping.)
+        $h->set_err($err, $errstr, $state) if defined $err;
+        return undef;
     }
 
 

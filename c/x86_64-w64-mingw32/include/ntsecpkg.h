@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _NTSECPKG_
 #define _NTSECPKG_
@@ -13,7 +13,9 @@ extern "C" {
   typedef PVOID *PLSA_CLIENT_REQUEST;
 
   typedef enum _LSA_TOKEN_INFORMATION_TYPE {
-    LsaTokenInformationNull,LsaTokenInformationV1,LsaTokenInformationV2
+    LsaTokenInformationNull,
+    LsaTokenInformationV1,
+    LsaTokenInformationV2
   } LSA_TOKEN_INFORMATION_TYPE,*PLSA_TOKEN_INFORMATION_TYPE;
 
   typedef struct _LSA_TOKEN_INFORMATION_NULL {
@@ -226,7 +228,12 @@ extern "C" {
   } SECPKG_PARAMETERS,*PSECPKG_PARAMETERS;
 
   typedef enum _SECPKG_EXTENDED_INFORMATION_CLASS {
-    SecpkgGssInfo = 1,SecpkgContextThunks,SecpkgMutualAuthLevel,SecpkgWowClientDll,SecpkgExtraOids,SecpkgMaxInfo
+    SecpkgGssInfo = 1,
+    SecpkgContextThunks,
+    SecpkgMutualAuthLevel,
+    SecpkgWowClientDll,
+    SecpkgExtraOids,
+    SecpkgMaxInfo
   } SECPKG_EXTENDED_INFORMATION_CLASS;
 
   typedef struct _SECPKG_GSS_INFO {
@@ -322,7 +329,11 @@ extern "C" {
   typedef BOOLEAN (NTAPI LSA_DELETE_SHARED_MEMORY)(PVOID SharedMem);
 
   typedef enum _SECPKG_NAME_TYPE {
-    SecNameSamCompatible,SecNameAlternateId,SecNameFlat,SecNameDN,SecNameSPN
+    SecNameSamCompatible,
+    SecNameAlternateId,
+    SecNameFlat,
+    SecNameDN,
+    SecNameSPN
   } SECPKG_NAME_TYPE;
 
   typedef NTSTATUS (NTAPI LSA_OPEN_SAM_USER)(PSECURITY_STRING Name,SECPKG_NAME_TYPE NameType,PSECURITY_STRING Prefix,BOOLEAN AllowGuest,ULONG Reserved,PVOID *UserHandle);

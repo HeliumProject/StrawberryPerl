@@ -12,10 +12,6 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
@@ -39,6 +35,9 @@
  * This file is taken from Cygwin distribution. Please keep it in sync.
  * The differences should be within __MINGW32__ guard.
  */
+
+#include <_mingw_mac.h>
+
 /* If compiler doesn't inline, at least avoid passing args on the stack. */
 #ifndef _WIN64
 #define _MCOUNT_CALL __attribute__ ((regparm (2)))
@@ -46,7 +45,13 @@
 #define _MCOUNT_CALL
 #endif
 
-#define _MCOUNT_DECL __attribute__((gnu_inline)) __inline__ void _MCOUNT_CALL _mcount
+#define _MCOUNT_DECL __attribute__((gnu_inline)) __inline__ \
+   void _MCOUNT_CALL _mcount_private
+
+/* gcc always assumes the mcount public symbol has a single leading underscore
+   for our target.  See gcc/config/i386.h; it isn't overridden in
+   config/i386/cygming.h or any other places for mingw */
+extern void __MINGW_LSYMBOL(mcount)(void);
 
 /* FIXME: This works, but it would be cleaner to convert mcount into an
    assembler stub that calls an extern  _mcount.

@@ -1,12 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINDEF_
 #define _WINDEF_
 
-#ifndef STRICT
+#if !defined (STRICT) && !defined (NO_STRICT)
 #define STRICT 1
 #endif
 
@@ -20,13 +20,13 @@ extern "C" {
 
 #ifndef BASETYPES
 #define BASETYPES
-  typedef unsigned long ULONG;
-  typedef ULONG *PULONG;
-  typedef unsigned short USHORT;
-  typedef USHORT *PUSHORT;
-  typedef unsigned char UCHAR;
-  typedef UCHAR *PUCHAR;
-  typedef char *PSZ;
+typedef unsigned long ULONG;
+typedef ULONG *PULONG;
+typedef unsigned short USHORT;
+typedef USHORT *PUSHORT;
+typedef unsigned char UCHAR;
+typedef UCHAR *PUCHAR;
+typedef char *PSZ;
 #endif
 
 #define MAX_PATH 260
@@ -51,16 +51,16 @@ extern "C" {
 #define TRUE 1
 #endif
 
+#ifndef _NO_W32_PSEUDO_MODIFIERS
 #ifndef IN
 #define IN
 #endif
-
 #ifndef OUT
 #define OUT
 #endif
-
 #ifndef OPTIONAL
 #define OPTIONAL
+#endif
 #endif
 
 #undef far
@@ -91,38 +91,47 @@ extern "C" {
 #undef NEAR
 #define FAR
 #define NEAR
+
 #ifndef CONST
 #define CONST const
 #endif
 
-  typedef unsigned long DWORD;
-  typedef int WINBOOL;
+#ifndef _DEF_WINBOOL_
+#define _DEF_WINBOOL_
+typedef int WINBOOL;
+#pragma push_macro("BOOL")
+#undef BOOL
 #if !defined(__OBJC__) && !defined(__OBJC_BOOL) && !defined(__objc_INCLUDE_GNU)
-#define BOOL WINBOOL
+typedef int BOOL;
 #endif
-  typedef unsigned char BYTE;
-  typedef unsigned short WORD;
-  typedef float FLOAT;
-  typedef FLOAT *PFLOAT;
-  typedef WINBOOL *PBOOL;
-  typedef WINBOOL *LPBOOL;
-  typedef BYTE *PBYTE;
-  typedef BYTE *LPBYTE;
-  typedef int *PINT;
-  typedef int *LPINT;
-  typedef WORD *PWORD;
-  typedef WORD *LPWORD;
-  typedef long *LPLONG;
-  typedef DWORD *PDWORD;
-  typedef DWORD *LPDWORD;
-  typedef void *LPVOID;
-  #ifndef _LPCVOID_DEFINED
+#define BOOL WINBOOL
+typedef BOOL *PBOOL;
+typedef BOOL *LPBOOL;
+#pragma pop_macro("BOOL")
+#endif /* _DEF_WINBOOL_ */
+
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef unsigned long DWORD;
+typedef float FLOAT;
+typedef FLOAT *PFLOAT;
+typedef BYTE *PBYTE;
+typedef BYTE *LPBYTE;
+typedef int *PINT;
+typedef int *LPINT;
+typedef WORD *PWORD;
+typedef WORD *LPWORD;
+typedef long *LPLONG;
+typedef DWORD *PDWORD;
+typedef DWORD *LPDWORD;
+typedef void *LPVOID;
+#ifndef _LPCVOID_DEFINED
 #define _LPCVOID_DEFINED
 typedef CONST void *LPCVOID;
 #endif
-  typedef int INT;
-  typedef unsigned int UINT;
-  typedef unsigned int *PUINT;
+typedef int INT;
+typedef unsigned int UINT;
+typedef unsigned int *PUINT;
 
 #ifndef NT_INCLUDED
 #include <winnt.h>
@@ -130,9 +139,9 @@ typedef CONST void *LPCVOID;
 
 #include <specstrings.h>
 
-  typedef UINT_PTR WPARAM;
-  typedef LONG_PTR LPARAM;
-  typedef LONG_PTR LRESULT;
+typedef UINT_PTR WPARAM;
+typedef LONG_PTR LPARAM;
+typedef LONG_PTR LRESULT;
 
 #ifndef __cplusplus
 #ifndef NOMINMAX
@@ -154,114 +163,114 @@ typedef CONST void *LPCVOID;
 #define HIBYTE(w) ((BYTE)((DWORD_PTR)(w) >> 8))
 
 #ifndef WIN_INTERNAL
-  DECLARE_HANDLE (HWND);
-  DECLARE_HANDLE (HHOOK);
+DECLARE_HANDLE (HWND);
+DECLARE_HANDLE (HHOOK);
 #ifdef WINABLE
-  DECLARE_HANDLE (HEVENT);
+DECLARE_HANDLE (HEVENT);
 #endif
 #endif
 
-  typedef WORD ATOM;
+typedef WORD ATOM;
 
-  typedef HANDLE *SPHANDLE;
-  typedef HANDLE *LPHANDLE;
-  typedef HANDLE HGLOBAL;
-  typedef HANDLE HLOCAL;
-  typedef HANDLE GLOBALHANDLE;
-  typedef HANDLE LOCALHANDLE;
+typedef HANDLE *SPHANDLE;
+typedef HANDLE *LPHANDLE;
+typedef HANDLE HGLOBAL;
+typedef HANDLE HLOCAL;
+typedef HANDLE GLOBALHANDLE;
+typedef HANDLE LOCALHANDLE;
 #ifdef _WIN64
-  typedef INT_PTR (WINAPI *FARPROC)();
-  typedef INT_PTR (WINAPI *NEARPROC)();
-  typedef INT_PTR (WINAPI *PROC)();
+typedef INT_PTR (WINAPI *FARPROC)();
+typedef INT_PTR (WINAPI *NEARPROC)();
+typedef INT_PTR (WINAPI *PROC)();
 #else
-  typedef int (WINAPI *FARPROC)();
-  typedef int (WINAPI *NEARPROC)();
-  typedef int (WINAPI *PROC)();
+typedef int (WINAPI *FARPROC)();
+typedef int (WINAPI *NEARPROC)();
+typedef int (WINAPI *PROC)();
 #endif
 
-  typedef void *HGDIOBJ;
+typedef void *HGDIOBJ;
 
-  DECLARE_HANDLE(HKEY);
-  typedef HKEY *PHKEY;
+DECLARE_HANDLE(HKEY);
+typedef HKEY *PHKEY;
 
-  DECLARE_HANDLE(HACCEL);
-  DECLARE_HANDLE(HBITMAP);
-  DECLARE_HANDLE(HBRUSH);
-  DECLARE_HANDLE(HCOLORSPACE);
-  DECLARE_HANDLE(HDC);
-  DECLARE_HANDLE(HGLRC);
-  DECLARE_HANDLE(HDESK);
-  DECLARE_HANDLE(HENHMETAFILE);
-  DECLARE_HANDLE(HFONT);
-  DECLARE_HANDLE(HICON);
-  DECLARE_HANDLE(HMENU);
-  DECLARE_HANDLE(HMETAFILE);
-  DECLARE_HANDLE(HINSTANCE);
-  typedef HINSTANCE HMODULE;
-  DECLARE_HANDLE(HPALETTE);
-  DECLARE_HANDLE(HPEN);
-  DECLARE_HANDLE(HRGN);
-  DECLARE_HANDLE(HRSRC);
-  DECLARE_HANDLE(HSTR);
-  DECLARE_HANDLE(HTASK);
-  DECLARE_HANDLE(HWINSTA);
-  DECLARE_HANDLE(HKL);
-  DECLARE_HANDLE(HMONITOR);
-  DECLARE_HANDLE(HWINEVENTHOOK);
-  DECLARE_HANDLE(HUMPD);
+DECLARE_HANDLE(HACCEL);
+DECLARE_HANDLE(HBITMAP);
+DECLARE_HANDLE(HBRUSH);
+DECLARE_HANDLE(HCOLORSPACE);
+DECLARE_HANDLE(HDC);
+DECLARE_HANDLE(HGLRC);
+DECLARE_HANDLE(HDESK);
+DECLARE_HANDLE(HENHMETAFILE);
+DECLARE_HANDLE(HFONT);
+DECLARE_HANDLE(HICON);
+DECLARE_HANDLE(HMENU);
+DECLARE_HANDLE(HMETAFILE);
+DECLARE_HANDLE(HINSTANCE);
+typedef HINSTANCE HMODULE;
+DECLARE_HANDLE(HPALETTE);
+DECLARE_HANDLE(HPEN);
+DECLARE_HANDLE(HRGN);
+DECLARE_HANDLE(HRSRC);
+DECLARE_HANDLE(HSTR);
+DECLARE_HANDLE(HTASK);
+DECLARE_HANDLE(HWINSTA);
+DECLARE_HANDLE(HKL);
+DECLARE_HANDLE(HMONITOR);
+DECLARE_HANDLE(HWINEVENTHOOK);
+DECLARE_HANDLE(HUMPD);
 
-  typedef int HFILE;
-  typedef HICON HCURSOR;
-  typedef DWORD COLORREF;
-  typedef DWORD *LPCOLORREF;
+typedef int HFILE;
+typedef HICON HCURSOR;
+typedef DWORD COLORREF;
+typedef DWORD *LPCOLORREF;
 
 #define HFILE_ERROR ((HFILE)-1)
 
-  typedef struct tagRECT {
-    LONG left;
-    LONG top;
-    LONG right;
-    LONG bottom;
-  } RECT,*PRECT,*NPRECT,*LPRECT;
+typedef struct tagRECT {
+  LONG left;
+  LONG top;
+  LONG right;
+  LONG bottom;
+} RECT,*PRECT,*NPRECT,*LPRECT;
 
-  typedef const RECT *LPCRECT;
+typedef const RECT *LPCRECT;
 
-  typedef struct _RECTL {
-    LONG left;
-    LONG top;
-    LONG right;
-    LONG bottom;
-  } RECTL,*PRECTL,*LPRECTL;
+typedef struct _RECTL {
+  LONG left;
+  LONG top;
+  LONG right;
+  LONG bottom;
+} RECTL,*PRECTL,*LPRECTL;
 
-  typedef const RECTL *LPCRECTL;
+typedef const RECTL *LPCRECTL;
 
-  typedef struct tagPOINT {
-    LONG x;
-    LONG y;
-  } POINT,*PPOINT,*NPPOINT,*LPPOINT;
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT,*PPOINT,*NPPOINT,*LPPOINT;
 
-  typedef struct _POINTL {
-    LONG x;
-    LONG y;
-  } POINTL,*PPOINTL;
+typedef struct _POINTL {
+  LONG x;
+  LONG y;
+} POINTL,*PPOINTL;
 
-  typedef struct tagSIZE {
-    LONG cx;
-    LONG cy;
-  } SIZE,*PSIZE,*LPSIZE;
+typedef struct tagSIZE {
+  LONG cx;
+  LONG cy;
+} SIZE,*PSIZE,*LPSIZE;
 
-  typedef SIZE SIZEL;
-  typedef SIZE *PSIZEL,*LPSIZEL;
+typedef SIZE SIZEL;
+typedef SIZE *PSIZEL,*LPSIZEL;
 
-  typedef struct tagPOINTS {
-    SHORT x;
-    SHORT y;
-  } POINTS,*PPOINTS,*LPPOINTS;
+typedef struct tagPOINTS {
+  SHORT x;
+  SHORT y;
+} POINTS,*PPOINTS,*LPPOINTS;
 
-  typedef struct _FILETIME {
-    DWORD dwLowDateTime;
-    DWORD dwHighDateTime;
-  } FILETIME,*PFILETIME,*LPFILETIME;
+typedef struct _FILETIME {
+  DWORD dwLowDateTime;
+  DWORD dwHighDateTime;
+} FILETIME,*PFILETIME,*LPFILETIME;
 #define _FILETIME_
 
 #define DM_UPDATE 1
@@ -296,4 +305,6 @@ typedef CONST void *LPCVOID;
 #ifdef __cplusplus
 }
 #endif
-#endif
+
+#endif /* _WINDEF_ */
+

@@ -1,8 +1,11 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
+
+#include <_mingw_unicode.h>
+
 #define ERROR_PCW_BASE 0xC00E5101
 
 #define ERROR_PCW_PCP_DOESNT_EXIST (ERROR_PCW_BASE + 0x00)
@@ -151,8 +154,4 @@ extern "C" {
 }
 #endif
 
-#ifdef UNICODE
-#define UiCreatePatchPackage UiCreatePatchPackageW
-#else
-#define UiCreatePatchPackage UiCreatePatchPackageA
-#endif
+#define UiCreatePatchPackage __MINGW_NAME_AW(UiCreatePatchPackage)

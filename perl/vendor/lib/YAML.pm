@@ -1,26 +1,24 @@
-package YAML;
-
 use 5.008001;
-use strict;
-use warnings;
-use YAML::Base;
-use YAML::Node; # XXX This is a temp fix for Module::Build
+package YAML;
+use YAML::Mo;
 
-our $VERSION   = '0.73';
-our @ISA       = 'YAML::Base';
-our @EXPORT    = qw{ Dump Load };
+our $VERSION = '0.81';
+
+use Exporter;
+push @YAML::ISA, 'Exporter';
+our @EXPORT = qw{ Dump Load };
 our @EXPORT_OK = qw{ freeze thaw DumpFile LoadFile Bless Blessed };
+
+use YAML::Node; # XXX This is a temp fix for Module::Build
 
 # XXX This VALUE nonsense needs to go.
 use constant VALUE => "\x07YAML\x07VALUE\x07";
 
 # YAML Object Properties
-field dumper_class => 'YAML::Dumper';
-field loader_class => 'YAML::Loader';
-field dumper_object =>
-    -init => '$self->init_action_object("dumper")';
-field loader_object =>
-    -init => '$self->init_action_object("loader")';
+has dumper_class => default => sub {'YAML::Dumper'};
+has loader_class => default => sub {'YAML::Loader'};
+has dumper_object => default => sub {$_[0]->init_action_object("dumper")};
+has loader_object => default => sub {$_[0]->init_action_object("loader")};
 
 sub Dump {
     my $yaml = YAML->new;
@@ -56,7 +54,7 @@ sub DumpFile {
             ($mode, $filename) = ($1, $2);
         }
         open $OUT, $mode, $filename
-          or YAML::Base->die('YAML_DUMP_ERR_FILE_OUTPUT', $filename, $!);
+          or YAML::Mo::Object->die('YAML_DUMP_ERR_FILE_OUTPUT', $filename, $!);
     }
     binmode $OUT, ':utf8';  # if $Config{useperlio} eq 'define';
     local $/ = "\n"; # reset special to "sane"
@@ -71,7 +69,7 @@ sub LoadFile {
     }
     else {
         open $IN, '<', $filename
-          or YAML::Base->die('YAML_LOAD_ERR_FILE_INPUT', $filename, $!);
+          or YAML::Mo::Object->die('YAML_LOAD_ERR_FILE_INPUT', $filename, $!);
     }
     binmode $IN, ':utf8';  # if $Config{useperlio} eq 'define';
     return Load(do { local $/; <$IN> });
@@ -664,7 +662,7 @@ optimum human readability.
 
 =item plain scalar
 
-A plain sclar is unquoted. All plain scalars are automatic candidates
+A plain scalar is unquoted. All plain scalars are automatic candidates
 for "implicit tagging". This means that their tag may be determined
 automatically by examination. The typical uses for this are plain alpha
 strings, integers, real numbers, dates, times and currency.
@@ -789,7 +787,7 @@ L<http://yaml.kwiki.org> is the official YAML wiki.
 
 =head1 SEE ALSO
 
-See YAML::Syck. Fast!
+See YAML::XS. Fast!
 
 =head1 AUTHOR
 
@@ -798,12 +796,12 @@ Ingy döt Net <ingy@cpan.org>
 is resonsible for YAML.pm.
 
 The YAML serialization language is the result of years of collaboration
-between Oren Ben-Kiki, Clark Evans and Ingy dE<ouml>t Net. Several others
+between Oren Ben-Kiki, Clark Evans and Ingy döt Net. Several others
 have added help along the way.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2005, 2006, 2008. Ingy dE<ouml>t Net.
+Copyright (c) 2005, 2006, 2008, 2011-2012. Ingy döt Net.
 
 Copyright (c) 2001, 2002, 2005. Brian Ingerson.
 

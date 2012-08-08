@@ -9,7 +9,7 @@ package HTML::Parser;
 use strict;
 use vars qw($VERSION @ISA);
 
-$VERSION = "3.68";
+$VERSION = "3.69";
 
 require HTML::Entities;
 
@@ -650,9 +650,7 @@ names are forced to lower case.
 General entities are decoded in the attribute values and
 one layer of matching quotes enclosing the attribute values is removed.
 
-The Unicode character set is assumed for entity decoding.  With Perl
-version 5.6 or earlier only the Latin-1 range is supported, and
-entities for characters outside the range 0..255 are left unchanged.
+The Unicode character set is assumed for entity decoding.
 
 =item C<@attr>
 
@@ -1192,12 +1190,14 @@ The result of decoding will be a mix of encoded and decoded characters
 for any entities that expand to characters with code above 127.  This
 is not a good thing.
 
-The solution is to use the Encode::encode_utf8() on the data before
-feeding it to the $p->parse().  For $p->parse_file() pass a file that
-has been opened in ":utf8" mode.
+The recommened solution is to apply Encode::decode_utf8() on the data before
+feeding it to the $p->parse().  For $p->parse_file() pass a file that has been
+opened in ":utf8" mode.
 
-The parser can process raw undecoded UTF-8 sanely if the C<utf8_mode>
-is enabled or if the "attr", "@attr" or "dtext" argspecs is avoided.
+The alternative solution is to enable the C<utf8_mode> and not decode before
+passing strings to $p->parse().  The parser can process raw undecoded UTF-8
+sanely if the C<utf8_mode> is enabled, or if the "attr", "@attr" or "dtext"
+argspecs are avoided.
 
 =item Parsing string decoded with wrong endianness
 

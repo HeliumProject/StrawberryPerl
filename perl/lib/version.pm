@@ -6,7 +6,7 @@ use strict;
 
 use vars qw(@ISA $VERSION $CLASS $STRICT $LAX *declare *qv);
 
-$VERSION = 0.88;
+$VERSION = 0.99;
 
 $CLASS = 'version';
 
@@ -114,40 +114,6 @@ $LAX =
 
 #--------------------------------------------------------------------------#
 
-eval "use version::vxs $VERSION";
-if ( $@ ) { # don't have the XS version installed
-    eval "use version::vpp $VERSION"; # don't tempt fate
-    die "$@" if ( $@ );
-    push @ISA, "version::vpp";
-    local $^W;
-    *version::qv = \&version::vpp::qv;
-    *version::declare = \&version::vpp::declare;
-    *version::_VERSION = \&version::vpp::_VERSION;
-    if ($] >= 5.009000 && $] < 5.011004) {
-	no strict 'refs';
-	*version::stringify = \&version::vpp::stringify;
-	*{'version::(""'} = \&version::vpp::stringify;
-	*version::new = \&version::vpp::new;
-	*version::parse = \&version::vpp::parse;
-    }
-}
-else { # use XS module
-    push @ISA, "version::vxs";
-    local $^W;
-    *version::declare = \&version::vxs::declare;
-    *version::qv = \&version::vxs::qv;
-    *version::_VERSION = \&version::vxs::_VERSION;
-    *version::vcmp = \&version::vxs::VCMP;
-    if ($] >= 5.009000 && $] < 5.011004) {
-	no strict 'refs';
-	*version::stringify = \&version::vxs::stringify;
-	*{'version::(""'} = \&version::vxs::stringify;
-	*version::new = \&version::vxs::new;
-	*version::parse = \&version::vxs::parse;
-    }
-
-}
-
 # Preloaded methods go here.
 sub import {
     no strict 'refs';
@@ -184,12 +150,6 @@ sub import {
 	*{$callpkg.'::qv'} =
 	    sub {return $class->qv(shift) }
 	  unless defined(&{$callpkg.'::qv'});
-    }
-
-    if (exists($args{'UNIVERSAL::VERSION'})) {
-	local $^W;
-	*UNIVERSAL::VERSION 
-		= \&version::_VERSION;
     }
 
     if (exists($args{'VERSION'})) {

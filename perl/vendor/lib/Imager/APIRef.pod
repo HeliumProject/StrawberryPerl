@@ -21,7 +21,9 @@ Imager::APIRef - Imager's C API - reference.
   i_color black;
   black.rgba.r = black.rgba.g = black.rgba.b = black.rgba.a = 0;
   i_fill_t *fill;
-  i_img_dim x;
+  i_img_dim x, y;
+  printf("left %" i_DF "\n", i_DFc(x));
+  printf("point (" i_DFp ")\n", i_DFcp(x, y));
 
   # Drawing
   i_arc(im, 50, 50, 20, 45, 135, &color);
@@ -58,21 +60,28 @@ Imager::APIRef - Imager's C API - reference.
                           i_fr_triangle, 0, i_fts_grid, 9, 1, segs);
   i_fill_destroy(fill);
 
+  # I/O Layers
+  ssize_t count = i_io_peekn(ig, buffer, sizeof(buffer));
+  ssize_t result = i_io_write(io, buffer, size)
+  char buffer[BUFSIZ]
+  ssize_t len = i_io_gets(buffer, sizeof(buffer), '\n');
+  io_glue_destroy(ig);
+
   # Image
 
   # Image creation/destruction
-  i_img *img = i_img_8_new(width, height, channels);
   i_img *img = i_sametype(src, width, height);
   i_img *img = i_sametype_chans(src, width, height, channels);
-  i_img *img = i_img_pal_new(width, height, channels, max_palette_size)
-  i_img *img = i_img_double_new(width, height, channels);
   i_img *img = i_img_16_new(width, height, channels);
+  i_img *img = i_img_8_new(width, height, channels);
+  i_img *img = i_img_double_new(width, height, channels);
+  i_img *img = i_img_pal_new(width, height, channels, max_palette_size)
   i_img_destroy(img)
 
   # Image Implementation
 
   # Image Information
-  // only channel 0 writeable 
+  // only channel 0 writable 
   i_img_setmask(img, 0x01);
   int mask = i_img_getmask(img);
   int channels = i_img_getchannels(img);
@@ -158,6 +167,8 @@ From: File render.im
 =over
 
 =item i_img
+
+  i_img *img;
 
 This is Imager's image type.
 
@@ -246,6 +257,14 @@ i_f_gsamp_bits - implements i_gsamp_bits() for this image.
 
 i_f_psamp_bits - implements i_psamp_bits() for this image.
 
+=item *
+
+i_f_psamp - implements psamp() for this image.
+
+=item *
+
+i_f_psampf - implements psamp() for this image.
+
 =back
 
 
@@ -253,6 +272,9 @@ i_f_psamp_bits - implements i_psamp_bits() for this image.
 From: File imdatatypes.h
 
 =item i_color
+
+  i_color black;
+  black.rgba.r = black.rgba.g = black.rgba.b = black.rgba.a = 0;
 
 Type for 8-bit/sample color.
 
@@ -304,6 +326,8 @@ From: File imdatatypes.h
 
 =item i_fill_t
 
+  i_fill_t *fill;
+
 This is the "abstract" base type for Imager's fill types.
 
 Unless you're implementing a new fill type you'll typically treat this
@@ -315,9 +339,52 @@ From: File imdatatypes.h
 
 =item i_img_dim
 
+  i_img_dim x, y;
+
 A signed integer type that represents an image dimension or ordinate.
 
 May be larger than int on some platforms.
+
+
+=for comment
+From: File imdatatypes.h
+
+=item i_DF
+
+  printf("left %" i_DF "\n", i_DFc(x));
+
+This is a constant string that can be used with functions like
+printf() to format i_img_dim values after they're been cast with i_DFc().
+
+Does not include the leading C<%>.
+
+
+=for comment
+From: File imdatatypes.h
+
+=item i_DFc
+
+Cast an C<i_img_dim> value to a type for use with the i_DF format
+string.
+
+
+=for comment
+From: File imdatatypes.h
+
+=item i_DFcp
+
+Casts two C<i_img_dim> values for use with the i_DF (or i_DFp) format.
+
+
+=for comment
+From: File imdatatypes.h
+
+=item i_DFp
+
+  printf("point (" i_DFp ")\n", i_DFcp(x, y));
+
+Format a pair of C<i_img_dim> values.  This format string I<does>
+include the leading C<%>.
 
 
 =for comment
@@ -333,6 +400,8 @@ From: File imdatatypes.h
 =item i_arc(im, x, y, rad, d1, d2, color)
 
 
+  i_arc(im, 50, 50, 20, 45, 135, &color);
+
 Fills an arc centered at (x,y) with radius I<rad> covering the range
 of angles in degrees from d1 to d2, with the color.
 
@@ -342,6 +411,8 @@ From: File draw.c
 
 =item i_arc_aa(im, x, y, rad, d1, d2, color)
 
+
+  i_arc_aa(im, 50, 50, 35, 90, 135, &color);
 
 Anti-alias fills an arc centered at (x,y) with radius I<rad> covering
 the range of angles in degrees from d1 to d2, with the color.
@@ -353,6 +424,8 @@ From: File draw.c
 =item i_arc_aa_cfill(im, x, y, rad, d1, d2, fill)
 
 
+  i_arc_aa_cfill(im, 50, 50, 35, 90, 135, fill);
+
 Anti-alias fills an arc centered at (x,y) with radius I<rad> covering
 the range of angles in degrees from d1 to d2, with the fill object.
 
@@ -362,6 +435,8 @@ From: File draw.c
 
 =item i_arc_cfill(im, x, y, rad, d1, d2, fill)
 
+
+  i_arc_cfill(im, 50, 50, 35, 90, 135, fill);
 
 Fills an arc centered at (x,y) with radius I<rad> covering the range
 of angles in degrees from d1 to d2, with the fill object.
@@ -373,6 +448,8 @@ From: File draw.c
 =item i_box(im, x1, y1, x2, y2, color)
 
 
+  i_box(im, 0, 0, im->xsize-1, im->ysize-1, &color).
+
 Outlines the box from (x1,y1) to (x2,y2) inclusive with I<color>.
 
 
@@ -381,6 +458,8 @@ From: File draw.c
 
 =item i_box_cfill(im, x1, y1, x2, y2, fill)
 
+
+  i_box_cfill(im, 0, 0, im->xsize-1, im->ysize-1, fill);
 
 Fills the box from (x1,y1) to (x2,y2) inclusive with fill.
 
@@ -391,6 +470,8 @@ From: File draw.c
 =item i_box_filled(im, x1, y1, x2, y2, color)
 
 
+  i_box_filled(im, 0, 0, im->xsize-1, im->ysize-1, &color);
+
 Fills the box from (x1,y1) to (x2,y2) inclusive with color.
 
 
@@ -399,6 +480,8 @@ From: File draw.c
 
 =item i_circle_aa(im, x, y, rad, color)
 
+
+  i_circle_aa(im, 50, 50, 45, &color);
 
 Anti-alias fills a circle centered at (x,y) for radius I<rad> with
 color.
@@ -409,6 +492,8 @@ From: File draw.c
 
 =item i_flood_cfill(C<im>, C<seedx>, C<seedy>, C<fill>)
 
+
+  i_flood_cfill(im, 50, 50, fill);
 
 Flood fills the 4-connected region starting from the point (C<seedx>,
 C<seedy>) with C<fill>.
@@ -421,6 +506,8 @@ From: File draw.c
 
 =item i_flood_cfill_border(C<im>, C<seedx>, C<seedy>, C<fill>, C<border>)
 
+
+  i_flood_cfill_border(im, 50, 50, fill, border);
 
 Flood fills the 4-connected region starting from the point (C<seedx>,
 C<seedy>) with C<fill>, the fill stops when it reaches pixels of color
@@ -435,6 +522,8 @@ From: File draw.c
 =item i_flood_fill(C<im>, C<seedx>, C<seedy>, C<color>)
 
 
+  i_flood_fill(im, 50, 50, &color);
+
 Flood fills the 4-connected region starting from the point (C<seedx>,
 C<seedy>) with I<color>.
 
@@ -446,6 +535,8 @@ From: File draw.c
 
 =item i_flood_fill_border(C<im>, C<seedx>, C<seedy>, C<color>, C<border>)
 
+
+  i_flood_fill_border(im, 50, 50, &color, &border);
 
 Flood fills the 4-connected region starting from the point (C<seedx>,
 C<seedy>) with C<color>, fill stops when the fill reaches a pixels
@@ -546,6 +637,23 @@ channels.
 
 =for comment
 From: File paste.im
+
+=item i_gsamp_bits(im, left, right, y, samples, channels, channel_count, bits)
+
+Reads integer samples scaled to C<bits> bits of precision into the
+C<unsigned int> array C<samples>.
+
+Expect this to be slow unless C<< bits == im->bits >>.
+
+Returns the number of samples copied, or -1 on error.
+
+Not all image types implement this method.
+
+Pushes errors, but does not call C<i_clear_error()>.
+
+
+=for comment
+From: File imext.c
 
 =item i_gsampf(im, left, right, y, samples, channels, channel_count)
 
@@ -673,6 +781,60 @@ color to the image.
 =for comment
 From: File imext.c
 
+=item i_psamp(im, left, right, y, samples, channels, channel_count)
+
+Writes sample values from C<samples> to C<im> for the horizontal line
+(left, y) to (right-1, y) inclusive for the channels specified by
+C<channels>, an array of C<int> with C<channel_count> elements.
+
+If C<channels> is C<NULL> then the first C<channels_count> channels
+are written to for each pixel.
+
+Returns the number of samples written, which should be (right - left)
+* channel_count.  If a channel not in the image is in channels, left
+is negative, left is outside the image or y is outside the image,
+returns -1 and pushes an error.
+
+
+=for comment
+From: File immacros.h
+
+=item i_psamp_bits(im, left, right, y, samples, channels, channel_count, bits)
+
+Writes integer samples scaled to C<bits> bits of precision from the
+C<unsigned int> array C<samples>.
+
+Expect this to be slow unless C<< bits == im->bits >>.
+
+Returns the number of samples copied, or -1 on error.
+
+Not all image types implement this method.
+
+Pushes errors, but does not call C<i_clear_error()>.
+
+
+=for comment
+From: File imext.c
+
+=item i_psampf(im, left, right, y, samples, channels, channel_count)
+
+Writes floating point sample values from C<samples> to C<im> for the
+horizontal line (left, y) to (right-1, y) inclusive for the channels
+specified by C<channels>, an array of C<int> with C<channel_count>
+elements.
+
+If C<channels> is C<NULL> then the first C<channels_count> channels
+are written to for each pixel.
+
+Returns the number of samples written, which should be (right - left)
+* channel_count.  If a channel not in the image is in channels, left
+is negative, left is outside the image or y is outside the image,
+returns -1 and pushes an error.
+
+
+=for comment
+From: File immacros.h
+
 
 =back
 
@@ -681,6 +843,8 @@ From: File imext.c
 =over
 
 =item i_clear_error()
+
+  i_clear_error();
 
 Clears the error stack.
 
@@ -691,6 +855,9 @@ Called by any Imager function before doing any other processing.
 From: File error.c
 
 =item i_push_error(int code, char const *msg)
+
+  i_push_error(0, "Yep, it's broken");
+  i_push_error(errno, "Error writing");
 
 Called by an Imager function to push an error message onto the stack.
 
@@ -703,6 +870,8 @@ error handling is calling function that does.).
 From: File error.c
 
 =item i_push_errorf(int code, char const *fmt, ...)
+
+  i_push_errorf(errno, "Cannot open file %s: %d", filename, errno);
 
 A version of i_push_error() that does printf() like formatting.
 
@@ -736,7 +905,9 @@ From: File error.c
 
 Retrieve the file write background color tag from the image.
 
-If not present, returns black.
+If not present, C<bg> is set to black.
+
+Returns 1 if the C<i_background> tag was found and valid.
 
 
 =for comment
@@ -750,7 +921,9 @@ floating point color.
 
 Implemented in terms of i_get_file_background().
 
-If not present, returns black.
+If not present, C<bg> is set to black.
+
+Returns 1 if the C<i_background> tag was found and valid.
 
 
 =for comment
@@ -759,7 +932,21 @@ From: File image.c
 =item i_get_image_file_limits(&width, &height, &bytes)
 
 
+  i_get_image_file_limits(&width, &height, &bytes)
+
 Retrieves the file limits set by i_set_image_file_limits().
+
+=over
+
+=item *
+
+i_img_dim *width, *height - the maximum width and height of the image.
+
+=item *
+
+size_t *bytes - size in memory of the image in bytes.
+
+=back
 
 
 =for comment
@@ -767,6 +954,8 @@ From: File limits.c
 
 =item i_int_check_image_file_limits(width, height, channels, sample_size)
 
+
+  i_i_int_check_image_file_limits(width, height, channels, sizeof(i_sample_t))
 
 Checks the size of a file in memory against the configured image file
 limits.
@@ -785,11 +974,27 @@ From: File limits.c
 =item i_set_image_file_limits(width, height, bytes)
 
 
+  i_set_image_file_limits(500, 500, 1000000);
+
 Set limits on the sizes of images read by Imager.
 
 Setting a limit to 0 means that limit is ignored.
 
 Negative limits result in failure.
+
+Parameters:
+
+=over
+
+=item *
+
+i_img_dim width, height - maximum width and height.
+
+=item *
+
+size_t bytes - maximum size in memory in bytes
+
+=back
 
 Returns non-zero on success.
 
@@ -807,6 +1012,9 @@ From: File limits.c
 =item i_new_fill_fount(C<xa>, C<ya>, C<xb>, C<yb>, C<type>, C<repeat>, C<combine>, C<super_sample>, C<ssample_param>, C<count>, C<segs>)
 
 
+  fill = i_new_fill_fount(0, 0, 100, 100, i_ft_linear, i_ft_linear, 
+                          i_fr_triangle, 0, i_fts_grid, 9, 1, segs);
+
 
 Creates a new general fill which fills with a fountain fill.
 
@@ -816,6 +1024,8 @@ From: File filters.im
 
 =item i_new_fill_hatch(C<fg>, C<bg>, C<combine>, C<hatch>, C<cust_hatch>, C<dx>, C<dy>)
 
+
+  i_fill_t *fill = i_new_fill_hatch(&fg_color, &bg_color, combine, hatch, custom_hatch, dx, dy);
 
 Creates a new hatched fill with the C<fg> color used for the 1 bits in
 the hatch and C<bg> for the 0 bits.  If C<combine> is non-zero alpha
@@ -837,6 +1047,8 @@ From: File fills.c
 =item i_new_fill_hatchf(C<fg>, C<bg>, C<combine>, C<hatch>, C<cust_hatch>, C<dx>, C<dy>)
 
 
+  i_fill_t *fill = i_new_fill_hatchf(&fg_fcolor, &bg_fcolor, combine, hatch, custom_hatch, dx, dy);
+
 Creates a new hatched fill with the C<fg> color used for the 1 bits in
 the hatch and C<bg> for the 0 bits.  If C<combine> is non-zero alpha
 values will be combined.
@@ -857,6 +1069,8 @@ From: File fills.c
 =item i_new_fill_image(C<im>, C<matrix>, C<xoff>, C<yoff>, C<combine>)
 
 
+  i_fill_t *fill = i_new_fill_image(src_img, matrix, x_offset, y_offset, combine);
+
 Create an image based fill.
 
 matrix is an array of 9 doubles representing a transformation matrix.
@@ -870,6 +1084,8 @@ From: File fills.c
 =item i_new_fill_solid(color, combine)
 
 
+  i_fill_t *fill = i_new_fill_solid(&color, combine);
+
 Create a solid fill based on an 8-bit color.
 
 If combine is non-zero then alpha values will be combined.
@@ -881,6 +1097,8 @@ From: File fills.c
 =item i_new_fill_solidf(color, combine)
 
 
+  i_fill_t *fill = i_new_fill_solidf(&fcolor, combine);
+
 Create a solid fill based on a float color.
 
 If combine is non-zero then alpha values will be combined.
@@ -891,11 +1109,277 @@ From: File fills.c
 
 =item i_fill_destroy(fill)
 
+  i_fill_destroy(fill);
+
 Call to destroy any fill object.
 
 
 =for comment
 From: File fills.c
+
+
+=back
+
+=head2 I/O Layers
+
+=over
+
+=item io_new_bufchain()
+
+returns a new io_glue object that has the 'empty' source and but can
+be written to and read from later (like a pseudo file).
+
+
+=for comment
+From: File iolayer.c
+
+=item io_new_buffer(data, length)
+
+Returns a new io_glue object that has the source defined as reading
+from specified buffer.  Note that the buffer is not copied.
+
+   data - buffer to read from
+   length - length of buffer
+
+
+=for comment
+From: File iolayer.c
+
+=item io_new_cb(p, read_cb, write_cb, seek_cb, close_cb, destroy_cb)
+
+Create a new I/O layer object that calls your supplied callbacks.
+
+In general the callbacks should behave like the corresponding POSIX
+primitives.
+
+=over
+
+=item *
+
+C<read_cb>(p, buffer, length) should read up to C<length> bytes into
+C<buffer> and return the number of bytes read.  At end of file, return
+0.  On error, return -1.
+
+=item *
+
+C<write_cb>(p, buffer, length) should write up to C<length> bytes from
+C<buffer> and return the number of bytes written.  A return value <= 0
+will be treated as an error.
+
+=item *
+
+C<seekcb>(p, offset, whence) should seek and return the new offset.
+
+=item *
+
+C<close_cb>(p) should return 0 on success, -1 on failure.
+
+=item *
+
+C<destroy_cb>(p) should release any memory specific to your callback
+handlers.
+
+=back
+
+
+=for comment
+From: File iolayer.c
+
+=item io_new_fd(fd)
+
+returns a new io_glue object that has the source defined as reading
+from specified file descriptor.  Note that the the interface to receiving
+data from the io_glue callbacks hasn't been done yet.
+
+   fd - file descriptor to read/write from
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_close(io)
+
+Flush any pending output and perform the close action for the stream.
+
+Returns 0 on success.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_flush(io)
+
+Flush any buffered output.
+
+Returns true on success,
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_getc(ig)
+
+A macro to read a single byte from a buffered I/O glue object.
+
+Returns EOF on failure, or a byte.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_gets(ig, buffer, size, end_of_line)
+
+  char buffer[BUFSIZ]
+  ssize_t len = i_io_gets(buffer, sizeof(buffer), '\n');
+
+Read up to C<size>-1 bytes from the stream C<ig> into C<buffer>.
+
+If the byte C<end_of_line> is seen then no further bytes will be read.
+
+Returns the number of bytes read.
+
+Always C<NUL> terminates the buffer.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_peekc(ig)
+
+Read the next character from the stream without advancing the stream.
+
+On error or end of file, return EOF.
+
+For unbuffered streams a single character buffer will be setup.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_peekn(ig, buffer, size)
+
+  ssize_t count = i_io_peekn(ig, buffer, sizeof(buffer));
+
+Buffer at least C<size> (at most C<< ig->buf_size >> bytes of data
+from the stream and return C<size> bytes of it to the caller in
+C<buffer>.
+
+This ignores the buffered state of the stream, and will always setup
+buffering if needed.
+
+If no C<type> parameter is provided to Imager::read() or
+Imager::read_multi(), Imager will call C<i_io_peekn()> when probing
+for the file format.
+
+Returns -1 on error, 0 if there is no data before EOF, or the number
+of bytes read into C<buffer>.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_putc(ig, c)
+
+Write a single character to the stream.
+
+On success return c, on error returns EOF
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_read(io, buffer, size)
+
+Read up to C<size> bytes from the stream C<io> into C<buffer>.
+
+Returns the number of bytes read.  Returns 0 on end of file.  Returns
+-1 on error.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_seek(io, offset, whence)
+
+Seek within the stream.
+
+Acts like perl's seek.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_set_buffered(io, buffered)
+
+Set the buffering mode of the stream.
+
+If you switch buffering off on a stream with buffering on:
+
+=over
+
+=item *
+
+any buffered output will be flushed.
+
+=item *
+
+any existing buffered input will be consumed before reads become
+unbuffered.
+
+=back
+
+Returns true on success.  This may fail if any buffered output cannot
+be flushed.
+
+
+=for comment
+From: File iolayer.c
+
+=item i_io_write(io, buffer, size)
+
+  ssize_t result = i_io_write(io, buffer, size)
+
+Write to the given I/O stream.
+
+Returns the number of bytes written.
+
+
+=for comment
+From: File iolayer.c
+
+=item io_slurp(ig, c)
+
+Takes the source that the io_glue is bound to and allocates space for
+a return buffer and returns the entire content in a single buffer.
+Note: This only works for io_glue objects created by
+io_new_bufchain().  It is useful for saving to scalars and such.
+
+   ig - io_glue object
+   c  - pointer to a pointer to where data should be copied to
+
+  char *data;
+  size_t size = io_slurp(ig, &data);
+  ... do something with the data ...
+  myfree(data);
+
+io_slurp() will abort the program if the supplied I/O layer is not
+from io_new_bufchain().
+
+
+=for comment
+From: File iolayer.c
+
+=item io_glue_destroy(ig)
+
+  io_glue_destroy(ig);
+
+Destroy an io_glue objects.  Should clean up all related buffers.
+
+   ig - io_glue object to destroy.
+
+
+=for comment
+From: File iolayer.c
 
 
 =back
@@ -986,6 +1470,8 @@ From: File rubthru.im
 =item i_img_16_new(x, y, ch)
 
 
+  i_img *img = i_img_16_new(width, height, channels);
+
 Create a new 16-bit/sample image.
 
 Returns the image on success, or NULL on failure.
@@ -998,14 +1484,18 @@ From: File img16.c
 
 
 
+  i_img *img = i_img_8_new(width, height, channels);
+
 Creates a new image object I<x> pixels wide, and I<y> pixels high with
 I<ch> channels.
 
 
 =for comment
-From: File image.c
+From: File img8.c
 
-=item i_img_double_new(int x, int y, int ch)
+=item i_img_double_new(i_img_dim x, i_img_dim y, int ch)
+
+  i_img *img = i_img_double_new(width, height, channels);
 
 Creates a new double per sample image.
 
@@ -1015,6 +1505,8 @@ From: File imgdouble.c
 
 =item i_img_pal_new(C<x>, C<y>, C<channels>, C<maxpal>)
 
+
+  i_img *img = i_img_pal_new(width, height, channels, max_palette_size)
 
 Creates a new paletted image of the supplied dimensions.
 
@@ -1029,6 +1521,8 @@ From: File palimg.c
 =item i_sametype(C<im>, C<xsize>, C<ysize>)
 
 
+  i_img *img = i_sametype(src, width, height);
+
 Returns an image of the same type (sample size, channels, paletted/direct).
 
 For paletted images the palette is copied from the source.
@@ -1040,6 +1534,8 @@ From: File image.c
 =item i_sametype_chans(C<im>, C<xsize>, C<ysize>, C<channels>)
 
 
+  i_img *img = i_sametype_chans(src, width, height, channels);
+
 Returns an image of the same type (sample size).
 
 For paletted images the equivalent direct type is returned.
@@ -1049,6 +1545,8 @@ For paletted images the equivalent direct type is returned.
 From: File image.c
 
 =item i_img_destroy(C<img>)
+
+  i_img_destroy(img)
 
 Destroy an image object
 
@@ -1121,6 +1619,8 @@ From: File immacros.h
 
 =item i_img_get_height(C<im>)
 
+  i_img_dim height = i_img_get_height(im);
+
 Returns the height in pixels of the image.
 
 
@@ -1128,6 +1628,8 @@ Returns the height in pixels of the image.
 From: File image.c
 
 =item i_img_get_width(C<im>)
+
+  i_img_dim width = i_img_get_width(im);
 
 Returns the width in pixels of the image.
 
@@ -1137,6 +1639,8 @@ From: File image.c
 
 =item i_img_getchannels(C<im>)
 
+  int channels = i_img_getchannels(img);
+
 Get the number of channels in C<im>.
 
 
@@ -1144,6 +1648,8 @@ Get the number of channels in C<im>.
 From: File image.c
 
 =item i_img_getmask(C<im>)
+
+  int mask = i_img_getmask(img);
 
 Get the image channel mask for C<im>.
 
@@ -1191,6 +1697,9 @@ C<zero_is_white> is set to non-zero if the first palette entry is white.
 From: File image.c
 
 =item i_img_setmask(C<im>, C<ch_mask>)
+
+  // only channel 0 writable 
+  i_img_setmask(img, 0x01);
 
 Set the image channel mask for C<im> to C<ch_mask>.
 
@@ -1535,6 +2044,8 @@ From: File tags.c
 
 =item i_tags_set(tags, name, data, size)
 
+  i_tags_set(&img->tags, "i_comment", -1);
+
 Sets the given tag to the string I<data>
 
 If size is -1 then the strlen(I<data>) bytes are stored.
@@ -1579,6 +2090,9 @@ From: File tags.c
 
 =item i_tags_setn(C<tags>, C<name>, C<idata>)
 
+  i_tags_setn(&img->tags, "i_xres", 204);
+  i_tags_setn(&img->tags, "i_yres", 196);
+
 Sets the given tag to the integer C<idata>
 
 Even on failure, if an existing tag C<name> exists, it will be
@@ -1602,10 +2116,14 @@ Retrieve a C<UTF-8> character from the stream.
 Modifies *p and *len to indicate the consumed characters.
 
 This doesn't support the extended C<UTF-8> encoding used by later
-versions of Perl.
+versions of Perl.  Since this is typically used to implement text
+output by font drivers, the strings supplied shouldn't have such out
+of range characters.
 
 This doesn't check that the C<UTF-8> character is using the shortest
 possible representation.
+
+Returns ~0UL on failure.
 
 
 =for comment
@@ -1618,7 +2136,7 @@ From: File io.c
 
 =head1 AUTHOR
 
-Tony Cook <tony@imager.perl.org>
+Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

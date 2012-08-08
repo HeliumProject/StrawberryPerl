@@ -3,12 +3,10 @@ package HTML::Form;
 use strict;
 use URI;
 use Carp ();
+use Encode ();
 
-use vars qw($VERSION $Encode_available);
-$VERSION = "5.829";
-
-eval { require Encode };
-$Encode_available = !$@;
+use vars qw($VERSION);
+$VERSION = "6.03";
 
 my %form_tags = map {$_ => 1} qw(input textarea button select option);
 
@@ -31,6 +29,13 @@ my %type2class = (
 
  keygen   => "KeygenInput",
 );
+
+# The new HTML5 input types
+%type2class = (%type2class, map { $_ => 'TextInput' } qw(
+    tel search url email
+    datetime date month week time datetime-local
+    number range color
+));
 
 =head1 NAME
 
@@ -76,9 +81,9 @@ relative action URIs.  The provided HTML document should be a Unicode string
 (or US-ASCII).
 
 By default HTML::Form assumes that the original document was UTF-8 encoded and
-thus encode forms that don't specify an explict I<accept-charset> as UTF-8.
+thus encode forms that don't specify an explicit I<accept-charset> as UTF-8.
 The charset assumed can be overridden by providing the C<charset> option to
-parse().  It's a good idea to be explict about this parameter as well, thus
+parse().  It's a good idea to be explicit about this parameter as well, thus
 the recommended simplest invocation becomes:
 
     my @forms = HTML::Form->parse(
@@ -124,11 +129,14 @@ the default for accept_charset.  If not provided this defaults to "UTF-8".
 =item C<< verbose => $bool >>
 
 Warn (print messages to STDERR) about any bad HTML form constructs found.
-You can trap these with $SIG{__WARN__}.
+You can trap these with $SIG{__WARN__}.  The default is not to issue warnings.
 
 =item C<< strict => $bool >>
 
 Initialize any form objects with the given strict attribute.
+If the strict is turned on the methods that change values of the form will croak if you try
+to set illegal values or modify readonly fields.
+The default is not to be strict.
 
 =back
 
@@ -196,13 +204,15 @@ sub parse
 		my($tag, $attr) = @$t;
 		last if $tag eq "/form";
 
-		# if we are inside a label tag, then keep
-		# appending any text to the current label
-		if(defined $current_label) {
-		    $current_label = join " ",
-		        grep { defined and length }
-		        $current_label,
-		        $p->get_phrase;
+		if ($tag ne 'textarea') {
+		    # if we are inside a label tag, then keep
+		    # appending any text to the current label
+		    if(defined $current_label) {
+		        $current_label = join " ",
+		            grep { defined and length }
+		            $current_label,
+		            $p->get_phrase;
+		    }
 		}
 
 		if ($tag eq "input") {
@@ -368,9 +378,7 @@ string like "application/x-www-form-urlencoded" or "multipart/form-data".
 This method gets/sets the list of charset encodings that the server processing
 the form accepts. Current implementation supports only one-element lists.
 Default value is "UNKNOWN" which we interpret as a request to use document
-charset as specified by the 'charset' parameter of the parse() method. To
-encode character strings you should have modern perl with Encode module. On
-older perls the setting of this attribute has no effect.
+charset as specified by the 'charset' parameter of the parse() method.
 
 =cut
 
@@ -694,10 +702,8 @@ sub make_request
     my @form    = $self->form;
 
     my $charset = $self->accept_charset eq "UNKNOWN" ? $self->{default_charset} : $self->accept_charset;
-    if ($Encode_available) {
-        foreach my $fi (@form) {
-            $fi = Encode::encode($charset, $fi) unless ref($fi);
-        }
+    foreach my $fi (@form) {
+	$fi = Encode::encode($charset, $fi) unless ref($fi);
     }
 
     if ($method eq "GET") {

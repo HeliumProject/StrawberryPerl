@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 440
@@ -531,16 +531,16 @@ extern "C" {
 #ifndef DECIMAL_SETZERO
   typedef struct tagDEC {
     USHORT wReserved;
-    __MINGW_EXTENSION union {
-      __MINGW_EXTENSION struct {
+    __C89_NAMELESS union {
+      __C89_NAMELESS struct {
 	BYTE scale;
 	BYTE sign;
       };
       USHORT signscale;
     };
     ULONG Hi32;
-    __MINGW_EXTENSION union {
-      __MINGW_EXTENSION struct {
+    __C89_NAMELESS union {
+      __C89_NAMELESS struct {
 	ULONG Lo32;
 	ULONG Mid32;
       };

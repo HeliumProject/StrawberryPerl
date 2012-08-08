@@ -5,24 +5,17 @@ use vars qw($VERSION @ISA);
 @ISA = qw(Imager::Font);
 
 BEGIN {
-  $VERSION = "0.79";
+  $VERSION = "0.85";
 
-  eval {
-    require XSLoader;
-    XSLoader::load('Imager::Font::FT2', $VERSION);
-    1;
-  } or do {
-    require DynaLoader;
-    push @ISA, 'DynaLoader';
-    bootstrap Imager::Font::FT2 $VERSION;
-  };
+  require XSLoader;
+  XSLoader::load('Imager::Font::FT2', $VERSION);
 }
 
 *_first = \&Imager::Font::_first;
 
 sub new {
   my $class = shift;
-  my %hsh=(color=>Imager::Color->new(255,0,0,0),
+  my %hsh=(color=>Imager::Color->new(255,0,0,255),
 	   size=>15,
 	   @_);
 
@@ -218,7 +211,7 @@ supported font files, so I've renamed it.
 
 =head1 AUTHOR
 
-Tony Cook <tony@imager.perl.org>
+Tony Cook <tonyc@cpan.org>
 
 =head1 SEE ALSO
 

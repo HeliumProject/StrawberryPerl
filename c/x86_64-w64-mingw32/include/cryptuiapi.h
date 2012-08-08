@@ -1,11 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __CRYPTUIAPI_H__
 #define __CRYPTUIAPI_H__
 
+#include <_mingw_unicode.h>
 #include <wintrust.h>
 #include <wincrypt.h>
 
@@ -79,7 +80,7 @@ extern "C" {
     DWORD dwSize;
     LPWSTR pwszSigningCertFileName;
     DWORD dwPvkChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       PCCRYPTUI_WIZ_DIGITAL_SIGN_PVK_FILE_INFO pPvkFileInfo;
       PCRYPT_KEY_PROV_INFO pPvkProvInfo;
     };
@@ -115,12 +116,12 @@ extern "C" {
   typedef struct _CRYPTUI_WIZ_DIGITAL_SIGN_INFO {
     DWORD dwSize;
     DWORD dwSubjectChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LPCWSTR pwszFileName;
       PCCRYPTUI_WIZ_DIGITAL_SIGN_BLOB_INFO pSignBlobInfo;
     };
     DWORD dwSigningCertChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       PCCERT_CONTEXT pSigningCertContext;
       PCCRYPTUI_WIZ_DIGITAL_SIGN_STORE_INFO pSigningCertStore;
       PCCRYPTUI_WIZ_DIGITAL_SIGN_CERT_PVK_INFO pSigningCertPvkInfo;
@@ -179,7 +180,7 @@ extern "C" {
     PCCERT_CONTEXT pCertContext;
     LPCSTR *rgszPurposes;
     DWORD cPurposes;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       CRYPT_PROVIDER_DATA const *pCryptProviderData;
       HANDLE hWVTStateData;
     };
@@ -194,6 +195,7 @@ extern "C" {
     LPCPROPSHEETPAGEW rgPropSheetPages;
     DWORD nStartPage;
   } CRYPTUI_VIEWCERTIFICATE_STRUCTW,*PCRYPTUI_VIEWCERTIFICATE_STRUCTW;
+
   typedef const CRYPTUI_VIEWCERTIFICATE_STRUCTW *PCCRYPTUI_VIEWCERTIFICATE_STRUCTW;
 
   typedef struct tagCRYPTUI_VIEWCERTIFICATE_STRUCTA {
@@ -204,7 +206,7 @@ extern "C" {
     PCCERT_CONTEXT pCertContext;
     LPCSTR *rgszPurposes;
     DWORD cPurposes;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       CRYPT_PROVIDER_DATA const *pCryptProviderData;
       HANDLE hWVTStateData;
     };
@@ -219,21 +221,17 @@ extern "C" {
     LPCPROPSHEETPAGEA rgPropSheetPages;
     DWORD nStartPage;
   } CRYPTUI_VIEWCERTIFICATE_STRUCTA,*PCRYPTUI_VIEWCERTIFICATE_STRUCTA;
+
   typedef const CRYPTUI_VIEWCERTIFICATE_STRUCTA *PCCRYPTUI_VIEWCERTIFICATE_STRUCTA;
 
   WINBOOL WINAPI CryptUIDlgViewCertificateW(PCCRYPTUI_VIEWCERTIFICATE_STRUCTW pCertViewInfo,WINBOOL *pfPropertiesChanged);
   WINBOOL WINAPI CryptUIDlgViewCertificateA(PCCRYPTUI_VIEWCERTIFICATE_STRUCTA pCertViewInfo,WINBOOL *pfPropertiesChanged);
-#ifdef UNICODE
-#define CryptUIDlgViewCertificate CryptUIDlgViewCertificateW
-#define PCRYPTUI_VIEWCERTIFICATE_STRUCT PCRYPTUI_VIEWCERTIFICATE_STRUCTW
-#define CRYPTUI_VIEWCERTIFICATE_STRUCT CRYPTUI_VIEWCERTIFICATE_STRUCTW
-#define PCCRYPTUI_VIEWCERTIFICATE_STRUCT PCCRYPTUI_VIEWCERTIFICATE_STRUCTW
-#else
-#define CryptUIDlgViewCertificate CryptUIDlgViewCertificateA
-#define PCRYPTUI_VIEWCERTIFICATE_STRUCT PCRYPTUI_VIEWCERTIFICATE_STRUCTA
-#define CRYPTUI_VIEWCERTIFICATE_STRUCT CRYPTUI_VIEWCERTIFICATE_STRUCTA
-#define PCCRYPTUI_VIEWCERTIFICATE_STRUCT PCCRYPTUI_VIEWCERTIFICATE_STRUCTA
-#endif
+
+#define CryptUIDlgViewCertificate __MINGW_NAME_AW(CryptUIDlgViewCertificate)
+
+#define PCRYPTUI_VIEWCERTIFICATE_STRUCT __MINGW_NAME_AW(PCRYPTUI_VIEWCERTIFICATE_STRUCT)
+#define CRYPTUI_VIEWCERTIFICATE_STRUCT __MINGW_NAME_AW(CRYPTUI_VIEWCERTIFICATE_STRUCT)
+#define PCCRYPTUI_VIEWCERTIFICATE_STRUCT __MINGW_NAME_AW(PCCRYPTUI_VIEWCERTIFICATE_STRUCT)
 
 #define CRYPTUI_WIZ_EXPORT_CERT_CONTEXT 1
 #define CRYPTUI_WIZ_EXPORT_CTL_CONTEXT 2
@@ -245,7 +243,7 @@ extern "C" {
     DWORD dwSize;
     LPCWSTR pwszExportFileName;
     DWORD dwSubjectChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       PCCERT_CONTEXT pCertContext;
       PCCTL_CONTEXT pCTLContext;
       PCCRL_CONTEXT pCRLContext;
@@ -285,7 +283,7 @@ extern "C" {
   typedef struct _CRYPTUI_WIZ_IMPORT_SUBJECT_INFO {
     DWORD dwSize;
     DWORD dwSubjectChoice;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LPCWSTR pwszFileName;
       PCCERT_CONTEXT pCertContext;
       PCCTL_CONTEXT pCTLContext;

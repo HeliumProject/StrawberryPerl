@@ -1,19 +1,19 @@
-
 package IO::Compress::Gzip ;
 
-require 5.004 ;
+require 5.006 ;
 
 use strict ;
 use warnings;
 use bytes;
 
+require Exporter ;
 
-use IO::Compress::RawDeflate 2.034 ;
+use IO::Compress::RawDeflate 2.052 () ; 
+use IO::Compress::Adapter::Deflate 2.052 ;
 
-use Compress::Raw::Zlib  2.034 ;
-use IO::Compress::Base::Common  2.034 qw(:Status :Parse createSelfTiedObject);
-use IO::Compress::Gzip::Constants 2.034 ;
-use IO::Compress::Zlib::Extra 2.034 ;
+use IO::Compress::Base::Common  2.052 qw(:Status :Parse isaScalar createSelfTiedObject);
+use IO::Compress::Gzip::Constants 2.052 ;
+use IO::Compress::Zlib::Extra 2.052 ;
 
 BEGIN
 {
@@ -23,16 +23,15 @@ BEGIN
       { *noUTF8 = sub {} }  
 }
 
-require Exporter ;
+our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, %DEFLATE_CONSTANTS, $GzipError);
 
-our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $GzipError);
-
-$VERSION = '2.034';
+$VERSION = '2.052';
 $GzipError = '' ;
 
 @ISA    = qw(Exporter IO::Compress::RawDeflate);
 @EXPORT_OK = qw( $GzipError gzip ) ;
 %EXPORT_TAGS = %IO::Compress::RawDeflate::DEFLATE_CONSTANTS ;
+
 push @{ $EXPORT_TAGS{all} }, @EXPORT_OK ;
 Exporter::export_ok_tags('all');
 
@@ -178,6 +177,8 @@ sub getFileInfo
     my $params = shift;
     my $filename = shift ;
 
+    return if isaScalar($filename);
+
     my $defaultTime = (stat($filename))[9] ;
 
     $params->value('Name' => $filename)
@@ -256,7 +257,7 @@ sub mkHeader
     }
 
     # HEADER CRC
-    $out .= pack("v", crc32($out) & 0x00FF ) if $param->value('HeaderCRC') ;
+    $out .= pack("v", Compress::Raw::Zlib::crc32($out) & 0x00FF ) if $param->value('HeaderCRC') ;
 
     noUTF8($out);
 
@@ -1196,8 +1197,6 @@ These symbolic constants are used by the C<Strategy> option in the constructor.
 
 See L<IO::Compress::FAQ|IO::Compress::FAQ/"Apache::GZip Revisited">
 
-    
-
 =head2 Working with Net::FTP
 
 See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
@@ -1206,7 +1205,7 @@ See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
 L<Compress::Zlib>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -1235,7 +1234,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2011 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

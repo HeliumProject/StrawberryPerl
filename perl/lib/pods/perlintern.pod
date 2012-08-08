@@ -18,6 +18,56 @@ format but are not marked as part of the Perl API. In other words,
 B<they are not for use in extensions>!
 
 
+=head1 Compile-time scope hooks
+
+=over 8
+
+=item BhkENTRY
+X<BhkENTRY>
+
+Return an entry from the BHK structure. I<which> is a preprocessor token
+indicating which entry to return. If the appropriate flag is not set
+this will return NULL. The type of the return value depends on which
+entry you ask for.
+
+NOTE: this function is experimental and may change or be
+removed without notice.
+
+	void *	BhkENTRY(BHK *hk, which)
+
+=for hackers
+Found in file op.h
+
+=item BhkFLAGS
+X<BhkFLAGS>
+
+Return the BHK's flags.
+
+NOTE: this function is experimental and may change or be
+removed without notice.
+
+	U32	BhkFLAGS(BHK *hk)
+
+=for hackers
+Found in file op.h
+
+=item CALL_BLOCK_HOOKS
+X<CALL_BLOCK_HOOKS>
+
+Call all the registered block hooks for type I<which>. I<which> is a
+preprocessing token; the type of I<arg> depends on I<which>.
+
+NOTE: this function is experimental and may change or be
+removed without notice.
+
+	void	CALL_BLOCK_HOOKS(which, arg)
+
+=for hackers
+Found in file op.h
+
+
+=back
+
 =head1 CV reference counts and CvOUTSIDE
 
 =over 8
@@ -80,8 +130,698 @@ Found in file cv.h
 
 =back
 
-=head1 Functions in file pad.h
+=head1 Embedding Functions
 
+=over 8
+
+=item cv_dump
+X<cv_dump>
+
+dump the contents of a CV
+
+	void	cv_dump(CV *cv, const char *title)
+
+=for hackers
+Found in file pad.c
+
+=item do_dump_pad
+X<do_dump_pad>
+
+Dump the contents of a padlist
+
+	void	do_dump_pad(I32 level, PerlIO *file,
+		            PADLIST *padlist, int full)
+
+=for hackers
+Found in file pad.c
+
+=item intro_my
+X<intro_my>
+
+"Introduce" my variables to visible status.
+
+	U32	intro_my()
+
+=for hackers
+Found in file pad.c
+
+=item padlist_dup
+X<padlist_dup>
+
+Duplicates a pad.
+
+	AV *	padlist_dup(AV *srcpad, CLONE_PARAMS *param)
+
+=for hackers
+Found in file pad.c
+
+=item pad_alloc_name
+X<pad_alloc_name>
+
+Allocates a place in the currently-compiling
+pad (via L<perlapi/pad_alloc>) and
+then stores a name for that entry.  I<namesv> is adopted and becomes the
+name entry; it must already contain the name string and be sufficiently
+upgraded.  I<typestash> and I<ourstash> and the C<padadd_STATE> flag get
+added to I<namesv>.  None of the other
+processing of L<perlapi/pad_add_name_pvn>
+is done.  Returns the offset of the allocated pad slot.
+
+	PADOFFSET pad_alloc_name(SV *namesv, U32 flags,
+	                         HV *typestash, HV *ourstash)
+
+=for hackers
+Found in file pad.c
+
+=item pad_block_start
+X<pad_block_start>
+
+Update the pad compilation state variables on entry to a new block
+
+	void	pad_block_start(int full)
+
+=for hackers
+Found in file pad.c
+
+=item pad_check_dup
+X<pad_check_dup>
+
+Check for duplicate declarations: report any of:
+
+     * a my in the current scope with the same name;
+     * an our (anywhere in the pad) with the same name and the
+       same stash as C<ourstash>
+
+C<is_our> indicates that the name to check is an 'our' declaration.
+
+	void	pad_check_dup(SV *name, U32 flags,
+		              const HV *ourstash)
+
+=for hackers
+Found in file pad.c
+
+=item pad_findlex
+X<pad_findlex>
+
+Find a named lexical anywhere in a chain of nested pads. Add fake entries
+in the inner pads if it's found in an outer one.
+
+Returns the offset in the bottom pad of the lex or the fake lex.
+cv is the CV in which to start the search, and seq is the current cop_seq
+to match against. If warn is true, print appropriate warnings.  The out_*
+vars return values, and so are pointers to where the returned values
+should be stored. out_capture, if non-null, requests that the innermost
+instance of the lexical is captured; out_name_sv is set to the innermost
+matched namesv or fake namesv; out_flags returns the flags normally
+associated with the IVX field of a fake namesv.
+
+Note that pad_findlex() is recursive; it recurses up the chain of CVs,
+then comes back down, adding fake entries as it goes. It has to be this way
+because fake namesvs in anon protoypes have to store in xlow the index into
+the parent pad.
+
+	PADOFFSET pad_findlex(const char *namepv,
+	                      STRLEN namelen, U32 flags,
+	                      const CV* cv, U32 seq, int warn,
+	                      SV** out_capture,
+	                      SV** out_name_sv, int *out_flags)
+
+=for hackers
+Found in file pad.c
+
+=item pad_fixup_inner_anons
+X<pad_fixup_inner_anons>
+
+For any anon CVs in the pad, change CvOUTSIDE of that CV from
+old_cv to new_cv if necessary. Needed when a newly-compiled CV has to be
+moved to a pre-existing CV struct.
+
+	void	pad_fixup_inner_anons(PADLIST *padlist,
+		                      CV *old_cv, CV *new_cv)
+
+=for hackers
+Found in file pad.c
+
+=item pad_free
+X<pad_free>
+
+Free the SV at offset po in the current pad.
+
+	void	pad_free(PADOFFSET po)
+
+=for hackers
+Found in file pad.c
+
+=item pad_leavemy
+X<pad_leavemy>
+
+Cleanup at end of scope during compilation: set the max seq number for
+lexicals in this scope and warn of any lexicals that never got introduced.
+
+	void	pad_leavemy()
+
+=for hackers
+Found in file pad.c
+
+=item pad_push
+X<pad_push>
+
+Push a new pad frame onto the padlist, unless there's already a pad at
+this depth, in which case don't bother creating a new one.  Then give
+the new pad an @_ in slot zero.
+
+	void	pad_push(PADLIST *padlist, int depth)
+
+=for hackers
+Found in file pad.c
+
+=item pad_reset
+X<pad_reset>
+
+Mark all the current temporaries for reuse
+
+	void	pad_reset()
+
+=for hackers
+Found in file pad.c
+
+=item pad_swipe
+X<pad_swipe>
+
+Abandon the tmp in the current pad at offset po and replace with a
+new one.
+
+	void	pad_swipe(PADOFFSET po, bool refadjust)
+
+=for hackers
+Found in file pad.c
+
+
+=back
+
+=head1 Functions in file op.c
+
+=over 8
+
+=item core_prototype
+X<core_prototype>
+
+This function assigns the prototype of the named core function to C<sv>, or
+to a new mortal SV if C<sv> is NULL.  It returns the modified C<sv>, or
+NULL if the core function has no prototype.  C<code> is a code as returned
+by C<keyword()>.  It must be negative and unequal to -KEY_CORE.
+
+	SV *	core_prototype(SV *sv, const char *name,
+		               const int code,
+		               int * const opnum)
+
+=for hackers
+Found in file op.c
+
+
+=back
+
+=head1 Functions in file pp_ctl.c
+
+
+=over 8
+
+=item docatch
+X<docatch>
+
+Check for the cases 0 or 3 of cur_env.je_ret, only used inside an eval context.
+
+0 is used as continue inside eval,
+
+3 is used for a die caught by an inner eval - continue inner loop
+
+See cop.h: je_mustcatch, when set at any runlevel to TRUE, means eval ops must
+establish a local jmpenv to handle exception traps.
+
+	OP*	docatch(OP *o)
+
+=for hackers
+Found in file pp_ctl.c
+
+
+=back
+
+=head1 GV Functions
+
+=over 8
+
+=item gv_try_downgrade
+X<gv_try_downgrade>
+
+If the typeglob C<gv> can be expressed more succinctly, by having
+something other than a real GV in its place in the stash, replace it
+with the optimised form.  Basic requirements for this are that C<gv>
+is a real typeglob, is sufficiently ordinary, and is only referenced
+from its package.  This function is meant to be used when a GV has been
+looked up in part to see what was there, causing upgrading, but based
+on what was found it turns out that the real GV isn't required after all.
+
+If C<gv> is a completely empty typeglob, it is deleted from the stash.
+
+If C<gv> is a typeglob containing only a sufficiently-ordinary constant
+sub, the typeglob is replaced with a scalar-reference placeholder that
+more compactly represents the same thing.
+
+NOTE: this function is experimental and may change or be
+removed without notice.
+
+	void	gv_try_downgrade(GV* gv)
+
+=for hackers
+Found in file gv.c
+
+
+=back
+
+=head1 Hash Manipulation Functions
+
+=over 8
+
+=item hv_ename_add
+X<hv_ename_add>
+
+Adds a name to a stash's internal list of effective names.  See
+C<hv_ename_delete>.
+
+This is called when a stash is assigned to a new location in the symbol
+table.
+
+	void	hv_ename_add(HV *hv, const char *name, U32 len,
+		             U32 flags)
+
+=for hackers
+Found in file hv.c
+
+=item hv_ename_delete
+X<hv_ename_delete>
+
+Removes a name from a stash's internal list of effective names.  If this is
+the name returned by C<HvENAME>, then another name in the list will take
+its place (C<HvENAME> will use it).
+
+This is called when a stash is deleted from the symbol table.
+
+	void	hv_ename_delete(HV *hv, const char *name,
+		                U32 len, U32 flags)
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_chain_2hv
+X<refcounted_he_chain_2hv>
+
+Generates and returns a C<HV *> representing the content of a
+C<refcounted_he> chain.
+I<flags> is currently unused and must be zero.
+
+	HV *	refcounted_he_chain_2hv(
+		    const struct refcounted_he *c, U32 flags
+		)
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_fetch_pv
+X<refcounted_he_fetch_pv>
+
+Like L</refcounted_he_fetch_pvn>, but takes a nul-terminated string
+instead of a string/length pair.
+
+	SV *	refcounted_he_fetch_pv(
+		    const struct refcounted_he *chain,
+		    const char *key, U32 hash, U32 flags
+		)
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_fetch_pvn
+X<refcounted_he_fetch_pvn>
+
+Search along a C<refcounted_he> chain for an entry with the key specified
+by I<keypv> and I<keylen>.  If I<flags> has the C<REFCOUNTED_HE_KEY_UTF8>
+bit set, the key octets are interpreted as UTF-8, otherwise they
+are interpreted as Latin-1.  I<hash> is a precomputed hash of the key
+string, or zero if it has not been precomputed.  Returns a mortal scalar
+representing the value associated with the key, or C<&PL_sv_placeholder>
+if there is no value associated with the key.
+
+	SV *	refcounted_he_fetch_pvn(
+		    const struct refcounted_he *chain,
+		    const char *keypv, STRLEN keylen, U32 hash,
+		    U32 flags
+		)
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_fetch_pvs
+X<refcounted_he_fetch_pvs>
+
+Like L</refcounted_he_fetch_pvn>, but takes a literal string instead of
+a string/length pair, and no precomputed hash.
+
+	SV *	refcounted_he_fetch_pvs(
+		    const struct refcounted_he *chain,
+		    const char *key, U32 flags
+		)
+
+=for hackers
+Found in file hv.h
+
+=item refcounted_he_fetch_sv
+X<refcounted_he_fetch_sv>
+
+Like L</refcounted_he_fetch_pvn>, but takes a Perl scalar instead of a
+string/length pair.
+
+	SV *	refcounted_he_fetch_sv(
+		    const struct refcounted_he *chain, SV *key,
+		    U32 hash, U32 flags
+		)
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_free
+X<refcounted_he_free>
+
+Decrements the reference count of a C<refcounted_he> by one.  If the
+reference count reaches zero the structure's memory is freed, which
+(recursively) causes a reduction of its parent C<refcounted_he>'s
+reference count.  It is safe to pass a null pointer to this function:
+no action occurs in this case.
+
+	void	refcounted_he_free(struct refcounted_he *he)
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_inc
+X<refcounted_he_inc>
+
+Increment the reference count of a C<refcounted_he>.  The pointer to the
+C<refcounted_he> is also returned.  It is safe to pass a null pointer
+to this function: no action occurs and a null pointer is returned.
+
+	struct refcounted_he * refcounted_he_inc(
+	                           struct refcounted_he *he
+	                       )
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_new_pv
+X<refcounted_he_new_pv>
+
+Like L</refcounted_he_new_pvn>, but takes a nul-terminated string instead
+of a string/length pair.
+
+	struct refcounted_he * refcounted_he_new_pv(
+	                           struct refcounted_he *parent,
+	                           const char *key, U32 hash,
+	                           SV *value, U32 flags
+	                       )
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_new_pvn
+X<refcounted_he_new_pvn>
+
+Creates a new C<refcounted_he>.  This consists of a single key/value
+pair and a reference to an existing C<refcounted_he> chain (which may
+be empty), and thus forms a longer chain.  When using the longer chain,
+the new key/value pair takes precedence over any entry for the same key
+further along the chain.
+
+The new key is specified by I<keypv> and I<keylen>.  If I<flags> has
+the C<REFCOUNTED_HE_KEY_UTF8> bit set, the key octets are interpreted
+as UTF-8, otherwise they are interpreted as Latin-1.  I<hash> is
+a precomputed hash of the key string, or zero if it has not been
+precomputed.
+
+I<value> is the scalar value to store for this key.  I<value> is copied
+by this function, which thus does not take ownership of any reference
+to it, and later changes to the scalar will not be reflected in the
+value visible in the C<refcounted_he>.  Complex types of scalar will not
+be stored with referential integrity, but will be coerced to strings.
+I<value> may be either null or C<&PL_sv_placeholder> to indicate that no
+value is to be associated with the key; this, as with any non-null value,
+takes precedence over the existence of a value for the key further along
+the chain.
+
+I<parent> points to the rest of the C<refcounted_he> chain to be
+attached to the new C<refcounted_he>.  This function takes ownership
+of one reference to I<parent>, and returns one reference to the new
+C<refcounted_he>.
+
+	struct refcounted_he * refcounted_he_new_pvn(
+	                           struct refcounted_he *parent,
+	                           const char *keypv,
+	                           STRLEN keylen, U32 hash,
+	                           SV *value, U32 flags
+	                       )
+
+=for hackers
+Found in file hv.c
+
+=item refcounted_he_new_pvs
+X<refcounted_he_new_pvs>
+
+Like L</refcounted_he_new_pvn>, but takes a literal string instead of
+a string/length pair, and no precomputed hash.
+
+	struct refcounted_he * refcounted_he_new_pvs(
+	                           struct refcounted_he *parent,
+	                           const char *key, SV *value,
+	                           U32 flags
+	                       )
+
+=for hackers
+Found in file hv.h
+
+=item refcounted_he_new_sv
+X<refcounted_he_new_sv>
+
+Like L</refcounted_he_new_pvn>, but takes a Perl scalar instead of a
+string/length pair.
+
+	struct refcounted_he * refcounted_he_new_sv(
+	                           struct refcounted_he *parent,
+	                           SV *key, U32 hash, SV *value,
+	                           U32 flags
+	                       )
+
+=for hackers
+Found in file hv.c
+
+
+=back
+
+=head1 IO Functions
+
+=over 8
+
+=item start_glob
+X<start_glob>
+
+Function called by C<do_readline> to spawn a glob (or do the glob inside
+perl on VMS). This code used to be inline, but now perl uses C<File::Glob>
+this glob starter is only used by miniperl during the build process.
+Moving it away shrinks pp_hot.c; shrinking pp_hot.c helps speed perl up.
+
+NOTE: this function is experimental and may change or be
+removed without notice.
+
+	PerlIO*	start_glob(SV *tmpglob, IO *io)
+
+=for hackers
+Found in file doio.c
+
+
+=back
+
+=head1 Magical Functions
+
+=over 8
+
+=item magic_clearhint
+X<magic_clearhint>
+
+Triggered by a delete from %^H, records the key to
+C<PL_compiling.cop_hints_hash>.
+
+	int	magic_clearhint(SV* sv, MAGIC* mg)
+
+=for hackers
+Found in file mg.c
+
+=item magic_clearhints
+X<magic_clearhints>
+
+Triggered by clearing %^H, resets C<PL_compiling.cop_hints_hash>.
+
+	int	magic_clearhints(SV* sv, MAGIC* mg)
+
+=for hackers
+Found in file mg.c
+
+=item magic_methcall
+X<magic_methcall>
+
+Invoke a magic method (like FETCH).
+
+C<sv> and C<mg> are the tied thingy and the tie magic.
+
+C<meth> is the name of the method to call.
+
+C<argc> is the number of args (in addition to $self) to pass to the method.
+
+The C<flags> can be:
+
+    G_DISCARD     invoke method with G_DISCARD flag and don't
+                  return a value
+    G_UNDEF_FILL  fill the stack with argc pointers to
+                  PL_sv_undef
+
+The arguments themselves are any values following the C<flags> argument.
+
+Returns the SV (if any) returned by the method, or NULL on failure.
+
+
+	SV*	magic_methcall(SV *sv, const MAGIC *mg,
+		               const char *meth, U32 flags,
+		               U32 argc, ...)
+
+=for hackers
+Found in file mg.c
+
+=item magic_sethint
+X<magic_sethint>
+
+Triggered by a store to %^H, records the key/value pair to
+C<PL_compiling.cop_hints_hash>.  It is assumed that hints aren't storing
+anything that would need a deep copy.  Maybe we should warn if we find a
+reference.
+
+	int	magic_sethint(SV* sv, MAGIC* mg)
+
+=for hackers
+Found in file mg.c
+
+=item mg_localize
+X<mg_localize>
+
+Copy some of the magic from an existing SV to new localized version of that
+SV. Container magic (eg %ENV, $1, tie) gets copied, value magic doesn't (eg
+taint, pos).
+
+If setmagic is false then no set magic will be called on the new (empty) SV.
+This typically means that assignment will soon follow (e.g. 'local $x = $y'),
+and that will handle the magic.
+
+	void	mg_localize(SV* sv, SV* nsv, bool setmagic)
+
+=for hackers
+Found in file mg.c
+
+
+=back
+
+=head1 MRO Functions
+
+=over 8
+
+=item mro_get_linear_isa_dfs
+X<mro_get_linear_isa_dfs>
+
+Returns the Depth-First Search linearization of @ISA
+the given stash.  The return value is a read-only AV*.
+C<level> should be 0 (it is used internally in this
+function's recursion).
+
+You are responsible for C<SvREFCNT_inc()> on the
+return value if you plan to store it anywhere
+semi-permanently (otherwise it might be deleted
+out from under you the next time the cache is
+invalidated).
+
+	AV*	mro_get_linear_isa_dfs(HV* stash, U32 level)
+
+=for hackers
+Found in file mro.c
+
+=item mro_isa_changed_in
+X<mro_isa_changed_in>
+
+Takes the necessary steps (cache invalidations, mostly)
+when the @ISA of the given package has changed.  Invoked
+by the C<setisa> magic, should not need to invoke directly.
+
+	void	mro_isa_changed_in(HV* stash)
+
+=for hackers
+Found in file mro.c
+
+=item mro_package_moved
+X<mro_package_moved>
+
+Call this function to signal to a stash that it has been assigned to
+another spot in the stash hierarchy.  C<stash> is the stash that has been
+assigned. C<oldstash> is the stash it replaces, if any.  C<gv> is the glob
+that is actually being assigned to.
+
+This can also be called with a null first argument to
+indicate that C<oldstash> has been deleted.
+
+This function invalidates isa caches on the old stash, on all subpackages
+nested inside it, and on the subclasses of all those, including
+non-existent packages that have corresponding entries in C<stash>.
+
+It also sets the effective names (C<HvENAME>) on all the stashes as
+appropriate.
+
+If the C<gv> is present and is not in the symbol table, then this function
+simply returns.  This checked will be skipped if C<flags & 1>.
+
+	void	mro_package_moved(HV * const stash,
+		                  HV * const oldstash,
+		                  const GV * const gv,
+		                  U32 flags)
+
+=for hackers
+Found in file mro.c
+
+
+=back
+
+=head1 Optree Manipulation Functions
+
+=over 8
+
+=item finalize_optree
+X<finalize_optree>
+
+This function finalizes the optree. Should be called directly after
+the complete optree is built. It does some additional
+checking which can't be done in the normal ck_xxx functions and makes
+the tree thread-safe.
+
+	void	finalize_optree(OP* o)
+
+=for hackers
+Found in file op.c
+
+
+=back
+
+=head1 Pad Data Structures
 
 =over 8
 
@@ -121,7 +861,8 @@ X<PAD_CLONE_VARS>
 
 Clone the state variables associated with running and compiling pads.
 
-	void	PAD_CLONE_VARS(PerlInterpreter *proto_perl, CLONE_PARAMS* param)
+	void	PAD_CLONE_VARS(PerlInterpreter *proto_perl,
+		               CLONE_PARAMS* param)
 
 =for hackers
 Found in file pad.h
@@ -192,15 +933,21 @@ C<po>. Must be a valid name. Returns null if not typed.
 =for hackers
 Found in file pad.h
 
-=item PAD_DUP
-X<PAD_DUP>
+=item pad_peg
+X<pad_peg>
 
-Clone a padlist.
+When PERL_MAD is enabled, this is a small no-op function that gets called
+at the start of each pad-related function.  It can be breakpointed to
+track all pad operations.  The parameter is a string indicating the type
+of pad operation being performed.
 
-	void	PAD_DUP(PADLIST dstpad, PADLIST srcpad, CLONE_PARAMS* param)
+NOTE: this function is experimental and may change or be
+removed without notice.
+
+	void	pad_peg(const char *s)
 
 =for hackers
-Found in file pad.h
+Found in file pad.c
 
 =item PAD_RESTORE_LOCAL
 X<PAD_RESTORE_LOCAL>
@@ -330,599 +1077,6 @@ Found in file pad.h
 
 =back
 
-=head1 Functions in file pp_ctl.c
-
-
-=over 8
-
-=item docatch
-X<docatch>
-
-Check for the cases 0 or 3 of cur_env.je_ret, only used inside an eval context.
-
-0 is used as continue inside eval,
-
-3 is used for a die caught by an inner eval - continue inner loop
-
-See cop.h: je_mustcatch, when set at any runlevel to TRUE, means eval ops must
-establish a local jmpenv to handle exception traps.
-
-	OP*	docatch(OP *o)
-
-=for hackers
-Found in file pp_ctl.c
-
-
-=back
-
-=head1 GV Functions
-
-=over 8
-
-=item gv_try_downgrade
-X<gv_try_downgrade>
-
-If the typeglob C<gv> can be expressed more succinctly, by having
-something other than a real GV in its place in the stash, replace it
-with the optimised form.  Basic requirements for this are that C<gv>
-is a real typeglob, is sufficiently ordinary, and is only referenced
-from its package.  This function is meant to be used when a GV has been
-looked up in part to see what was there, causing upgrading, but based
-on what was found it turns out that the real GV isn't required after all.
-
-If C<gv> is a completely empty typeglob, it is deleted from the stash.
-
-If C<gv> is a typeglob containing only a sufficiently-ordinary constant
-sub, the typeglob is replaced with a scalar-reference placeholder that
-more compactly represents the same thing.
-
-NOTE: this function is experimental and may change or be
-removed without notice.
-
-	void	gv_try_downgrade(GV* gv)
-
-=for hackers
-Found in file gv.c
-
-=item is_gv_magical_sv
-X<is_gv_magical_sv>
-
-Returns C<TRUE> if given the name of a magical GV.
-
-Currently only useful internally when determining if a GV should be
-created even in rvalue contexts.
-
-C<flags> is not used at present but available for future extension to
-allow selecting particular classes of magical variable.
-
-Currently assumes that C<name> is NUL terminated (as well as len being valid).
-This assumption is met by all callers within the perl core, which all pass
-pointers returned by SvPV.
-
-	bool	is_gv_magical_sv(SV *const name_sv, U32 flags)
-
-=for hackers
-Found in file gv.c
-
-
-=back
-
-=head1 Hash Manipulation Functions
-
-=over 8
-
-=item refcounted_he_chain_2hv
-X<refcounted_he_chain_2hv>
-
-Generates and returns a C<HV *> by walking up the tree starting at the passed
-in C<struct refcounted_he *>.
-
-NOTE: this function is experimental and may change or be
-removed without notice.
-
-	HV *	refcounted_he_chain_2hv(const struct refcounted_he *c)
-
-=for hackers
-Found in file hv.c
-
-=item refcounted_he_free
-X<refcounted_he_free>
-
-Decrements the reference count of the passed in C<struct refcounted_he *>
-by one. If the reference count reaches zero the structure's memory is freed,
-and C<refcounted_he_free> iterates onto the parent node.
-
-NOTE: this function is experimental and may change or be
-removed without notice.
-
-	void	refcounted_he_free(struct refcounted_he *he)
-
-=for hackers
-Found in file hv.c
-
-=item refcounted_he_new
-X<refcounted_he_new>
-
-Creates a new C<struct refcounted_he>. As S<key> is copied, and value is
-stored in a compact form, all references remain the property of the caller.
-The C<struct refcounted_he> is returned with a reference count of 1.
-
-NOTE: this function is experimental and may change or be
-removed without notice.
-
-	struct refcounted_he *	refcounted_he_new(struct refcounted_he *const parent, SV *const key, SV *const value)
-
-=for hackers
-Found in file hv.c
-
-
-=back
-
-=head1 IO Functions
-
-=over 8
-
-=item start_glob
-X<start_glob>
-
-Function called by C<do_readline> to spawn a glob (or do the glob inside
-perl on VMS). This code used to be inline, but now perl uses C<File::Glob>
-this glob starter is only used by miniperl during the build process.
-Moving it away shrinks pp_hot.c; shrinking pp_hot.c helps speed perl up.
-
-NOTE: this function is experimental and may change or be
-removed without notice.
-
-	PerlIO*	start_glob(SV *tmpglob, IO *io)
-
-=for hackers
-Found in file doio.c
-
-
-=back
-
-=head1 Magical Functions
-
-=over 8
-
-=item magic_clearhint
-X<magic_clearhint>
-
-Triggered by a delete from %^H, records the key to
-C<PL_compiling.cop_hints_hash>.
-
-	int	magic_clearhint(SV* sv, MAGIC* mg)
-
-=for hackers
-Found in file mg.c
-
-=item magic_clearhints
-X<magic_clearhints>
-
-Triggered by clearing %^H, resets C<PL_compiling.cop_hints_hash>.
-
-	int	magic_clearhints(SV* sv, MAGIC* mg)
-
-=for hackers
-Found in file mg.c
-
-=item magic_sethint
-X<magic_sethint>
-
-Triggered by a store to %^H, records the key/value pair to
-C<PL_compiling.cop_hints_hash>.  It is assumed that hints aren't storing
-anything that would need a deep copy.  Maybe we should warn if we find a
-reference.
-
-	int	magic_sethint(SV* sv, MAGIC* mg)
-
-=for hackers
-Found in file mg.c
-
-=item mg_localize
-X<mg_localize>
-
-Copy some of the magic from an existing SV to new localized version of that
-SV. Container magic (eg %ENV, $1, tie) gets copied, value magic doesn't (eg
-taint, pos).
-
-If setmagic is false then no set magic will be called on the new (empty) SV.
-This typically means that assignment will soon follow (e.g. 'local $x = $y'),
-and that will handle the magic.
-
-	void	mg_localize(SV* sv, SV* nsv, bool setmagic)
-
-=for hackers
-Found in file mg.c
-
-
-=back
-
-=head1 MRO Functions
-
-=over 8
-
-=item mro_get_linear_isa_dfs
-X<mro_get_linear_isa_dfs>
-
-Returns the Depth-First Search linearization of @ISA
-the given stash.  The return value is a read-only AV*.
-C<level> should be 0 (it is used internally in this
-function's recursion).
-
-You are responsible for C<SvREFCNT_inc()> on the
-return value if you plan to store it anywhere
-semi-permanently (otherwise it might be deleted
-out from under you the next time the cache is
-invalidated).
-
-	AV*	mro_get_linear_isa_dfs(HV* stash, U32 level)
-
-=for hackers
-Found in file mro.c
-
-=item mro_isa_changed_in
-X<mro_isa_changed_in>
-
-Takes the necessary steps (cache invalidations, mostly)
-when the @ISA of the given package has changed.  Invoked
-by the C<setisa> magic, should not need to invoke directly.
-
-	void	mro_isa_changed_in(HV* stash)
-
-=for hackers
-Found in file mro.c
-
-
-=back
-
-=head1 Pad Data Structures
-
-=over 8
-
-=item CvPADLIST
-X<CvPADLIST>
-
-CV's can have CvPADLIST(cv) set to point to an AV.
-
-For these purposes "forms" are a kind-of CV, eval""s are too (except they're
-not callable at will and are always thrown away after the eval"" is done
-executing). Require'd files are simply evals without any outer lexical
-scope.
-
-XSUBs don't have CvPADLIST set - dXSTARG fetches values from PL_curpad,
-but that is really the callers pad (a slot of which is allocated by
-every entersub).
-
-The CvPADLIST AV has does not have AvREAL set, so REFCNT of component items
-is managed "manual" (mostly in pad.c) rather than normal av.c rules.
-The items in the AV are not SVs as for a normal AV, but other AVs:
-
-0'th Entry of the CvPADLIST is an AV which represents the "names" or rather
-the "static type information" for lexicals.
-
-The CvDEPTH'th entry of CvPADLIST AV is an AV which is the stack frame at that
-depth of recursion into the CV.
-The 0'th slot of a frame AV is an AV which is @_.
-other entries are storage for variables and op targets.
-
-During compilation:
-C<PL_comppad_name> is set to the names AV.
-C<PL_comppad> is set to the frame AV for the frame CvDEPTH == 1.
-C<PL_curpad> is set to the body of the frame AV (i.e. AvARRAY(PL_comppad)).
-
-During execution, C<PL_comppad> and C<PL_curpad> refer to the live
-frame of the currently executing sub.
-
-Iterating over the names AV iterates over all possible pad
-items. Pad slots that are SVs_PADTMP (targets/GVs/constants) end up having
-&PL_sv_undef "names" (see pad_alloc()).
-
-Only my/our variable (SVs_PADMY/SVs_PADOUR) slots get valid names.
-The rest are op targets/GVs/constants which are statically allocated
-or resolved at compile time.  These don't have names by which they
-can be looked up from Perl code at run time through eval"" like
-my/our variables can be.  Since they can't be looked up by "name"
-but only by their index allocated at compile time (which is usually
-in PL_op->op_targ), wasting a name SV for them doesn't make sense.
-
-The SVs in the names AV have their PV being the name of the variable.
-xlow+1..xhigh inclusive in the NV union is a range of cop_seq numbers for
-which the name is valid.  For typed lexicals name SV is SVt_PVMG and SvSTASH
-points at the type.  For C<our> lexicals, the type is also SVt_PVMG, with the
-SvOURSTASH slot pointing at the stash of the associated global (so that
-duplicate C<our> declarations in the same package can be detected).  SvUVX is
-sometimes hijacked to store the generation number during compilation.
-
-If SvFAKE is set on the name SV, then that slot in the frame AV is
-a REFCNT'ed reference to a lexical from "outside". In this case,
-the name SV does not use xlow and xhigh to store a cop_seq range, since it is
-in scope throughout. Instead xhigh stores some flags containing info about
-the real lexical (is it declared in an anon, and is it capable of being
-instantiated multiple times?), and for fake ANONs, xlow contains the index
-within the parent's pad where the lexical's value is stored, to make
-cloning quicker.
-
-If the 'name' is '&' the corresponding entry in frame AV
-is a CV representing a possible closure.
-(SvFAKE and name of '&' is not a meaningful combination currently but could
-become so if C<my sub foo {}> is implemented.)
-
-Note that formats are treated as anon subs, and are cloned each time
-write is called (if necessary).
-
-The flag SVs_PADSTALE is cleared on lexicals each time the my() is executed,
-and set on scope exit. This allows the 'Variable $x is not available' warning
-to be generated in evals, such as 
-
-    { my $x = 1; sub f { eval '$x'} } f();
-
-For state vars, SVs_PADSTALE is overloaded to mean 'not yet initialised'
-
-	AV *	CvPADLIST(CV *cv)
-
-=for hackers
-Found in file pad.c
-
-=item cv_clone
-X<cv_clone>
-
-Clone a CV: make a new CV which points to the same code etc, but which
-has a newly-created pad built by copying the prototype pad and capturing
-any outer lexicals.
-
-	CV*	cv_clone(CV* proto)
-
-=for hackers
-Found in file pad.c
-
-=item cv_dump
-X<cv_dump>
-
-dump the contents of a CV
-
-	void	cv_dump(const CV *cv, const char *title)
-
-=for hackers
-Found in file pad.c
-
-=item do_dump_pad
-X<do_dump_pad>
-
-Dump the contents of a padlist
-
-	void	do_dump_pad(I32 level, PerlIO *file, PADLIST *padlist, int full)
-
-=for hackers
-Found in file pad.c
-
-=item intro_my
-X<intro_my>
-
-"Introduce" my variables to visible status.
-
-	U32	intro_my()
-
-=for hackers
-Found in file pad.c
-
-=item pad_add_anon
-X<pad_add_anon>
-
-Add an anon code entry to the current compiling pad
-
-	PADOFFSET	pad_add_anon(SV* sv, OPCODE op_type)
-
-=for hackers
-Found in file pad.c
-
-=item pad_add_name
-X<pad_add_name>
-
-Create a new name and associated PADMY SV in the current pad; return the
-offset.
-If C<typestash> is valid, the name is for a typed lexical; set the
-name's stash to that value.
-If C<ourstash> is valid, it's an our lexical, set the name's
-SvOURSTASH to that value
-
-If fake, it means we're cloning an existing entry
-
-NOTE: this function is experimental and may change or be
-removed without notice.
-
-	PADOFFSET	pad_add_name(const char *name, const STRLEN len, const U32 flags, HV *typestash, HV *ourstash)
-
-=for hackers
-Found in file pad.c
-
-=item pad_alloc
-X<pad_alloc>
-
-Allocate a new my or tmp pad entry. For a my, simply push a null SV onto
-the end of PL_comppad, but for a tmp, scan the pad from PL_padix upwards
-for a slot which has no name and no active value.
-
-	PADOFFSET	pad_alloc(I32 optype, U32 tmptype)
-
-=for hackers
-Found in file pad.c
-
-=item pad_block_start
-X<pad_block_start>
-
-Update the pad compilation state variables on entry to a new block
-
-	void	pad_block_start(int full)
-
-=for hackers
-Found in file pad.c
-
-=item pad_check_dup
-X<pad_check_dup>
-
-Check for duplicate declarations: report any of:
-     * a my in the current scope with the same name;
-     * an our (anywhere in the pad) with the same name and the same stash
-       as C<ourstash>
-C<is_our> indicates that the name to check is an 'our' declaration
-
-	void	pad_check_dup(SV *name, const U32 flags, const HV *ourstash)
-
-=for hackers
-Found in file pad.c
-
-=item pad_findlex
-X<pad_findlex>
-
-Find a named lexical anywhere in a chain of nested pads. Add fake entries
-in the inner pads if it's found in an outer one.
-
-Returns the offset in the bottom pad of the lex or the fake lex.
-cv is the CV in which to start the search, and seq is the current cop_seq
-to match against. If warn is true, print appropriate warnings.  The out_*
-vars return values, and so are pointers to where the returned values
-should be stored. out_capture, if non-null, requests that the innermost
-instance of the lexical is captured; out_name_sv is set to the innermost
-matched namesv or fake namesv; out_flags returns the flags normally
-associated with the IVX field of a fake namesv.
-
-Note that pad_findlex() is recursive; it recurses up the chain of CVs,
-then comes back down, adding fake entries as it goes. It has to be this way
-because fake namesvs in anon protoypes have to store in xlow the index into
-the parent pad.
-
-	PADOFFSET	pad_findlex(const char *name, const CV* cv, U32 seq, int warn, SV** out_capture, SV** out_name_sv, int *out_flags)
-
-=for hackers
-Found in file pad.c
-
-=item pad_fixup_inner_anons
-X<pad_fixup_inner_anons>
-
-For any anon CVs in the pad, change CvOUTSIDE of that CV from
-old_cv to new_cv if necessary. Needed when a newly-compiled CV has to be
-moved to a pre-existing CV struct.
-
-	void	pad_fixup_inner_anons(PADLIST *padlist, CV *old_cv, CV *new_cv)
-
-=for hackers
-Found in file pad.c
-
-=item pad_free
-X<pad_free>
-
-Free the SV at offset po in the current pad.
-
-	void	pad_free(PADOFFSET po)
-
-=for hackers
-Found in file pad.c
-
-=item pad_leavemy
-X<pad_leavemy>
-
-Cleanup at end of scope during compilation: set the max seq number for
-lexicals in this scope and warn of any lexicals that never got introduced.
-
-	void	pad_leavemy()
-
-=for hackers
-Found in file pad.c
-
-=item pad_new
-X<pad_new>
-
-Create a new compiling padlist, saving and updating the various global
-vars at the same time as creating the pad itself. The following flags
-can be OR'ed together:
-
-    padnew_CLONE	this pad is for a cloned CV
-    padnew_SAVE		save old globals
-    padnew_SAVESUB	also save extra stuff for start of sub
-
-	PADLIST*	pad_new(int flags)
-
-=for hackers
-Found in file pad.c
-
-=item pad_push
-X<pad_push>
-
-Push a new pad frame onto the padlist, unless there's already a pad at
-this depth, in which case don't bother creating a new one.  Then give
-the new pad an @_ in slot zero.
-
-	void	pad_push(PADLIST *padlist, int depth)
-
-=for hackers
-Found in file pad.c
-
-=item pad_reset
-X<pad_reset>
-
-Mark all the current temporaries for reuse
-
-	void	pad_reset()
-
-=for hackers
-Found in file pad.c
-
-=item pad_setsv
-X<pad_setsv>
-
-Set the entry at offset po in the current pad to sv.
-Use the macro PAD_SETSV() rather than calling this function directly.
-
-	void	pad_setsv(PADOFFSET po, SV* sv)
-
-=for hackers
-Found in file pad.c
-
-=item pad_swipe
-X<pad_swipe>
-
-Abandon the tmp in the current pad at offset po and replace with a
-new one.
-
-	void	pad_swipe(PADOFFSET po, bool refadjust)
-
-=for hackers
-Found in file pad.c
-
-=item pad_tidy
-X<pad_tidy>
-
-Tidy up a pad after we've finished compiling it:
-    * remove most stuff from the pads of anonsub prototypes;
-    * give it a @_;
-    * mark tmps as such.
-
-	void	pad_tidy(padtidy_type type)
-
-=for hackers
-Found in file pad.c
-
-=item pad_undef
-X<pad_undef>
-
-Free the padlist associated with a CV.
-If parts of it happen to be current, we null the relevant
-PL_*pad* global vars so that we don't have any dangling references left.
-We also repoint the CvOUTSIDE of any about-to-be-orphaned
-inner subs to the outer of this cv.
-
-(This function should really be called pad_free, but the name was already
-taken)
-
-	void	pad_undef(CV* cv)
-
-=for hackers
-Found in file pad.c
-
-
-=back
-
 =head1 Per-Interpreter Variables
 
 =over 8
@@ -1047,7 +1201,8 @@ X<sv_add_arena>
 Given a chunk of memory, link it to the head of the list of arenas,
 and split it into a list of free SVs.
 
-	void	sv_add_arena(char *const ptr, const U32 size, const U32 flags)
+	void	sv_add_arena(char *const ptr, const U32 size,
+		             const U32 flags)
 
 =for hackers
 Found in file sv.c
@@ -1056,7 +1211,7 @@ Found in file sv.c
 X<sv_clean_all>
 
 Decrement the refcnt of each remaining SV, possibly triggering a
-cleanup. This function may have to be called multiple times to free
+cleanup.  This function may have to be called multiple times to free
 SVs which are in complex self-referential hierarchies.
 
 	I32	sv_clean_all()
@@ -1067,7 +1222,7 @@ Found in file sv.c
 =item sv_clean_objs
 X<sv_clean_objs>
 
-Attempt to destroy all objects not yet freed
+Attempt to destroy all objects not yet freed.
 
 	void	sv_clean_objs()
 
@@ -1077,7 +1232,7 @@ Found in file sv.c
 =item sv_free_arenas
 X<sv_free_arenas>
 
-Deallocate the memory used by all arenas. Note that all the individual SV
+Deallocate the memory used by all arenas.  Note that all the individual SV
 heads and bodies within the arenas must already have been freed.
 
 	void	sv_free_arenas()
@@ -1107,6 +1262,17 @@ removed without notice.
 =for hackers
 Found in file sv.c
 
+=item sv_ref
+X<sv_ref>
+
+Returns a SV describing what the SV passed in is a reference to.
+
+	SV*	sv_ref(SV *dst, const SV *const sv,
+		       const int ob)
+
+=for hackers
+Found in file sv.c
+
 
 =back
 
@@ -1117,12 +1283,12 @@ Found in file sv.c
 =item find_uninit_var
 X<find_uninit_var>
 
-Find the name of the undefined variable (if any) that caused the operator o
+Find the name of the undefined variable (if any) that caused the operator
 to issue a "Use of uninitialized value" warning.
-If match is true, only return a name if it's value matches uninit_sv.
+If match is true, only return a name if its value matches uninit_sv.
 So roughly speaking, if a unary operator (such as OP_COS) generates a
 warning, then following the direct child of the op may yield an
-OP_PADSV or OP_GV that gives the name of the undefined variable. On the
+OP_PADSV or OP_GV that gives the name of the undefined variable.  On the
 other hand, with OP_ADD there are two branches to follow, so we only print
 the variable name if we get an exact match.
 
@@ -1134,7 +1300,9 @@ PL_comppad/PL_curpad points to the currently executing pad.
 NOTE: this function is experimental and may change or be
 removed without notice.
 
-	SV*	find_uninit_var(const OP *const obase, const SV *const uninit_sv, bool top)
+	SV*	find_uninit_var(const OP *const obase,
+		                const SV *const uninit_sv,
+		                bool top)
 
 =for hackers
 Found in file sv.c
@@ -1142,7 +1310,7 @@ Found in file sv.c
 =item report_uninit
 X<report_uninit>
 
-Print appropriate "Use of uninitialized variable" warning
+Print appropriate "Use of uninitialized variable" warning.
 
 	void	report_uninit(const SV *uninit_sv)
 
@@ -1154,21 +1322,71 @@ Found in file sv.c
 
 =head1 Undocumented functions
 
-These functions are currently undocumented:
+The following functions are currently undocumented.  If you use one of
+them, you may wish to consider creating and submitting documentation for
+it.
 
 =over
 
-=item F0convert
-X<F0convert>
+=item _add_range_to_invlist
+X<_add_range_to_invlist>
 
-=item Slab_to_rw
-X<Slab_to_rw>
+=item _core_swash_init
+X<_core_swash_init>
 
-=item add_data
-X<add_data>
+=item _invlist_array_init
+X<_invlist_array_init>
 
-=item add_utf16_textfilter
-X<add_utf16_textfilter>
+=item _invlist_contents
+X<_invlist_contents>
+
+=item _invlist_intersection
+X<_invlist_intersection>
+
+=item _invlist_intersection_maybe_complement_2nd
+X<_invlist_intersection_maybe_complement_2nd>
+
+=item _invlist_invert
+X<_invlist_invert>
+
+=item _invlist_invert_prop
+X<_invlist_invert_prop>
+
+=item _invlist_populate_swatch
+X<_invlist_populate_swatch>
+
+=item _invlist_subtract
+X<_invlist_subtract>
+
+=item _invlist_union
+X<_invlist_union>
+
+=item _invlist_union_maybe_complement_2nd
+X<_invlist_union_maybe_complement_2nd>
+
+=item _is_utf8__perl_idstart
+X<_is_utf8__perl_idstart>
+
+=item _new_invlist
+X<_new_invlist>
+
+=item _swash_inversion_hash
+X<_swash_inversion_hash>
+
+=item _swash_to_invlist
+X<_swash_to_invlist>
+
+=item _to_fold_latin1
+X<_to_fold_latin1>
+
+=item _to_upper_title_latin1
+X<_to_upper_title_latin1>
+
+=item aassign_common_vars
+X<aassign_common_vars>
+
+=item add_cp_to_invlist
+X<add_cp_to_invlist>
 
 =item addmad
 X<addmad>
@@ -1176,29 +1394,8 @@ X<addmad>
 =item allocmy
 X<allocmy>
 
-=item amagic_cmp
-X<amagic_cmp>
-
-=item amagic_cmp_locale
-X<amagic_cmp_locale>
-
-=item amagic_i_ncmp
-X<amagic_i_ncmp>
-
-=item amagic_ncmp
-X<amagic_ncmp>
-
-=item anonymise_cv
-X<anonymise_cv>
-
-=item ao
-X<ao>
-
-=item append_elem
-X<append_elem>
-
-=item append_list
-X<append_list>
+=item amagic_is_enabled
+X<amagic_is_enabled>
 
 =item append_madprops
 X<append_madprops>
@@ -1206,17 +1403,8 @@ X<append_madprops>
 =item apply
 X<apply>
 
-=item apply_attrs
-X<apply_attrs>
-
-=item apply_attrs_my
-X<apply_attrs_my>
-
 =item av_reify
 X<av_reify>
-
-=item bad_type
-X<bad_type>
 
 =item bind_match
 X<bind_match>
@@ -1236,239 +1424,47 @@ X<boot_core_UNIVERSAL>
 =item boot_core_mro
 X<boot_core_mro>
 
-=item bytes_to_uni
-X<bytes_to_uni>
-
 =item cando
 X<cando>
 
-=item check_type_and_open
-X<check_type_and_open>
+=item check_utf8_print
+X<check_utf8_print>
 
-=item check_uni
-X<check_uni>
-
-=item checkcomma
-X<checkcomma>
-
-=item checkposixcc
-X<checkposixcc>
-
-=item ck_anoncode
-X<ck_anoncode>
-
-=item ck_bitop
-X<ck_bitop>
-
-=item ck_concat
-X<ck_concat>
-
-=item ck_defined
-X<ck_defined>
-
-=item ck_delete
-X<ck_delete>
-
-=item ck_die
-X<ck_die>
-
-=item ck_each
-X<ck_each>
-
-=item ck_eof
-X<ck_eof>
-
-=item ck_eval
-X<ck_eval>
-
-=item ck_exec
-X<ck_exec>
-
-=item ck_exists
-X<ck_exists>
-
-=item ck_exit
-X<ck_exit>
-
-=item ck_ftst
-X<ck_ftst>
-
-=item ck_fun
-X<ck_fun>
-
-=item ck_glob
-X<ck_glob>
-
-=item ck_grep
-X<ck_grep>
-
-=item ck_index
-X<ck_index>
-
-=item ck_join
-X<ck_join>
-
-=item ck_lfun
-X<ck_lfun>
-
-=item ck_listiob
-X<ck_listiob>
-
-=item ck_match
-X<ck_match>
-
-=item ck_method
-X<ck_method>
-
-=item ck_null
-X<ck_null>
-
-=item ck_open
-X<ck_open>
-
-=item ck_readline
-X<ck_readline>
-
-=item ck_repeat
-X<ck_repeat>
-
-=item ck_require
-X<ck_require>
-
-=item ck_return
-X<ck_return>
-
-=item ck_rfun
-X<ck_rfun>
-
-=item ck_rvconst
-X<ck_rvconst>
-
-=item ck_sassign
-X<ck_sassign>
-
-=item ck_select
-X<ck_select>
-
-=item ck_shift
-X<ck_shift>
-
-=item ck_sort
-X<ck_sort>
-
-=item ck_spair
-X<ck_spair>
-
-=item ck_split
-X<ck_split>
-
-=item ck_subr
-X<ck_subr>
-
-=item ck_substr
-X<ck_substr>
-
-=item ck_svconst
-X<ck_svconst>
-
-=item ck_trunc
-X<ck_trunc>
-
-=item ck_unpack
-X<ck_unpack>
-
-=item ckwarn_common
-X<ckwarn_common>
-
-=item cl_and
-X<cl_and>
-
-=item cl_anything
-X<cl_anything>
-
-=item cl_init
-X<cl_init>
-
-=item cl_init_zero
-X<cl_init_zero>
-
-=item cl_is_anything
-X<cl_is_anything>
-
-=item cl_or
-X<cl_or>
-
-=item clear_placeholders
-X<clear_placeholders>
-
-=item closest_cop
-X<closest_cop>
+=item ck_entersub_args_core
+X<ck_entersub_args_core>
 
 =item convert
 X<convert>
 
-=item cop_free
-X<cop_free>
-
-=item cr_textfilter
-X<cr_textfilter>
+=item coresub_op
+X<coresub_op>
 
 =item create_eval_scope
 X<create_eval_scope>
 
-=item curmad
-X<curmad>
+=item cv_ckproto_len_flags
+X<cv_ckproto_len_flags>
 
-=item cv_ckproto_len
-X<cv_ckproto_len>
+=item cvgv_set
+X<cvgv_set>
 
-=item deb_curcv
-X<deb_curcv>
+=item cvstash_set
+X<cvstash_set>
 
 =item deb_stack_all
 X<deb_stack_all>
 
-=item deb_stack_n
-X<deb_stack_n>
-
-=item debprof
-X<debprof>
-
-=item debug_start_match
-X<debug_start_match>
-
-=item del_sv
-X<del_sv>
-
 =item delete_eval_scope
 X<delete_eval_scope>
 
-=item deprecate_commaless_var_list
-X<deprecate_commaless_var_list>
-
-=item destroy_matcher
-X<destroy_matcher>
-
-=item die_where
-X<die_where>
-
-=item div128
-X<div128>
+=item die_unwind
+X<die_unwind>
 
 =item do_aexec
 X<do_aexec>
 
 =item do_aexec5
 X<do_aexec5>
-
-=item do_chomp
-X<do_chomp>
-
-=item do_chop
-X<do_chop>
-
-=item do_delete_local
-X<do_delete_local>
 
 =item do_eof
 X<do_eof>
@@ -1488,17 +1484,14 @@ X<do_ipcctl>
 =item do_ipcget
 X<do_ipcget>
 
-=item do_kv
-X<do_kv>
-
 =item do_msgrcv
 X<do_msgrcv>
 
 =item do_msgsnd
 X<do_msgsnd>
 
-=item do_oddball
-X<do_oddball>
+=item do_ncmp
+X<do_ncmp>
 
 =item do_op_xmldump
 X<do_op_xmldump>
@@ -1521,9 +1514,6 @@ X<do_semop>
 =item do_shmio
 X<do_shmio>
 
-=item do_smartmatch
-X<do_smartmatch>
-
 =item do_sysseek
 X<do_sysseek>
 
@@ -1532,24 +1522,6 @@ X<do_tell>
 
 =item do_trans
 X<do_trans>
-
-=item do_trans_complex
-X<do_trans_complex>
-
-=item do_trans_complex_utf8
-X<do_trans_complex_utf8>
-
-=item do_trans_count
-X<do_trans_count>
-
-=item do_trans_count_utf8
-X<do_trans_count_utf8>
-
-=item do_trans_simple
-X<do_trans_simple>
-
-=item do_trans_simple_utf8
-X<do_trans_simple_utf8>
 
 =item do_vecget
 X<do_vecget>
@@ -1560,50 +1532,11 @@ X<do_vecset>
 =item do_vop
 X<do_vop>
 
-=item doeval
-X<doeval>
-
 =item dofile
 X<dofile>
 
-=item dofindlabel
-X<dofindlabel>
-
-=item doform
-X<doform>
-
-=item dooneliner
-X<dooneliner>
-
-=item doopen_pm
-X<doopen_pm>
-
-=item doparseform
-X<doparseform>
-
-=item dopoptoeval
-X<dopoptoeval>
-
-=item dopoptogiven
-X<dopoptogiven>
-
-=item dopoptolabel
-X<dopoptolabel>
-
-=item dopoptoloop
-X<dopoptoloop>
-
-=item dopoptosub_at
-X<dopoptosub_at>
-
-=item dopoptowhen
-X<dopoptowhen>
-
 =item dump_all_perl
 X<dump_all_perl>
-
-=item dump_exec_pos
-X<dump_exec_pos>
 
 =item dump_packsubs_perl
 X<dump_packsubs_perl>
@@ -1614,98 +1547,20 @@ X<dump_sub_perl>
 =item dump_sv_child
 X<dump_sv_child>
 
-=item dump_trie
-X<dump_trie>
-
-=item dump_trie_interim_list
-X<dump_trie_interim_list>
-
-=item dump_trie_interim_table
-X<dump_trie_interim_table>
-
-=item dumpuntil
-X<dumpuntil>
-
-=item dup_attrlist
-X<dup_attrlist>
-
 =item emulate_cop_io
 X<emulate_cop_io>
-
-=item exec_failed
-X<exec_failed>
-
-=item expect_number
-X<expect_number>
 
 =item feature_is_enabled
 X<feature_is_enabled>
 
-=item filter_gets
-X<filter_gets>
-
-=item find_and_forget_pmops
-X<find_and_forget_pmops>
-
-=item find_array_subscript
-X<find_array_subscript>
-
-=item find_beginning
-X<find_beginning>
-
-=item find_byclass
-X<find_byclass>
-
-=item find_hash_subscript
-X<find_hash_subscript>
-
-=item find_in_my_stash
-X<find_in_my_stash>
+=item find_rundefsv2
+X<find_rundefsv2>
 
 =item find_script
 X<find_script>
 
-=item first_symbol
-X<first_symbol>
-
-=item fold_constants
-X<fold_constants>
-
-=item forbid_setid
-X<forbid_setid>
-
-=item force_ident
-X<force_ident>
-
-=item force_list
-X<force_list>
-
-=item force_next
-X<force_next>
-
-=item force_strict_version
-X<force_strict_version>
-
-=item force_version
-X<force_version>
-
-=item force_word
-X<force_word>
-
-=item forget_pmop
-X<forget_pmop>
-
 =item free_tied_hv_pool
 X<free_tied_hv_pool>
-
-=item gen_constant_list
-X<gen_constant_list>
-
-=item get_arena
-X<get_arena>
-
-=item get_aux_mg
-X<get_aux_mg>
 
 =item get_db_sub
 X<get_db_sub>
@@ -1716,14 +1571,20 @@ X<get_debug_opts>
 =item get_hash_seed
 X<get_hash_seed>
 
-=item get_isa_hash
-X<get_isa_hash>
+=item get_invlist_iter_addr
+X<get_invlist_iter_addr>
+
+=item get_invlist_len_addr
+X<get_invlist_len_addr>
+
+=item get_invlist_version_id_addr
+X<get_invlist_version_id_addr>
+
+=item get_invlist_zero_addr
+X<get_invlist_zero_addr>
 
 =item get_no_modify
 X<get_no_modify>
-
-=item get_num
-X<get_num>
 
 =item get_opargs
 X<get_opargs>
@@ -1734,68 +1595,17 @@ X<get_re_arg>
 =item getenv_len
 X<getenv_len>
 
-=item glob_2number
-X<glob_2number>
-
-=item glob_assign_glob
-X<glob_assign_glob>
-
-=item glob_assign_ref
-X<glob_assign_ref>
-
-=item group_end
-X<group_end>
-
-=item gv_ename
-X<gv_ename>
-
-=item gv_get_super_pkg
-X<gv_get_super_pkg>
-
-=item gv_init_sv
-X<gv_init_sv>
-
-=item hfreeentries
-X<hfreeentries>
-
-=item hsplit
-X<hsplit>
-
-=item hv_auxinit
-X<hv_auxinit>
+=item hfree_next_entry
+X<hfree_next_entry>
 
 =item hv_backreferences_p
 X<hv_backreferences_p>
 
-=item hv_copy_hints_hv
-X<hv_copy_hints_hv>
-
-=item hv_delete_common
-X<hv_delete_common>
-
 =item hv_kill_backrefs
 X<hv_kill_backrefs>
 
-=item hv_magic_check
-X<hv_magic_check>
-
-=item hv_notallowed
-X<hv_notallowed>
-
-=item incline
-X<incline>
-
-=item incpush
-X<incpush>
-
-=item incpush_if_exists
-X<incpush_if_exists>
-
-=item incpush_use_sep
-X<incpush_use_sep>
-
-=item ingroup
-X<ingroup>
+=item hv_undef_flags
+X<hv_undef_flags>
 
 =item init_argv_symbols
 X<init_argv_symbols>
@@ -1806,47 +1616,32 @@ X<init_dbargs>
 =item init_debugger
 X<init_debugger>
 
-=item init_ids
-X<init_ids>
-
-=item init_interp
-X<init_interp>
-
-=item init_main_stash
-X<init_main_stash>
-
-=item init_perllib
-X<init_perllib>
-
-=item init_postdump_symbols
-X<init_postdump_symbols>
-
-=item init_predump_symbols
-X<init_predump_symbols>
-
-=item intuit_method
-X<intuit_method>
-
-=item intuit_more
-X<intuit_more>
-
 =item invert
 X<invert>
 
+=item invlist_array
+X<invlist_array>
+
+=item invlist_clone
+X<invlist_clone>
+
+=item invlist_iterinit
+X<invlist_iterinit>
+
+=item invlist_len
+X<invlist_len>
+
+=item invlist_max
+X<invlist_max>
+
+=item invlist_set_len
+X<invlist_set_len>
+
+=item invlist_trim
+X<invlist_trim>
+
 =item io_close
 X<io_close>
-
-=item is_an_int
-X<is_an_int>
-
-=item is_handle_constructor
-X<is_handle_constructor>
-
-=item is_inplace_av
-X<is_inplace_av>
-
-=item is_list_assignment
-X<is_list_assignment>
 
 =item is_utf8_X_L
 X<is_utf8_X_L>
@@ -1878,20 +1673,8 @@ X<is_utf8_X_non_hangul>
 =item is_utf8_X_prepend
 X<is_utf8_X_prepend>
 
-=item is_utf8_char_slow
-X<is_utf8_char_slow>
-
-=item is_utf8_common
-X<is_utf8_common>
-
-=item isa_lookup
-X<isa_lookup>
-
 =item jmaybe
 X<jmaybe>
-
-=item join_exact
-X<join_exact>
 
 =item keyword
 X<keyword>
@@ -1899,29 +1682,11 @@ X<keyword>
 =item keyword_plugin_standard
 X<keyword_plugin_standard>
 
-=item lex_end
-X<lex_end>
-
-=item lex_start
-X<lex_start>
-
-=item linklist
-X<linklist>
-
 =item list
 X<list>
 
-=item listkids
-X<listkids>
-
 =item localize
 X<localize>
-
-=item looks_like_bool
-X<looks_like_bool>
-
-=item lop
-X<lop>
 
 =item mad_free
 X<mad_free>
@@ -1994,12 +1759,6 @@ X<magic_killbackrefs>
 
 =item magic_len
 X<magic_len>
-
-=item magic_methcall
-X<magic_methcall>
-
-=item magic_methpack
-X<magic_methpack>
 
 =item magic_nextpack
 X<magic_nextpack>
@@ -2076,20 +1835,14 @@ X<magic_setuvar>
 =item magic_setvec
 X<magic_setvec>
 
+=item magic_setvstring
+X<magic_setvstring>
+
 =item magic_sizepack
 X<magic_sizepack>
 
 =item magic_wipepack
 X<magic_wipepack>
-
-=item make_matcher
-X<make_matcher>
-
-=item make_trie
-X<make_trie>
-
-=item make_trie_failtable
-X<make_trie_failtable>
 
 =item malloc_good_size
 X<malloc_good_size>
@@ -2097,41 +1850,14 @@ X<malloc_good_size>
 =item malloced_size
 X<malloced_size>
 
-=item matcher_matches_sv
-X<matcher_matches_sv>
-
-=item measure_struct
-X<measure_struct>
-
 =item mem_collxfrm
 X<mem_collxfrm>
-
-=item mem_log_common
-X<mem_log_common>
-
-=item mess_alloc
-X<mess_alloc>
-
-=item method_common
-X<method_common>
-
-=item missingterm
-X<missingterm>
-
-=item mod
-X<mod>
 
 =item mode_from_discipline
 X<mode_from_discipline>
 
-=item modkids
-X<modkids>
-
 =item more_bodies
 X<more_bodies>
-
-=item more_sv
-X<more_sv>
 
 =item mro_meta_dup
 X<mro_meta_dup>
@@ -2139,11 +1865,8 @@ X<mro_meta_dup>
 =item mro_meta_init
 X<mro_meta_init>
 
-=item mul128
-X<mul128>
-
-=item mulexp10
-X<mulexp10>
+=item munge_qwlist_to_paren_list
+X<munge_qwlist_to_paren_list>
 
 =item my_attrs
 X<my_attrs>
@@ -2168,9 +1891,6 @@ X<my_betohs>
 
 =item my_clearenv
 X<my_clearenv>
-
-=item my_exit_jump
-X<my_exit_jump>
 
 =item my_htobe16
 X<my_htobe16>
@@ -2208,9 +1928,6 @@ X<my_htolel>
 =item my_htoles
 X<my_htoles>
 
-=item my_kid
-X<my_kid>
-
 =item my_letoh16
 X<my_letoh16>
 
@@ -2229,20 +1946,20 @@ X<my_letohl>
 =item my_letohs
 X<my_letohs>
 
+=item my_lstat_flags
+X<my_lstat_flags>
+
+=item my_stat_flags
+X<my_stat_flags>
+
 =item my_swabn
 X<my_swabn>
 
 =item my_unexec
 X<my_unexec>
 
-=item need_utf8
-X<need_utf8>
-
-=item newDEFSVOP
-X<newDEFSVOP>
-
-=item newGIVWHENOP
-X<newGIVWHENOP>
+=item newATTRSUB_flags
+X<newATTRSUB_flags>
 
 =item newGP
 X<newGP>
@@ -2256,47 +1973,14 @@ X<newMADsv>
 =item newTOKEN
 X<newTOKEN>
 
-=item new_constant
-X<new_constant>
-
-=item new_he
-X<new_he>
-
-=item new_logop
-X<new_logop>
+=item newXS_len_flags
+X<newXS_len_flags>
 
 =item new_warnings_bitfield
 X<new_warnings_bitfield>
 
-=item next_symbol
-X<next_symbol>
-
 =item nextargv
 X<nextargv>
-
-=item nextchar
-X<nextchar>
-
-=item no_bareword_allowed
-X<no_bareword_allowed>
-
-=item no_fh_allowed
-X<no_fh_allowed>
-
-=item no_op
-X<no_op>
-
-=item not_a_number
-X<not_a_number>
-
-=item nuke_stacks
-X<nuke_stacks>
-
-=item num_overflow
-X<num_overflow>
-
-=item offer_nice_chunk
-X<offer_nice_chunk>
 
 =item oopsAV
 X<oopsAV>
@@ -2316,23 +2000,23 @@ X<op_getmad>
 =item op_getmad_weak
 X<op_getmad_weak>
 
+=item op_integerize
+X<op_integerize>
+
+=item op_lvalue_flags
+X<op_lvalue_flags>
+
 =item op_refcnt_dec
 X<op_refcnt_dec>
 
 =item op_refcnt_inc
 X<op_refcnt_inc>
 
+=item op_std_init
+X<op_std_init>
+
 =item op_xmldump
 X<op_xmldump>
-
-=item open_script
-X<open_script>
-
-=item opt_scalarhv
-X<opt_scalarhv>
-
-=item pack_rec
-X<pack_rec>
 
 =item package
 X<package>
@@ -2340,26 +2024,11 @@ X<package>
 =item package_version
 X<package_version>
 
-=item pad_add_name_sv
-X<pad_add_name_sv>
-
-=item pad_compname_type
-X<pad_compname_type>
-
-=item pad_peg
-X<pad_peg>
-
-=item parse_body
-X<parse_body>
-
 =item parse_unicode_opts
 X<parse_unicode_opts>
 
 =item parser_free
 X<parser_free>
-
-=item path_is_absolute
-X<path_is_absolute>
 
 =item peep
 X<peep>
@@ -2367,89 +2036,26 @@ X<peep>
 =item pending_Slabs_to_ro
 X<pending_Slabs_to_ro>
 
-=item pidgone
-X<pidgone>
-
-=item pm_description
-X<pm_description>
-
-=item pmflag
-X<pmflag>
-
 =item pmop_xmldump
 X<pmop_xmldump>
 
 =item pmruntime
 X<pmruntime>
 
-=item pmtrans
-X<pmtrans>
-
-=item prepend_elem
-X<prepend_elem>
+=item populate_isa
+X<populate_isa>
 
 =item prepend_madprops
 X<prepend_madprops>
 
-=item printbuf
-X<printbuf>
-
-=item process_special_blocks
-X<process_special_blocks>
-
-=item ptr_table_find
-X<ptr_table_find>
-
-=item put_byte
-X<put_byte>
-
 =item qerror
 X<qerror>
-
-=item qsortsvu
-X<qsortsvu>
-
-=item re_croak2
-X<re_croak2>
-
-=item readpipe_override
-X<readpipe_override>
-
-=item ref_array_or_hash
-X<ref_array_or_hash>
-
-=item refcounted_he_fetch
-X<refcounted_he_fetch>
-
-=item refcounted_he_new_common
-X<refcounted_he_new_common>
-
-=item refcounted_he_value
-X<refcounted_he_value>
-
-=item refkids
-X<refkids>
-
-=item refto
-X<refto>
-
-=item reg
-X<reg>
-
-=item reg_check_named_buff_matched
-X<reg_check_named_buff_matched>
 
 =item reg_named_buff
 X<reg_named_buff>
 
 =item reg_named_buff_iter
 X<reg_named_buff_iter>
-
-=item reg_namedseq
-X<reg_namedseq>
-
-=item reg_node
-X<reg_node>
 
 =item reg_numbered_buff_fetch
 X<reg_numbered_buff_fetch>
@@ -2463,95 +2069,26 @@ X<reg_numbered_buff_store>
 =item reg_qr_package
 X<reg_qr_package>
 
-=item reg_recode
-X<reg_recode>
-
-=item reg_scan_name
-X<reg_scan_name>
-
-=item reg_skipcomment
-X<reg_skipcomment>
-
 =item reg_temp_copy
 X<reg_temp_copy>
-
-=item reganode
-X<reganode>
-
-=item regatom
-X<regatom>
-
-=item regbranch
-X<regbranch>
-
-=item regclass
-X<regclass>
-
-=item regcppop
-X<regcppop>
-
-=item regcppush
-X<regcppush>
 
 =item regcurly
 X<regcurly>
 
-=item regdump_extflags
-X<regdump_extflags>
-
-=item reghop3
-X<reghop3>
-
-=item reghop4
-X<reghop4>
-
-=item reghopmaybe3
-X<reghopmaybe3>
-
-=item reginclass
-X<reginclass>
-
-=item reginsert
-X<reginsert>
-
-=item regmatch
-X<regmatch>
-
-=item regpiece
-X<regpiece>
-
-=item regpposixcc
-X<regpposixcc>
-
 =item regprop
 X<regprop>
-
-=item regrepeat
-X<regrepeat>
-
-=item regtail
-X<regtail>
-
-=item regtail_study
-X<regtail_study>
-
-=item regtry
-X<regtry>
-
-=item reguni
-X<reguni>
-
-=item regwhite
-X<regwhite>
 
 =item report_evil_fh
 X<report_evil_fh>
 
-=item require_tie_mod
-X<require_tie_mod>
+=item report_redefined_cv
+X<report_redefined_cv>
 
-=item restore_magic
-X<restore_magic>
+=item report_wrongway_fh
+X<report_wrongway_fh>
+
+=item rpeep
+X<rpeep>
 
 =item rsignal_restore
 X<rsignal_restore>
@@ -2559,53 +2096,11 @@ X<rsignal_restore>
 =item rsignal_save
 X<rsignal_save>
 
-=item run_body
-X<run_body>
-
-=item run_user_filter
-X<run_user_filter>
-
-=item rxres_free
-X<rxres_free>
-
-=item rxres_restore
-X<rxres_restore>
-
 =item rxres_save
 X<rxres_save>
 
 =item same_dirent
 X<same_dirent>
-
-=item save_freeop
-X<save_freeop>
-
-=item save_hek_flags
-X<save_hek_flags>
-
-=item save_hints
-X<save_hints>
-
-=item save_lines
-X<save_lines>
-
-=item save_magic
-X<save_magic>
-
-=item save_op
-X<save_op>
-
-=item save_pushi32ptr
-X<save_pushi32ptr>
-
-=item save_pushptri32ptr
-X<save_pushptri32ptr>
-
-=item save_pushptrptr
-X<save_pushptrptr>
-
-=item save_scalar_at
-X<save_scalar_at>
 
 =item sawparens
 X<sawparens>
@@ -2613,140 +2108,26 @@ X<sawparens>
 =item scalar
 X<scalar>
 
-=item scalar_mod_type
-X<scalar_mod_type>
-
-=item scalarboolean
-X<scalarboolean>
-
-=item scalarkids
-X<scalarkids>
-
-=item scalarseq
-X<scalarseq>
-
 =item scalarvoid
 X<scalarvoid>
 
-=item scan_commit
-X<scan_commit>
-
-=item scan_const
-X<scan_const>
-
-=item scan_formline
-X<scan_formline>
-
-=item scan_heredoc
-X<scan_heredoc>
-
-=item scan_ident
-X<scan_ident>
-
-=item scan_inputsymbol
-X<scan_inputsymbol>
-
-=item scan_pat
-X<scan_pat>
-
-=item scan_str
-X<scan_str>
-
-=item scan_subst
-X<scan_subst>
-
-=item scan_trans
-X<scan_trans>
-
-=item scan_word
-X<scan_word>
-
-=item scope
-X<scope>
-
-=item search_const
-X<search_const>
-
-=item sequence
-X<sequence>
-
-=item sequence_num
-X<sequence_num>
-
-=item sequence_tail
-X<sequence_tail>
-
-=item share_hek_flags
-X<share_hek_flags>
+=item set_regclass_bit
+X<set_regclass_bit>
 
 =item sighandler
 X<sighandler>
 
-=item simplify_sort
-X<simplify_sort>
-
-=item skipspace
-X<skipspace>
-
-=item skipspace0
-X<skipspace0>
-
-=item skipspace1
-X<skipspace1>
-
-=item skipspace2
-X<skipspace2>
-
 =item softref2xv
 X<softref2xv>
-
-=item sortcv
-X<sortcv>
-
-=item sortcv_stacked
-X<sortcv_stacked>
-
-=item sortcv_xsub
-X<sortcv_xsub>
-
-=item space_join_names_mortal
-X<space_join_names_mortal>
-
-=item start_force
-X<start_force>
-
-=item stdize_locale
-X<stdize_locale>
-
-=item store_cop_label
-X<store_cop_label>
-
-=item strip_return
-X<strip_return>
-
-=item study_chunk
-X<study_chunk>
 
 =item sub_crush_depth
 X<sub_crush_depth>
 
-=item sublex_done
-X<sublex_done>
-
-=item sublex_push
-X<sublex_push>
-
-=item sublex_start
-X<sublex_start>
-
-=item sv_2iuv_common
-X<sv_2iuv_common>
-
-=item sv_2iuv_non_preserve
-X<sv_2iuv_non_preserve>
-
 =item sv_add_backref
 X<sv_add_backref>
+
+=item sv_catxmlpv
+X<sv_catxmlpv>
 
 =item sv_catxmlpvn
 X<sv_catxmlpvn>
@@ -2754,41 +2135,20 @@ X<sv_catxmlpvn>
 =item sv_catxmlsv
 X<sv_catxmlsv>
 
+=item sv_compile_2op_is_broken
+X<sv_compile_2op_is_broken>
+
 =item sv_del_backref
 X<sv_del_backref>
-
-=item sv_dup_inc_multiple
-X<sv_dup_inc_multiple>
-
-=item sv_exp_grow
-X<sv_exp_grow>
 
 =item sv_free2
 X<sv_free2>
 
-=item sv_i_ncmp
-X<sv_i_ncmp>
-
 =item sv_kill_backrefs
 X<sv_kill_backrefs>
 
-=item sv_ncmp
-X<sv_ncmp>
-
-=item sv_pos_b2u_midway
-X<sv_pos_b2u_midway>
-
-=item sv_pos_u2b_cached
-X<sv_pos_u2b_cached>
-
-=item sv_pos_u2b_forwards
-X<sv_pos_u2b_forwards>
-
-=item sv_pos_u2b_midway
-X<sv_pos_u2b_midway>
-
-=item sv_release_COW
-X<sv_release_COW>
+=item sv_sethek
+X<sv_sethek>
 
 =item sv_setsv_cow
 X<sv_setsv_cow>
@@ -2799,17 +2159,8 @@ X<sv_unglob>
 =item sv_xmlpeek
 X<sv_xmlpeek>
 
-=item swallow_bom
-X<swallow_bom>
-
-=item swash_get
-X<swash_get>
-
-=item to_byte_substr
-X<to_byte_substr>
-
-=item to_utf8_substr
-X<to_utf8_substr>
+=item tied_method
+X<tied_method>
 
 =item token_free
 X<token_free>
@@ -2817,68 +2168,23 @@ X<token_free>
 =item token_getmad
 X<token_getmad>
 
-=item tokenize_use
-X<tokenize_use>
+=item translate_substr_offsets
+X<translate_substr_offsets>
 
-=item tokeq
-X<tokeq>
+=item try_amagic_bin
+X<try_amagic_bin>
 
-=item tokereport
-X<tokereport>
-
-=item too_few_arguments
-X<too_few_arguments>
-
-=item too_many_arguments
-X<too_many_arguments>
-
-=item uiv_2buf
-X<uiv_2buf>
-
-=item unpack_rec
-X<unpack_rec>
+=item try_amagic_un
+X<try_amagic_un>
 
 =item unshare_hek
 X<unshare_hek>
 
-=item unshare_hek_or_pvn
-X<unshare_hek_or_pvn>
-
-=item unwind_handler_stack
-X<unwind_handler_stack>
-
-=item update_debugger_info
-X<update_debugger_info>
-
-=item usage
-X<usage>
-
-=item utf16_textfilter
-X<utf16_textfilter>
-
-=item utf8_mg_pos_cache_update
-X<utf8_mg_pos_cache_update>
-
 =item utilize
 X<utilize>
 
-=item validate_suid
-X<validate_suid>
-
 =item varname
 X<varname>
-
-=item vdie
-X<vdie>
-
-=item vdie_common
-X<vdie_common>
-
-=item vdie_croak_common
-X<vdie_croak_common>
-
-=item visit
-X<visit>
 
 =item vivify_defelem
 X<vivify_defelem>
@@ -2889,11 +2195,11 @@ X<vivify_ref>
 =item wait4pid
 X<wait4pid>
 
+=item was_lvalue_sub
+X<was_lvalue_sub>
+
 =item watch
 X<watch>
-
-=item write_no_mem
-X<write_no_mem>
 
 =item write_to_stderr
 X<write_to_stderr>
@@ -2903,9 +2209,6 @@ X<xmldump_all>
 
 =item xmldump_all_perl
 X<xmldump_all_perl>
-
-=item xmldump_attr
-X<xmldump_attr>
 
 =item xmldump_eval
 X<xmldump_eval>
@@ -2931,8 +2234,20 @@ X<xmldump_sub_perl>
 =item xmldump_vindent
 X<xmldump_vindent>
 
+=item xs_apiversion_bootcheck
+X<xs_apiversion_bootcheck>
+
+=item xs_version_bootcheck
+X<xs_version_bootcheck>
+
 =item yyerror
 X<yyerror>
+
+=item yyerror_pv
+X<yyerror_pv>
+
+=item yyerror_pvn
+X<yyerror_pvn>
 
 =item yylex
 X<yylex>
@@ -2940,8 +2255,8 @@ X<yylex>
 =item yyparse
 X<yyparse>
 
-=item yywarn
-X<yywarn>
+=item yyunlex
+X<yyunlex>
 
 =back
 

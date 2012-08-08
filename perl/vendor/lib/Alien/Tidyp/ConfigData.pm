@@ -166,7 +166,7 @@ authorship claim or copyright claim to the contents of C<Alien::Tidyp::ConfigDat
 __DATA__
 do{ my $x = [
        {
-         'share_subdir' => 'v1.4.6',
+         'share_subdir' => 'v1.4.7',
          'config' => {
                        'INC' => '-I"@PrEfIx@/include/tidyp"',
                        'LIBS' => '-L"@PrEfIx@/lib" -ltidyp',

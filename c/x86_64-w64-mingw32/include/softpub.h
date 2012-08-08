@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef SOFTPUB_H
 #define SOFTPUB_H
@@ -41,7 +41,7 @@ extern "C" {
     WTD_GENERIC_CHAIN_POLICY_SIGNER_INFO,*PWTD_GENERIC_CHAIN_POLICY_SIGNER_INFO;
 
   struct _WTD_GENERIC_CHAIN_POLICY_SIGNER_INFO {
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       DWORD cbStruct;
       DWORD cbSize;
     };
@@ -56,7 +56,7 @@ extern "C" {
   typedef HRESULT (WINAPI *PFN_WTD_GENERIC_CHAIN_POLICY_CALLBACK)(PCRYPT_PROVIDER_DATA pProvData,DWORD dwStepError,DWORD dwRegPolicySettings,DWORD cSigner,PWTD_GENERIC_CHAIN_POLICY_SIGNER_INFO *rgpSigner,void *pvPolicyArg);
 
   typedef struct _WTD_GENERIC_CHAIN_POLICY_CREATE_INFO {
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       DWORD cbStruct;
       DWORD cbSize;
     };
@@ -67,7 +67,7 @@ extern "C" {
   } WTD_GENERIC_CHAIN_POLICY_CREATE_INFO,*PWTD_GENERIC_CHAIN_POLICY_CREATE_INFO;
 
   typedef struct _WTD_GENERIC_CHAIN_POLICY_DATA {
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       DWORD cbStruct;
       DWORD cbSize;
     };

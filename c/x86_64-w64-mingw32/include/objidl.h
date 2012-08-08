@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
@@ -2185,10 +2185,9 @@ extern "C" {
     byte data[1 ];
   } RemSTGMEDIUM;
 
-#ifdef NONAMELESSUNION
   typedef struct tagSTGMEDIUM {
     DWORD tymed;
-    union {
+    __C89_NAMELESS union {
       HBITMAP hBitmap;
       HMETAFILEPICT hMetaFilePict;
       HENHMETAFILE hEnhMetaFile;
@@ -2196,24 +2195,10 @@ extern "C" {
       LPOLESTR lpszFileName;
       IStream *pstm;
       IStorage *pstg;
-    } u;
+    } DUMMYUNIONNAME;
     IUnknown *pUnkForRelease;
   } uSTGMEDIUM;
-#else
-  typedef struct tagSTGMEDIUM {
-    DWORD tymed;
-    __MINGW_EXTENSION union {
-      HBITMAP hBitmap;
-      HMETAFILEPICT hMetaFilePict;
-      HENHMETAFILE hEnhMetaFile;
-      HGLOBAL hGlobal;
-      LPOLESTR lpszFileName;
-      IStream *pstm;
-      IStorage *pstg;
-    };
-    IUnknown *pUnkForRelease;
-  } uSTGMEDIUM;
-#endif
+
   typedef struct _GDI_OBJECT {
     DWORD ObjectType;
     union __MIDL_IAdviseSink_0002 {
@@ -5095,6 +5080,31 @@ extern "C" {
   HRESULT WINAPI AsyncIAdviseSink2_Begin_OnLinkSrcChange_Stub(AsyncIAdviseSink2 *This,IMoniker *pmk);
   void WINAPI AsyncIAdviseSink2_Finish_OnLinkSrcChange_Proxy(AsyncIAdviseSink2 *This);
   HRESULT WINAPI AsyncIAdviseSink2_Finish_OnLinkSrcChange_Stub(AsyncIAdviseSink2 *This);
+
+#if (_WIN32_WINNT >= 0x0600)
+typedef struct tagBIND_OPTS3 {
+  DWORD        cbStruct;
+  DWORD        grfFlags;
+  DWORD        grfMode;
+  DWORD        dwTickCountDeadline;
+  DWORD        dwTrackFlags;
+  DWORD        dwClassContext;
+  LCID         locale;
+  COSERVERINFO *pServerInfo;
+  HWND         hwnd;
+} BIND_OPTS3, *LPBIND_OPTS3;
+#endif /*(_WIN32_WINNT >= 0x0600)*/
+
+#if (_WIN32_WINNT >= 0x0601)
+typedef enum _APTTYPEQUALIFIER {
+  APTTYPEQUALIFIER_NONE                 = 0,
+  APTTYPEQUALIFIER_IMPLICIT_MTA         = 1,
+  APTTYPEQUALIFIER_NA_ON_MTA            = 2,
+  APTTYPEQUALIFIER_NA_ON_STA            = 3,
+  APTTYPEQUALIFIER_NA_ON_IMPLICIT_MTA   = 4,
+  APTTYPEQUALIFIER_NA_ON_MAINSTA        = 5 
+} APTTYPEQUALIFIER;
+#endif /*(_WIN32_WINNT >= 0x0601)*/
 
 #ifdef __cplusplus
 }

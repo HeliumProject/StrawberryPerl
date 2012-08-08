@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _RESAPI_DEFINES_
 #define _RESAPI_DEFINES_
@@ -15,8 +15,17 @@
 extern "C" {
 #endif
 
+#ifndef _NO_W32_PSEUDO_MODIFIERS
+#ifndef IN
 #define IN
+#endif
+#ifndef OUT
 #define OUT
+#endif
+#ifndef OPTIONAL
+#define OPTIONAL
+#endif
+#endif
 
 #define STARTUP_ROUTINE "Startup"
 
@@ -45,7 +54,7 @@ extern "C" {
   typedef VOID (_stdcall *PQUORUM_RESOURCE_LOST)(RESOURCE_HANDLE Resource);
 
   typedef enum LOG_LEVEL {
-    LOG_INFORMATION,LOG_WARNING,LOG_ERROR,LOG_SEVERE
+    LOG_INFORMATION = 0,LOG_WARNING,LOG_ERROR,LOG_SEVERE
   } LOG_LEVEL,*PLOG_LEVEL;
 
   typedef VOID (_stdcall *PLOG_EVENT_ROUTINE)(RESOURCE_HANDLE ResourceHandle,LOG_LEVEL LogLevel,LPCWSTR FormatString,...);
@@ -62,7 +71,7 @@ extern "C" {
   typedef DWORD (_stdcall *PRESOURCE_TYPE_CONTROL_ROUTINE)(LPCWSTR ResourceTypeName,DWORD ControlCode,PVOID InBuffer,DWORD InBufferSize,PVOID OutBuffer,DWORD OutBufferSize,LPDWORD BytesReturned);
 
   typedef enum _RESOURCE_EXIT_STATE {
-    ResourceExitStateContinue,ResourceExitStateTerminate,ResourceExitStateMax
+    ResourceExitStateContinue = 0,ResourceExitStateTerminate,ResourceExitStateMax
   } RESOURCE_EXIT_STATE;
 
   typedef struct CLRES_V1_FUNCTIONS {
@@ -82,7 +91,7 @@ extern "C" {
   typedef struct CLRES_FUNCTION_TABLE {
     DWORD TableSize;
     DWORD Version;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       CLRES_V1_FUNCTIONS V1Functions;
     };
   } CLRES_FUNCTION_TABLE,*PCLRES_FUNCTION_TABLE;
@@ -111,7 +120,7 @@ extern "C" {
     LPWSTR Name;
     LPWSTR KeyName;
     DWORD Format;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       DWORD_PTR DefaultPtr;
       DWORD Default;
       LPVOID lpDefault;
@@ -227,6 +236,151 @@ extern "C" {
   DWORD WINAPI ResUtilGetPropertyFormats(const PRESUTIL_PROPERTY_ITEM pPropertyTable,PVOID pOutPropertyFormatList,DWORD cbPropertyFormatListSize,LPDWORD pcbBytesReturned,LPDWORD pcbRequired);
   DWORD WINAPI ResUtilGetCoreClusterResources(HCLUSTER hCluster,HRESOURCE *phClusterNameResource,HRESOURCE *phClusterIPAddressResource,HRESOURCE *phClusterQuorumResource);
   DWORD WINAPI ResUtilGetResourceName(HRESOURCE hResource,PWSTR pszResourceName,DWORD *pcchResourceNameInOut);
+
+#if (_WIN32_WINNT >= 0x0600)
+typedef enum _CLUSTER_ROLE {
+  ClusterRoleDHCP                          = 0,
+  ClusterRoleDTC                           = 1,
+  ClusterRoleFileServer                    = 2,
+  ClusterRoleGenericApplication            = 3,
+  ClusterRoleGenericScript                 = 4,
+  ClusterRoleGenericService                = 5,
+  ClusterRoleISCSINameServer               = 6,
+  ClusterRoleMSMQ                          = 7,
+  ClusterRoleNFS                           = 8,
+  ClusterRolePrintServer                   = 9,
+  ClusterRoleStandAloneNamespaceServer     = 10,
+  ClusterRoleVolumeShadowCopyServiceTask   = 11,
+  ClusterRoleWINS                          = 12 
+} CLUSTER_ROLE;
+
+typedef enum _CLUSTER_ROLE_STATE {
+  ClusterRoleUnknown       = -1,
+  ClusterRoleClustered     = 0,
+  ClusterRoleUnclustered   = 1 
+} CLUSTER_ROLE_STATE;
+
+typedef enum RESOURCE_MONITOR_STATE {
+  RmonInitializing,
+  RmonIdle,
+  RmonStartingResource,
+  RmonInitializingResource,
+  RmonOnlineResource,
+  RmonOfflineResource,
+  RmonShutdownResource,
+  RmonDeletingResource,
+  RmonIsAlivePoll,
+  RmonLooksAlivePoll,
+  RmonArbitrateResource,
+  RmonReleaseResource,
+  RmonResourceControl,
+  RmonResourceTypeControl,
+  RmonTerminateResource,
+  RmonDeadlocked 
+} RESOURCE_MONITOR_STATE;
+
+typedef DWORD (CALLBACK *LPRESOURCE_CALLBACK)( 
+  HRESOURCE hSelf,
+  HRESOURCE hResource,
+  PVOID pParameter
+);
+
+typedef DWORD (CALLBACK *LPRESOURCE_CALLBACK_EX)( 
+  HCLUSTER hCluster,
+  HRESOURCE hSelf,
+  HRESOURCE hResource,
+  PVOID pParameter
+);
+
+typedef struct RESUTIL_FILETIME_DATA {
+  FILETIME Default;
+  FILETIME Minimum;
+  FILETIME Maximum;
+} RESUTIL_FILETIME_DATA, *PRESUTIL_FILETIME_DATA;
+
+DWORD ResUtilFindFileTimeProperty(
+  const PVOID pPropertyList,
+  DWORD cbPropertyListSize,
+  LPCWSTR pszPropertyName,
+  LPFILETIME pftPropertyValue
+);
+
+CLUSTER_ROLE_STATE WINAPI ResUtilGetClusterRoleState(
+  HCLUSTER hCluster,
+  CLUSTER_ROLE eClusterRole
+);
+
+DWORD WINAPI ResUtilGetFileTimeProperty(
+  LPFILETIME pftOutValue,
+  const PCLUSPROP_FILETIME pValueStruct,
+  FILETIME ftOldValue,
+  FILETIME ftMinimum,
+  FILETIME ftMaximum,
+  LPBYTE *ppPropertyList,
+  LPDWORD pcbPropertyListSize
+);
+
+DWORD WINAPI ResUtilGetLongProperty(
+  LPLONG plOutValue,
+  const PCLUSPROP_LONG pValueStruct,
+  LONG lOldValue,
+  LONG lMinimum,
+  LONG lMaximum,
+  LPBYTE *ppPropertyList,
+  LPDWORD pcbPropertyListSize
+);
+
+DWORD WINAPI ResUtilGetQwordValue(
+  HKEY hkeyClusterKey,
+  LPCWSTR pszValueName,
+  PULONGLONG pqwOutValue,
+  ULONGLONG qwDefaultValue
+);
+
+DWORD WINAPI ResUtilSetQwordValue(
+  HKEY hkeyClusterKey,
+  LPCWSTR pszValueName,
+  ULONGLONG qwNewValue,
+  PULONGLONG pqwOutValue
+);
+
+typedef DWORD (WINAPI *PWORKER_START_ROUTINE)( 
+  PCLUS_WORKER pWorker,
+  LPVOID lpThreadParameter
+);
+
+#endif /* (_WIN32_WINNT >= 0x0600) */
+
+#if (_WIN32_WINNT >= 0x0600)
+DWORD WINAPI ClusterClearBackupStateForSharedVolume(
+  LPCWSTR lpszVolumePathName
+);
+
+WINBOOL WINAPI ClusterGetVolumeNameForVolumeMountPoint(
+  LPCWSTR lpszVolumeMountPoint,
+  LPWSTR lpszVolumeName,
+  DWORD cchBufferLength
+);
+
+WINBOOL WINAPI ClusterGetVolumePathName(
+  LPCWSTR lpszFileName,
+  LPWSTR lpszVolumePathName,
+  DWORD cchBufferLength
+);
+
+WINBOOL WINAPI ClusterIsPathOnSharedVolume(
+  LPCWSTR lpszPathName
+);
+
+DWORD WINAPI ClusterPrepareSharedVolumeForBackup(
+  LPCWSTR lpszFileName,
+  LPWSTR lpszVolumePathName,
+  LPDWORD lpcchVolumePathName,
+  LPWSTR lpszVolumeName,
+  LPDWORD lpcchVolumeName
+);
+
+#endif /* (_WIN32_WINNT >= 0x0600) */
 
 #ifdef __cplusplus
 }

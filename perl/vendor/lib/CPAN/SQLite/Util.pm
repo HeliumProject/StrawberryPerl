@@ -1,14 +1,16 @@
+# $Id: Util.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::Util;
 use strict;
 use warnings;
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 
 use base qw(Exporter);
 our (@EXPORT_OK, %chaps, %modes,
      $table_id, $query_info, $mode_info, $full_id, $dslip);
 @EXPORT_OK = qw(%chaps $repositories %modes
                 vcmp $table_id $query_info $mode_info $full_id
-		has_hash_data has_array_data $dslip
+                has_hash_data has_array_data $dslip
                 expand_dslip download chap_desc print_debug);
 
 make_ids();
@@ -45,7 +47,7 @@ $query_info = { module => {mode => 'module', type => 'name'},
                 cpanid => {mode => 'author', type => 'name'},
                 author => {mode => 'author', type => 'name'},
                 auth_id => {mode => 'author', type => 'id'},
-	      };
+              };
 
 %chaps = (
           2 => 'Perl Core Modules',
@@ -132,6 +134,7 @@ sub make_ids {
     $full_id->{$id} = $table . '.' . $id;
   }
 #    $full_id->{chapterid} = 'chaps.chapterid';
+  return;
 }
 
 #my $num_re = qr{^0*\.\d+$};
@@ -188,7 +191,7 @@ sub chap_desc {
 
 sub print_debug {
   return unless $ENV{CPAN_SQLITE_DEBUG};
-  print @_;
+  return print @_;
 }
 
 sub vcmp {
@@ -239,21 +242,21 @@ sub vcmp {
 
 sub vgt {
   my ($self, $l, $r) = @_;
-  $self->vcmp($l, $r) > 0;
+  return $self->vcmp($l, $r) > 0;
 }
 
 sub vlt {
   my ($self, $l, $r) = @_;
-  0 + ($self->vcmp($l, $r) < 0);
+  return 0 + ($self->vcmp($l, $r) < 0);
 }
 
 sub vstring {
   my ($self, $n) = @_;
-  $n =~ s/^v// 
+  $n =~ s/^v//
     or die "CPAN::Search::Lite::Version::vstring() called with invalid arg [$n]";
   {
     no warnings;
-    pack "U*", split /\./, $n;
+    return pack "U*", split /\./, $n;
   }
 }
 
@@ -273,7 +276,7 @@ sub float2vv {
         $ret .= ".".int($1);
     }
     # warn "n[$n]ret[$ret]";
-    $ret;
+    return $ret;
 }
 
 sub readable {

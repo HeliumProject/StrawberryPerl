@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _LMUSER_
 #define _LMUSER_
@@ -804,7 +804,8 @@ extern "C" {
   NET_API_STATUS WINAPI I_NetLogonControl(LPCWSTR ServerName,DWORD FunctionCode,DWORD QueryLevel,LPBYTE *Buffer);
   NET_API_STATUS WINAPI I_NetLogonControl2(LPCWSTR ServerName,DWORD FunctionCode,DWORD QueryLevel,LPBYTE Data,LPBYTE *Buffer);
 
-#ifndef _NTDEF_
+#if !defined (_NTDEF_) && !defined (_NTSTATUS_PSDK)
+#define _NTSTATUS_PSDK
   typedef LONG NTSTATUS,*PNTSTATUS;
 #endif
 

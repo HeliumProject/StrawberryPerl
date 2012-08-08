@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_WCTYPE
 #define _INC_WCTYPE
@@ -124,7 +124,7 @@ extern "C" {
   _CRTIMP int __cdecl __iswcsym(wint_t);
   int __cdecl is_wctype(wint_t,wctype_t);
 #if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || !defined (NO_OLDNAMES) || defined (__cplusplus)
-int __cdecl isblank(int _C);
+int __cdecl iswblank(wint_t _C);
 #endif
 #endif
 

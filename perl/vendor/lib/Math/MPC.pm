@@ -51,7 +51,6 @@
     '=='   => \&overload_equiv,
     '!='   => \&overload_not_equiv,
     '!'    => \&overload_not,
-    'not'  => \&overload_not,
     '='    => \&overload_copy,
     '""'   => \&overload_string,
     'abs'  => \&overload_abs,
@@ -122,7 +121,7 @@ Rmpc_set_nan Rmpc_swap
 Rmpc_mul_sj Rmpc_mul_ld Rmpc_mul_d Rmpc_div_sj Rmpc_sj_div Rmpc_div_ld Rmpc_ld_div Rmpc_div_d Rmpc_d_div
 );
 
-    $Math::MPC::VERSION = '0.90';
+    $Math::MPC::VERSION = '0.93';
 
     DynaLoader::bootstrap Math::MPC $Math::MPC::VERSION;
 
@@ -1064,7 +1063,7 @@ Math::MPC - perl interface to the MPC (multi precision complex) library.
      + - * / ** sqrt (Return object has default precision)
      += -= *= /= **= (Precision remains unchanged)
      == != 
-     ! not bool
+     ! bool
      abs (Returns an MPFR object, blessed into package Math::MPFR)
      exp log (Return object has default precision)
      sin cos (Return object has default precision)

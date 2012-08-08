@@ -651,6 +651,9 @@ data doesn't alter it.
 
 DBI::PurePerl does not support profiling (though it could in theory).
 
+For asynchronous queries, time spent while the query is running on the
+backend is not counted.
+
 A few platforms don't support the gettimeofday() high resolution
 time function used by the DBI (and available via the dbi_time() function).
 In which case you'll get integer resolution time which is mostly useless.
@@ -678,7 +681,7 @@ use Carp;
 
 use DBI qw(dbi_time dbi_profile dbi_profile_merge_nodes dbi_profile_merge);
 
-$VERSION = sprintf("2.%06d", q$Revision: 14123 $ =~ /(\d+)/o);
+$VERSION = sprintf("2.%06d", q$Revision: 15064 $ =~ /(\d+)/o);
 
 
 @ISA = qw(Exporter);

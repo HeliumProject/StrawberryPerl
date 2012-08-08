@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINTERNL_
 #define _WINTERNL_
@@ -33,7 +33,7 @@ extern "C" {
     UNICODE_STRING FullDllName;
     BYTE Reserved4[8];
     PVOID Reserved5[3];
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       ULONG CheckSum;
       PVOID Reserved6;
     };
@@ -100,17 +100,342 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 
   typedef struct _OBJECT_ATTRIBUTES {
     ULONG Length;
+#ifdef _WIN64
+    ULONG pad1;
+#endif
     HANDLE RootDirectory;
     PUNICODE_STRING ObjectName;
     ULONG Attributes;
+#ifdef _WIN64
+    ULONG pad2;
+#endif
     PVOID SecurityDescriptor;
     PVOID SecurityQualityOfService;
-  } OBJECT_ATTRIBUTES;
+  } OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
 
-  typedef OBJECT_ATTRIBUTES *POBJECT_ATTRIBUTES;
+  typedef struct _OBJECT_DATA_INFORMATION {
+    BOOLEAN InheritHandle;
+    BOOLEAN ProtectFromClose;
+  } OBJECT_DATA_INFORMATION, *POBJECT_DATA_INFORMATION;
 
+  typedef struct _OBJECT_BASIC_INFORMATION {
+    ULONG  Attributes;
+    ACCESS_MASK  GrantedAccess;
+    ULONG  HandleCount;
+    ULONG  PointerCount;
+    ULONG  PagedPoolUsage;
+    ULONG  NonPagedPoolUsage;
+    ULONG  Reserved[3];
+    ULONG  NameInformationLength;
+    ULONG  TypeInformationLength;
+    ULONG  SecurityDescriptorLength;
+    LARGE_INTEGER  CreateTime;
+  } OBJECT_BASIC_INFORMATION, *POBJECT_BASIC_INFORMATION;
+
+  typedef struct _OBJECT_NAME_INFORMATION {
+    UNICODE_STRING Name;
+  } OBJECT_NAME_INFORMATION, *POBJECT_NAME_INFORMATION;
+
+  typedef struct _OBJECT_TYPE_INFORMATION {
+    UNICODE_STRING TypeName;
+    ULONG TotalNumberOfObjects;
+    ULONG TotalNumberOfHandles;
+    ULONG TotalPagedPoolUsage;
+    ULONG TotalNonPagedPoolUsage;
+    ULONG TotalNamePoolUsage;
+    ULONG TotalHandleTableUsage;
+    ULONG HighWaterNumberOfObjects;
+    ULONG HighWaterNumberOfHandles;
+    ULONG HighWaterPagedPoolUsage;
+    ULONG HighWaterNonPagedPoolUsage;
+    ULONG HighWaterNamePoolUsage;
+    ULONG HighWaterHandleTableUsage;
+    ULONG InvalidAttributes;
+    GENERIC_MAPPING GenericMapping;
+    ULONG ValidAccessMask;
+    BOOLEAN SecurityRequired;
+    BOOLEAN MaintainHandleCount;
+    ULONG PoolType;
+    ULONG DefaultPagedPoolCharge;
+    ULONG DefaultNonPagedPoolCharge;
+  } OBJECT_TYPE_INFORMATION, *POBJECT_TYPE_INFORMATION;
+
+  typedef struct _OBJECT_ALL_INFORMATION { 
+    ULONG NumberOfObjects; 
+    OBJECT_TYPE_INFORMATION ObjectTypeInformation[1]; 
+  }OBJECT_ALL_INFORMATION, *POBJECT_ALL_INFORMATION;
+
+  typedef enum _FILE_INFORMATION_CLASS {
+    FileDirectoryInformation = 1,
+    FileFullDirectoryInformation,
+    FileBothDirectoryInformation,
+    FileBasicInformation,
+    FileStandardInformation,
+    FileInternalInformation,
+    FileEaInformation,
+    FileAccessInformation,
+    FileNameInformation,
+    FileRenameInformation,
+    FileLinkInformation,
+    FileNamesInformation,
+    FileDispositionInformation,
+    FilePositionInformation,
+    FileFullEaInformation,
+    FileModeInformation,
+    FileAlignmentInformation,
+    FileAllInformation,
+    FileAllocationInformation,
+    FileEndOfFileInformation,
+    FileAlternateNameInformation,
+    FileStreamInformation,
+    FilePipeInformation,
+    FilePipeLocalInformation,
+    FilePipeRemoteInformation,
+    FileMailslotQueryInformation,
+    FileMailslotSetInformation,
+    FileCompressionInformation,
+    FileObjectIdInformation,
+    FileCompletionInformation,
+    FileMoveClusterInformation,
+    FileQuotaInformation,
+    FileReparsePointInformation,
+    FileNetworkOpenInformation,
+    FileAttributeTagInformation,
+    FileTrackingInformation,
+    FileIdBothDirectoryInformation,
+    FileIdFullDirectoryInformation,
+    FileValidDataLengthInformation,
+    FileShortNameInformation = 40,
+    FileSfioReserveInformation = 44,
+    FileSfioVolumeInformation = 45,
+    FileHardLinkInformation = 46,
+    FileNormalizedNameInformation = 48,
+    FileIdGlobalTxDirectoryInformation = 50,
+    FileStandardLinkInformation = 54,
+    FileMaximumInformation
+  } FILE_INFORMATION_CLASS, *PFILE_INFORMATION_CLASS;
+
+  typedef struct _FILE_DIRECTORY_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG FileIndex;
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    LARGE_INTEGER EndOfFile;
+    LARGE_INTEGER AllocationSize;
+    ULONG FileAttributes;
+    ULONG FileNameLength;
+    WCHAR FileName[ANYSIZE_ARRAY];
+  } FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
+
+  typedef struct _FILE_FULL_DIRECTORY_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG FileIndex;
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    LARGE_INTEGER EndOfFile;
+    LARGE_INTEGER AllocationSize;
+    ULONG FileAttributes;
+    ULONG FileNameLength;
+    ULONG EaSize;
+    WCHAR FileName[ANYSIZE_ARRAY];
+  } FILE_FULL_DIRECTORY_INFORMATION, *PFILE_FULL_DIRECTORY_INFORMATION,FILE_FULL_DIR_INFORMATION, *PFILE_FULL_DIR_INFORMATION;
+
+  typedef struct _FILE_ID_FULL_DIRECTORY_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG FileIndex;
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    LARGE_INTEGER EndOfFile;
+    LARGE_INTEGER AllocationSize;
+    ULONG FileAttributes;
+    ULONG FileNameLength;
+    ULONG EaSize;
+    LARGE_INTEGER FileId;
+    WCHAR FileName[ANYSIZE_ARRAY];
+  } FILE_ID_FULL_DIRECTORY_INFORMATION, *PFILE_ID_FULL_DIRECTORY_INFORMATION;
+
+  typedef struct _FILE_BOTH_DIRECTORY_INFORMATION {
+    ULONG NextEntryOffset;
+	 ULONG FileIndex;
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    LARGE_INTEGER EndOfFile;
+    LARGE_INTEGER AllocationSize;
+    ULONG FileAttributes;
+    ULONG FileNameLength;
+    ULONG EaSize;
+    CHAR ShortNameLength;
+    WCHAR ShortName[12];
+    WCHAR FileName[ANYSIZE_ARRAY];
+  } FILE_BOTH_DIRECTORY_INFORMATION, *PFILE_BOTH_DIRECTORY_INFORMATION,FILE_BOTH_DIR_INFORMATION, *PFILE_BOTH_DIR_INFORMATION;
+
+  typedef struct _FILE_ID_BOTH_DIRECTORY_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG FileIndex;
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    LARGE_INTEGER EndOfFile;
+    LARGE_INTEGER AllocationSize;
+    ULONG FileAttributes;
+    ULONG FileNameLength;
+    ULONG EaSize;
+    CHAR ShortNameLength;
+    WCHAR ShortName[12];
+    LARGE_INTEGER FileId;
+    WCHAR FileName[ANYSIZE_ARRAY];
+  } FILE_ID_BOTH_DIRECTORY_INFORMATION, *PFILE_ID_BOTH_DIRECTORY_INFORMATION;
+
+  typedef struct _FILE_BASIC_INFORMATION {
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    ULONG FileAttributes;
+  } FILE_BASIC_INFORMATION, *PFILE_BASIC_INFORMATION;
+
+  typedef struct _FILE_STANDARD_INFORMATION {
+    LARGE_INTEGER AllocationSize;
+    LARGE_INTEGER EndOfFile;
+    ULONG NumberOfLinks;
+    BOOLEAN DeletePending;
+    BOOLEAN Directory;
+  } FILE_STANDARD_INFORMATION, *PFILE_STANDARD_INFORMATION;
+
+  typedef struct _FILE_INTERNAL_INFORMATION {
+    LARGE_INTEGER IndexNumber;
+  } FILE_INTERNAL_INFORMATION, *PFILE_INTERNAL_INFORMATION;
+
+  typedef struct _FILE_EA_INFORMATION {
+    ULONG EaSize;
+  } FILE_EA_INFORMATION, *PFILE_EA_INFORMATION;
+
+  typedef struct _FILE_ACCESS_INFORMATION {
+    ACCESS_MASK AccessFlags;
+  } FILE_ACCESS_INFORMATION, *PFILE_ACCESS_INFORMATION;
+
+  typedef struct _FILE_NAME_INFORMATION {
+    ULONG FileNameLength;
+    WCHAR FileName[1];
+  } FILE_NAME_INFORMATION, *PFILE_NAME_INFORMATION;
+
+  typedef struct _FILE_RENAME_INFORMATION {
+    BOOLEAN Replace;
+    HANDLE RootDir;
+    ULONG FileNameLength;
+    WCHAR FileName[1];
+  } FILE_RENAME_INFORMATION, *PFILE_RENAME_INFORMATION;
+
+  typedef struct _FILE_NAMES_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG FileIndex;
+    ULONG FileNameLength;
+    WCHAR FileName[1];
+  } FILE_NAMES_INFORMATION, *PFILE_NAMES_INFORMATION;
+
+  typedef struct _FILE_DISPOSITION_INFORMATION {
+    BOOLEAN DoDeleteFile;
+  } FILE_DISPOSITION_INFORMATION, *PFILE_DISPOSITION_INFORMATION;
+
+  typedef struct _FILE_POSITION_INFORMATION {
+    LARGE_INTEGER CurrentByteOffset;
+  } FILE_POSITION_INFORMATION, *PFILE_POSITION_INFORMATION;
+
+  typedef struct _FILE_ALIGNMENT_INFORMATION {
+    ULONG AlignmentRequirement;
+  } FILE_ALIGNMENT_INFORMATION, *PFILE_ALIGNMENT_INFORMATION;
+
+  typedef struct _FILE_ALLOCATION_INFORMATION {
+    LARGE_INTEGER AllocationSize;
+  } FILE_ALLOCATION_INFORMATION, *PFILE_ALLOCATION_INFORMATION;
+
+  typedef struct _FILE_END_OF_FILE_INFORMATION {
+    LARGE_INTEGER EndOfFile;
+  } FILE_END_OF_FILE_INFORMATION, *PFILE_END_OF_FILE_INFORMATION;
+
+  typedef struct _FILE_NETWORK_OPEN_INFORMATION {
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    LARGE_INTEGER AllocationSize;
+    LARGE_INTEGER EndOfFile;
+    ULONG FileAttributes;
+  } FILE_NETWORK_OPEN_INFORMATION, *PFILE_NETWORK_OPEN_INFORMATION;
+
+  typedef struct _FILE_FULL_EA_INFORMATION {
+    ULONG NextEntryOffset;
+    UCHAR Flags;
+    UCHAR EaNameLength;
+    USHORT EaValueLength;
+    CHAR EaName[1];
+  } FILE_FULL_EA_INFORMATION, *PFILE_FULL_EA_INFORMATION;
+
+  typedef struct _FILE_MODE_INFORMATION {
+    ULONG Mode;
+  } FILE_MODE_INFORMATION, *PFILE_MODE_INFORMATION;
+
+  typedef struct _FILE_STREAM_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG StreamNameLength;
+    LARGE_INTEGER StreamSize;
+    LARGE_INTEGER StreamAllocationSize;
+    WCHAR StreamName[1];
+  } FILE_STREAM_INFORMATION, *PFILE_STREAM_INFORMATION;
+
+  typedef struct _FILE_ATTRIBUTE_TAG_INFORMATION {
+    ULONG FileAttributes;
+    ULONG ReparseTag;
+  } FILE_ATTRIBUTE_TAG_INFORMATION, *PFILE_ATTRIBUTE_TAG_INFORMATION;
+
+  typedef struct _FILE_MAILSLOT_QUERY_INFORMATION {
+    ULONG MaximumMessageSize;
+    ULONG MailslotQuota;
+    ULONG NextMessageSize;
+    ULONG MessagesAvailable;
+    LARGE_INTEGER ReadTimeout;
+  } FILE_MAILSLOT_QUERY_INFORMATION, *PFILE_MAILSLOT_QUERY_INFORMATION;
+
+  typedef struct _FILE_MAILSLOT_SET_INFORMATION {
+    LARGE_INTEGER ReadTimeout;
+  } FILE_MAILSLOT_SET_INFORMATION, *PFILE_MAILSLOT_SET_INFORMATION;
+
+  typedef struct _FILE_PIPE_LOCAL_INFORMATION {
+    ULONG NamedPipeType;
+    ULONG NamedPipeConfiguration;
+    ULONG MaximumInstances;
+    ULONG CurrentInstances;
+    ULONG InboundQuota;
+    ULONG ReadDataAvailable;
+    ULONG OutboundQuota;
+    ULONG WriteQuotaAvailable;
+    ULONG NamedPipeState;
+    ULONG NamedPipeEnd;
+  } FILE_PIPE_LOCAL_INFORMATION, *PFILE_PIPE_LOCAL_INFORMATION;
+
+  typedef struct _FILE_ALL_INFORMATION {
+    FILE_BASIC_INFORMATION     BasicInformation;
+    FILE_STANDARD_INFORMATION  StandardInformation;
+    FILE_INTERNAL_INFORMATION  InternalInformation;
+    FILE_EA_INFORMATION        EaInformation;
+    FILE_ACCESS_INFORMATION    AccessInformation;
+    FILE_POSITION_INFORMATION  PositionInformation;
+    FILE_MODE_INFORMATION      ModeInformation;
+    FILE_ALIGNMENT_INFORMATION AlignmentInformation;
+    FILE_NAME_INFORMATION      NameInformation;
+  } FILE_ALL_INFORMATION, *PFILE_ALL_INFORMATION;
+ 
   typedef struct _IO_STATUS_BLOCK {
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       NTSTATUS Status;
       PVOID Pointer;
     };
@@ -148,15 +473,75 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
   } UNWIND_HISTORY_TABLE,*PUNWIND_HISTORY_TABLE;
 #endif
 
-  typedef struct _PROCESS_BASIC_INFORMATION {
-    PVOID Reserved1;
-    PPEB PebBaseAddress;
-    PVOID Reserved2[2];
-    ULONG_PTR UniqueProcessId;
-    PVOID Reserved3;
-  } PROCESS_BASIC_INFORMATION;
+  typedef struct _VM_COUNTERS {
+    SIZE_T PeakVirtualSize;
+    SIZE_T VirtualSize;
+    ULONG PageFaultCount;
+    SIZE_T PeakWorkingSetSize;
+    SIZE_T WorkingSetSize;
+    SIZE_T QuotaPeakPagedPoolUsage;
+    SIZE_T QuotaPagedPoolUsage;
+    SIZE_T QuotaPeakNonPagedPoolUsage;
+    SIZE_T QuotaNonPagedPoolUsage;
+    SIZE_T PagefileUsage;
+    SIZE_T PeakPagefileUsage;
+  } VM_COUNTERS, *PVM_COUNTERS;
 
-  typedef PROCESS_BASIC_INFORMATION *PPROCESS_BASIC_INFORMATION;
+  typedef enum _THREAD_STATE {
+    StateInitialized = 0,
+    StateReady, StateRunning, StateStandby, StateTerminated,
+    StateWait, StateTransition,
+    StateUnknown
+  } THREAD_STATE;
+
+  typedef struct _CLIENT_ID {
+    HANDLE UniqueProcess;
+    HANDLE UniqueThread;
+  } CLIENT_ID, *PCLIENT_ID;
+
+  typedef LONG KPRIORITY;
+
+  typedef enum _KWAIT_REASON {
+    Executive = 0,
+    FreePage, PageIn, PoolAllocation, DelayExecution,
+    Suspended, UserRequest, WrExecutive, WrFreePage, WrPageIn,
+    WrPoolAllocation, WrDelayExecution, WrSuspended,
+    WrUserRequest, WrEventPair, WrQueue, WrLpcReceive,
+    WrLpcReply, WrVirtualMemory, WrPageOut, WrRendezvous,
+    Spare2, Spare3, Spare4, Spare5, Spare6, WrKernel,
+    MaximumWaitReason
+  } KWAIT_REASON;
+
+  typedef struct _SYSTEM_THREADS
+  {
+    LARGE_INTEGER KernelTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER CreateTime;
+    ULONG WaitTime;
+    PVOID StartAddress;
+    CLIENT_ID ClientId;
+    KPRIORITY Priority;
+    KPRIORITY BasePriority;
+    ULONG ContextSwitchCount;
+    THREAD_STATE State;
+    KWAIT_REASON WaitReason;
+  } SYSTEM_THREADS, *PSYSTEM_THREADS;
+
+  typedef struct _PROCESS_BASIC_INFORMATION {
+    NTSTATUS ExitStatus;
+    PPEB PebBaseAddress;
+    KAFFINITY AffinityMask;
+    KPRIORITY BasePriority;
+    ULONG_PTR UniqueProcessId;
+    ULONG_PTR InheritedFromUniqueProcessId;
+  } PROCESS_BASIC_INFORMATION, *PPROCESS_BASIC_INFORMATION;
+
+  typedef struct _KERNEL_USER_TIMES {
+    FILETIME CreateTime;
+    FILETIME ExitTime;
+    LARGE_INTEGER KernelTime;
+    LARGE_INTEGER UserTime;
+  } KERNEL_USER_TIMES, *PKERNEL_USER_TIMES;
 
   typedef struct _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION {
     LARGE_INTEGER IdleTime;
@@ -168,16 +553,21 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 
   typedef struct _SYSTEM_PROCESS_INFORMATION {
     ULONG NextEntryOffset;
-    BYTE Reserved1[52];
-    PVOID Reserved2[3];
+    ULONG NumberOfThreads;
+    LARGE_INTEGER Reserved[3];
+    LARGE_INTEGER CreateTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER KernelTime;
+    UNICODE_STRING ImageName;
+    KPRIORITY BasePriority;
     HANDLE UniqueProcessId;
-    PVOID Reserved3;
+    HANDLE InheritedFromUniqueProcessId;
     ULONG HandleCount;
-    BYTE Reserved4[4];
-    PVOID Reserved5[11];
-    SIZE_T PeakPagefileUsage;
+    ULONG SessionId;
+    ULONG PageDirectoryBase;
+    VM_COUNTERS VirtualMemoryCounters;
     SIZE_T PrivatePageCount;
-    LARGE_INTEGER Reserved6[6];
+    IO_COUNTERS IoCounters;
   } SYSTEM_PROCESS_INFORMATION,*PSYSTEM_PROCESS_INFORMATION;
 
   typedef struct _SYSTEM_REGISTRY_QUOTA_INFORMATION {
@@ -187,18 +577,111 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
   } SYSTEM_REGISTRY_QUOTA_INFORMATION,*PSYSTEM_REGISTRY_QUOTA_INFORMATION;
 
   typedef struct _SYSTEM_BASIC_INFORMATION {
-    BYTE Reserved1[24];
-    PVOID Reserved2[4];
+    BYTE Reserved1[4];
+    ULONG MaximumIncrement;
+    ULONG PhysicalPageSize;
+    ULONG NumberOfPhysicalPages;
+    ULONG LowestPhysicalPage;
+    ULONG HighestPhysicalPage;
+    ULONG AllocationGranularity;
+    ULONG LowestUserAddress;
+    ULONG HighestUserAddress;
+    ULONG ActiveProcessors;
     CCHAR NumberOfProcessors;
   } SYSTEM_BASIC_INFORMATION,*PSYSTEM_BASIC_INFORMATION;
 
+  typedef struct _SYSTEM_PROCESSOR_INFORMATION {
+    USHORT ProcessorArchitecture;
+    USHORT ProcessorLevel;
+    USHORT ProcessorRevision;
+    USHORT Unknown;
+    ULONG FeatureBits;
+  } SYSTEM_PROCESSOR_INFORMATION, *PSYSTEM_PROCESSOR_INFORMATION;
+
   typedef struct _SYSTEM_TIMEOFDAY_INFORMATION {
-    BYTE Reserved1[48];
+    LARGE_INTEGER BootTime;
+    LARGE_INTEGER CurrentTime;
+    LARGE_INTEGER TimeZoneBias;
+    ULONG CurrentTimeZoneId;
+    BYTE Reserved1[20];
   } SYSTEM_TIMEOFDAY_INFORMATION,*PSYSTEM_TIMEOFDAY_INFORMATION;
 
   typedef struct _SYSTEM_PERFORMANCE_INFORMATION {
-    BYTE Reserved1[312];
-  } SYSTEM_PERFORMANCE_INFORMATION,*PSYSTEM_PERFORMANCE_INFORMATION;
+    LARGE_INTEGER IdleTime;
+    LARGE_INTEGER ReadTransferCount;
+    LARGE_INTEGER WriteTransferCount;
+    LARGE_INTEGER OtherTransferCount;
+    ULONG ReadOperationCount;
+    ULONG WriteOperationCount;
+    ULONG OtherOperationCount;
+    ULONG AvailablePages;
+    ULONG TotalCommittedPages;
+    ULONG TotalCommitLimit;
+    ULONG PeakCommitment;
+    ULONG PageFaults;
+    ULONG WriteCopyFaults;
+    ULONG TransitionFaults;
+    ULONG CacheTransitionFaults;
+    ULONG DemandZeroFaults;
+    ULONG PagesRead;
+    ULONG PageReadIos;
+    ULONG CacheReads;
+    ULONG CacheIos;
+    ULONG PagefilePagesWritten;
+    ULONG PagefilePageWriteIos;
+    ULONG MappedFilePagesWritten;
+    ULONG MappedFilePageWriteIos;
+    ULONG PagedPoolUsage;
+    ULONG NonPagedPoolUsage;
+    ULONG PagedPoolAllocs;
+    ULONG PagedPoolFrees;
+    ULONG NonPagedPoolAllocs;
+    ULONG NonPagedPoolFrees;
+    ULONG TotalFreeSystemPtes;
+    ULONG SystemCodePage;
+    ULONG TotalSystemDriverPages;
+    ULONG TotalSystemCodePages;
+    ULONG SmallNonPagedLookasideListAllocateHits;
+    ULONG SmallPagedLookasideListAllocateHits;
+    ULONG Reserved3;
+    ULONG MmSystemCachePage;
+    ULONG PagedPoolPage;
+    ULONG SystemDriverPage;
+    ULONG FastReadNoWait;
+    ULONG FastReadWait;
+    ULONG FastReadResourceMiss;
+    ULONG FastReadNotPossible;
+    ULONG FastMdlReadNoWait;
+    ULONG FastMdlReadWait;
+    ULONG FastMdlReadResourceMiss;
+    ULONG FastMdlReadNotPossible;
+    ULONG MapDataNoWait;
+    ULONG MapDataWait;
+    ULONG MapDataNoWaitMiss;
+    ULONG MapDataWaitMiss;
+    ULONG PinMappedDataCount;
+    ULONG PinReadNoWait;
+    ULONG PinReadWait;
+    ULONG PinReadNoWaitMiss;
+    ULONG PinReadWaitMiss;
+    ULONG CopyReadNoWait;
+    ULONG CopyReadWait;
+    ULONG CopyReadNoWaitMiss;
+    ULONG CopyReadWaitMiss;
+    ULONG MdlReadNoWait;
+    ULONG MdlReadWait;
+    ULONG MdlReadNoWaitMiss;
+    ULONG MdlReadWaitMiss;
+    ULONG ReadAheadIos;
+    ULONG LazyWriteIos;
+    ULONG LazyWritePages;
+    ULONG DataFlushes;
+    ULONG DataPages;
+    ULONG ContextSwitches;
+    ULONG FirstLevelTbFills;
+    ULONG SecondLevelTbFills;
+    ULONG SystemCalls;
+  } SYSTEM_PERFORMANCE_INFORMATION, *PSYSTEM_PERFORMANCE_INFORMATION;
 
   typedef struct _SYSTEM_EXCEPTION_INFORMATION {
     BYTE Reserved1[16];
@@ -212,23 +695,60 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     BYTE Reserved1[24];
   } SYSTEM_INTERRUPT_INFORMATION,*PSYSTEM_INTERRUPT_INFORMATION;
 
-  typedef enum _FILE_INFORMATION_CLASS {
-    FileDirectoryInformation = 1
-  } FILE_INFORMATION_CLASS;
+  typedef struct _SYSTEM_HANDLE_ENTRY {
+    ULONG OwnerPid;
+    BYTE ObjectType;
+    BYTE HandleFlags;
+    USHORT HandleValue;
+    PVOID ObjectPointer;
+    ULONG AccessMask;
+  } SYSTEM_HANDLE_ENTRY, *PSYSTEM_HANDLE_ENTRY;
+
+  typedef struct _SYSTEM_HANDLE_INFORMATION {
+    ULONG Count;
+    SYSTEM_HANDLE_ENTRY Handle[1];
+  } SYSTEM_HANDLE_INFORMATION, *PSYSTEM_HANDLE_INFORMATION;
 
   typedef enum _PROCESSINFOCLASS {
-    ProcessBasicInformation = 0,ProcessWow64Information = 26
+    ProcessBasicInformation = 0,ProcessQuotaLimits = 1,ProcessIoCounters = 2,ProcessVmCounters = 3,ProcessTimes = 4,ProcessBasePriority = 5,
+    ProcessRaisePriority = 6,ProcessDebugPort = 7,ProcessExceptionPort = 8,ProcessAccessToken = 9,ProcessWow64Information = 26,ProcessImageFileName = 27
   } PROCESSINFOCLASS;
 
   typedef enum _THREADINFOCLASS {
-    ThreadIsIoPending = 16
+     ThreadBasicInformation,
+     ThreadTimes,
+     ThreadPriority,
+     ThreadBasePriority,
+     ThreadAffinityMask,
+     ThreadImpersonationToken,
+     ThreadDescriptorTableEntry,
+     ThreadEnableAlignmentFaultFixup,
+     ThreadEventPair,
+     ThreadQuerySetWin32StartAddress,
+     ThreadZeroTlsCell,
+     ThreadPerformanceCount,
+     ThreadAmILastThread,
+     ThreadIdealProcessor,
+     ThreadPriorityBoost,
+     ThreadSetTlsArrayAddress,
+     ThreadIsIoPending,
+     ThreadHideFromDebugger
   } THREADINFOCLASS;
+  typedef THREADINFOCLASS THREAD_INFORMATION_CLASS, *PTHREAD_INFORMATION_CLASS;
 
   typedef enum _SYSTEM_INFORMATION_CLASS {
-    SystemBasicInformation = 0,SystemPerformanceInformation = 2,SystemTimeOfDayInformation = 3,SystemProcessInformation = 5,
-    SystemProcessorPerformanceInformation = 8,SystemInterruptInformation = 23,SystemExceptionInformation = 33,SystemRegistryQuotaInformation = 37,
+    SystemBasicInformation = 0,SystemProcessorInformation = 1,SystemPerformanceInformation = 2,SystemTimeOfDayInformation = 3,SystemProcessInformation = 5,
+    SystemProcessorPerformanceInformation = 8,SystemHandleInformation = 16,SystemInterruptInformation = 23,SystemExceptionInformation = 33,SystemRegistryQuotaInformation = 37,
     SystemLookasideInformation = 45
   } SYSTEM_INFORMATION_CLASS;
+
+  typedef enum _OBJECT_INFORMATION_CLASS {
+    ObjectBasicInformation,
+    ObjectNameInformation,
+    ObjectTypeInformation,
+    ObjectAllInformation,
+    ObjectDataInformation
+ } OBJECT_INFORMATION_CLASS, *POBJECT_INFORMATION_CLASS;
 
 #define INTERNAL_TS_ACTIVE_CONSOLE_ID (*((volatile ULONG*)(0x7ffe02d8)))
 
@@ -245,6 +765,8 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
   ULONG WINAPI RtlNtStatusToDosError (NTSTATUS Status);
   NTSTATUS WINAPI NtQueryInformationProcess(HANDLE ProcessHandle,PROCESSINFOCLASS ProcessInformationClass,PVOID ProcessInformation,ULONG ProcessInformationLength,PULONG ReturnLength);
   NTSTATUS WINAPI NtQueryInformationThread(HANDLE ThreadHandle,THREADINFOCLASS ThreadInformationClass,PVOID ThreadInformation,ULONG ThreadInformationLength,PULONG ReturnLength);
+  NTSTATUS WINAPI NtQueryInformationFile(HANDLE hFile,PIO_STATUS_BLOCK io,PVOID ptr,LONG len,FILE_INFORMATION_CLASS FileInformationClass);
+  NTSTATUS WINAPI NtQueryObject(HANDLE Handle,OBJECT_INFORMATION_CLASS ObjectInformationClass,PVOID ObjectInformation,ULONG ObjectInformationLength,PULONG ReturnLength);
   NTSTATUS WINAPI NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass,PVOID SystemInformation,ULONG SystemInformationLength,PULONG ReturnLength);
   NTSTATUS WINAPI NtQuerySystemTime(PLARGE_INTEGER SystemTime);
   NTSTATUS WINAPI RtlLocalTimeToSystemTime(PLARGE_INTEGER LocalTime,PLARGE_INTEGER SystemTime);
@@ -289,3 +811,4 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 #endif
 
 #endif
+

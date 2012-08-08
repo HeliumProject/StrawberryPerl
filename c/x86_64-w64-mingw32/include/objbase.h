@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #include <rpc.h>
 #include <rpcndr.h>
@@ -17,6 +17,7 @@
 #if defined(__cplusplus) && !defined(CINTERFACE)
 
 #ifndef __OBJC__
+#undef interface
 #define interface struct
 #endif
 
@@ -30,6 +31,7 @@
 #define THIS void
 #define DECLARE_INTERFACE(iface) __STRUCT__ iface
 #define DECLARE_INTERFACE_(iface,baseiface) __STRUCT__ iface : public baseiface
+#define DECLARE_INTERFACE_IID_(iface,baseiface,iidiface) __STRUCT__ iface : public baseiface
 
 #if !defined(BEGIN_INTERFACE)
 #define BEGIN_INTERFACE
@@ -38,6 +40,7 @@
 #else
 
 #ifndef __OBJC__
+#undef interface
 #define interface struct
 #endif
 
@@ -64,7 +67,14 @@
 #define DECLARE_INTERFACE(iface) typedef struct iface { struct iface##Vtbl *lpVtbl; } iface; typedef struct iface##Vtbl iface##Vtbl; struct iface##Vtbl
 #endif
 #define DECLARE_INTERFACE_(iface,baseiface) DECLARE_INTERFACE(iface)
+#define DECLARE_INTERFACE_IID_(iface,baseiface,iidiface) DECLARE_INTERFACE(iface)
+
 #endif
+
+#define IFACEMETHOD(method)         STDMETHOD(method)
+#define IFACEMETHOD_(type,method)   STDMETHOD_(type,method)
+#define IFACEMETHODV(method)        STDMETHODV(method)
+#define IFACEMETHODV_(type,method)  STDMETHODV_(type,method)
 
 #ifndef FARSTRUCT
 #define FARSTRUCT
@@ -147,6 +157,19 @@ typedef struct IRpcChannelBuffer IRpcChannelBuffer;
 
 #ifndef INITGUID
 #include <cguid.h>
+#endif
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+
+extern "C++" {
+    template<typename T> void **IID_PPV_ARGS_Helper(T **iface)    {
+        static_cast<IUnknown*>(*iface);
+        return reinterpret_cast<void**>(iface);
+    }
+}
+
+#define IID_PPV_ARGS(iface) __uuidof(**(iface)), IID_PPV_ARGS_Helper(iface)
+
 #endif
 
 typedef enum tagCOINIT {
@@ -326,6 +349,18 @@ WINOLEAPI GetRunningObjectTable(DWORD reserved,LPRUNNINGOBJECTTABLE *pprot);
 #include <propidl.h>
 
 WINOLEAPI CreateStdProgressIndicator(HWND hwndParent,LPCOLESTR pszTitle,IBindStatusCallback *pIbscCaller,IBindStatusCallback **ppIbsc);
+
+#if (_WIN32_WINNT >= 0x0600)
+WINOLEAPI CoDisconnectContext(DWORD dwTimeout);
+#endif /*(_WIN32_WINNT >= 0x0600)*/
+#if (_WIN32_WINNT >= 0x0601)
+
+WINOLEAPI CoGetApartmentType(
+  APTTYPE *pAptType,
+  APTTYPEQUALIFIER *pAptQualifier
+);
+
+#endif /*(_WIN32_WINNT >= 0x0601)*/
 
 #ifndef RC_INVOKED
 #include <poppack.h>

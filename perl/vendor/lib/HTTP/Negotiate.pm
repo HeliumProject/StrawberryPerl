@@ -1,9 +1,8 @@
 package HTTP::Negotiate;
 
-$VERSION = "5.835";
+$VERSION = "6.01";
 sub Version { $VERSION; }
 
-require 5.002;
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw(choose);

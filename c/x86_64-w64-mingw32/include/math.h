@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MATH_H_
 #define _MATH_H_
@@ -91,11 +91,17 @@ extern "C" {
 #define _EXCEPTION_DEFINED
   struct _exception {
     int type;
-    char *name;
+    const char *name;
     double arg1;
     double arg2;
     double retval;
   };
+
+  void __mingw_raise_matherr (int typ, const char *name, double a1, double a2,
+			      double rslt);
+  void __mingw_setusermatherr (int (__cdecl *)(struct _exception *));
+  _CRTIMP void __setusermatherr(int (__cdecl *)(struct _exception *));
+  #define __setusermatherr __mingw_setusermatherr
 #endif
 
   double __cdecl sin(double _X);
@@ -116,10 +122,25 @@ extern "C" {
   double __cdecl ceil(double _X);
   double __cdecl floor(double _X);
   double __cdecl fabs(double _X);
+#ifndef __CRT__NO_INLINE
+#if !defined (__ia64__)
+  __CRT_INLINE double __cdecl fabs (double x)
+  {
+    double res = 0.0;
+    __asm__ __volatile__ ("fabs;" : "=t" (res) : "0" (x));
+    return res;
+  }
+#endif
+#endif
+
   double __cdecl ldexp(double _X,int _Y);
   double __cdecl frexp(double _X,int *_Y);
   double __cdecl modf(double _X,double *_Y);
   double __cdecl fmod(double _X,double _Y);
+
+  void __cdecl sincos (double __x, double *p_sin, double *p_cos);
+  void __cdecl sincosl (long double __x, long double *p_sin, long double *p_cos);
+  void __cdecl sincosf (float __x, float *p_sin, float *p_cos);
 
 #ifndef _CRT_ABS_DEFINED
 #define _CRT_ABS_DEFINED
@@ -180,12 +201,12 @@ extern "C" {
 
 #if !defined(NO_OLDNAMES)
 
-_CRTIMP double __cdecl j0 (double);
-_CRTIMP double __cdecl j1 (double);
-_CRTIMP double __cdecl jn (int, double);
-_CRTIMP double __cdecl y0 (double);
-_CRTIMP double __cdecl y1 (double);
-_CRTIMP double __cdecl yn (int, double);
+_CRTIMP double __cdecl j0 (double) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+_CRTIMP double __cdecl j1 (double) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+_CRTIMP double __cdecl jn (int, double) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+_CRTIMP double __cdecl y0 (double) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+_CRTIMP double __cdecl y1 (double) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+_CRTIMP double __cdecl yn (int, double) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
 
 _CRTIMP double __cdecl chgsign (double);
 /*
@@ -282,6 +303,16 @@ typedef long double double_t;
 
 #ifndef __CRT__NO_INLINE
   __CRT_INLINE int __cdecl __fpclassifyl (long double x) {
+    unsigned short sw;
+    __asm__ __volatile__ ("fxam; fstsw %%ax;" : "=a" (sw): "t" (x));
+    return sw & (FP_NAN | FP_NORMAL | FP_ZERO );
+  }
+  __CRT_INLINE int __cdecl __fpclassify (double x) {
+    unsigned short sw;
+    __asm__ __volatile__ ("fxam; fstsw %%ax;" : "=a" (sw): "t" (x));
+    return sw & (FP_NAN | FP_NORMAL | FP_ZERO );
+  }
+  __CRT_INLINE int __cdecl __fpclassifyf (float x) {
     unsigned short sw;
     __asm__ __volatile__ ("fxam; fstsw %%ax;" : "=a" (sw): "t" (x));
     return sw & (FP_NAN | FP_NORMAL | FP_ZERO );
@@ -562,7 +593,7 @@ typedef long double double_t;
 #endif
 #endif
 /* 7.12.7.3  */
-  extern double __cdecl hypot (double, double); /* in libmoldname.a */
+  extern double __cdecl hypot (double, double) __MINGW_ATTRIB_DEPRECATED_MSVC2005; /* in libmoldname.a */
   extern float __cdecl hypotf (float x, float y);
 #ifndef __CRT__NO_INLINE
   __CRT_INLINE float __cdecl hypotf (float x, float y) { return (float) hypot ((double)x, (double)y);}

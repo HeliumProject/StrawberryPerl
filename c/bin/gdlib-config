@@ -71,7 +71,7 @@ while test $# -gt 0; do
 	echo  -L/mingw/lib  -L/mingw/lib -L/mingw/lib -L/mingw/lib -L/mingw/lib
 	;;
     --libs)
-	echo -lXpm -ljpeg -lfreetype -lpng12 -lz  /mingw/lib/libiconv.dll.a -Wl,-rpath -Wl,/mingw/lib
+	echo -lXpm -ljpeg -lfreetype -lpng -lz  /mingw/lib/libiconv.dll.a -Wl,-rpath -Wl,/mingw/lib
 	;;
     --cflags|--includes)
 	echo -I${prefix}/include
@@ -84,7 +84,7 @@ while test $# -gt 0; do
 	echo "includedir: $includedir"
 	echo "cflags:     -I${prefix}/include"
 	echo "ldflags:     -L/mingw/lib  -L/mingw/lib -L/mingw/lib -L/mingw/lib -L/mingw/lib"
-	echo "libs:       -lXpm -ljpeg -lfreetype -lpng12 -lz  /mingw/lib/libiconv.dll.a -Wl,-rpath -Wl,/mingw/lib"
+	echo "libs:       -lXpm -ljpeg -lfreetype -lpng -lz  /mingw/lib/libiconv.dll.a -Wl,-rpath -Wl,/mingw/lib"
 	echo "libdir:     $libdir"
 	echo "features:   GD_XPM GD_JPEG GD_FREETYPE GD_PNG GD_GIF GD_GIFANIM GD_OPENPOLYGON"
 	;;

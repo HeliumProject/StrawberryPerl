@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _OLECTL_H_
 #define _OLECTL_H_
@@ -94,7 +94,7 @@ typedef struct tagFONTDESC {
 typedef struct tagPICTDESC {
   UINT cbSizeofstruct;
   UINT picType;
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     struct {
       HBITMAP hbitmap;
       HPALETTE hpal;
@@ -110,7 +110,7 @@ typedef struct tagPICTDESC {
     struct {
       HENHMETAFILE hemf;
     } emf;
-  };
+  } DUMMYUNIONNAME;
 } PICTDESC,*LPPICTDESC;
 
 typedef long OLE_XPOS_PIXELS;

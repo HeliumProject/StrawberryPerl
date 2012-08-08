@@ -1,6 +1,6 @@
 =head1 NAME
 
-perlXStut - Tutorial for writing XSUBs
+perlxstut - Tutorial for writing XSUBs
 
 =head1 DESCRIPTION
 
@@ -198,14 +198,6 @@ been deleted):
 You can safely ignore the line about "prototyping behavior" - it is
 explained in L<perlxs/"The PROTOTYPES: Keyword">.
 
-If you are on a Win32 system, and the build process fails with linker
-errors for functions in the C library, check if your Perl is configured
-to use PerlCRT (running B<perl -V:libc> should show you if this is the
-case).  If Perl is configured to use PerlCRT, you have to make sure
-PerlCRT.lib is copied to the same location that msvcrt.lib lives in,
-so that the compiler can find it on its own.  msvcrt.lib is usually
-found in the Visual C compiler's lib directory (e.g. C:/DevStudio/VC/lib).
-
 Perl has its own special way of easily writing test scripts, but for this
 example only, we'll create our own test script.  Create a file called hello
 that looks like this:
@@ -228,7 +220,7 @@ and we should see the following output:
 =head2 EXAMPLE 2
 
 Now let's add to our extension a subroutine that will take a single numeric
-argument as input and return 0 if the number is even or 1 if the number
+argument as input and return 1 if the number is even or 0 if the number
 is odd.
 
 Add the following to the end of Mytest.xs:
@@ -443,8 +435,12 @@ heavy use of the C functions within Perl.
 
 The B<xsubpp> program uses rules to convert from Perl's data types (scalar,
 array, etc.) to C's data types (int, char, etc.).  These rules are stored
-in the typemap file ($PERLLIB/ExtUtils/typemap).  This file is split into
-three parts.
+in the typemap file ($PERLLIB/ExtUtils/typemap).  There's a brief discussion
+below, but all the nitty-gritty details can be found in L<perlxstypemap>.
+If you have a new-enough version of perl (5.16 and up) or an upgraded
+XS compiler (C<ExtUtils::ParseXS> 3.13_01 or better), then you can inline
+typemaps in your XS instead of writing separate files.
+Either way, this typemap thing is split into three parts:
 
 The first section maps various C data types to a name, which corresponds
 somewhat with the various Perl types.  The second section contains C code
@@ -459,7 +455,7 @@ The file name is Mytest.c:
 	    dXSARGS;
 	    if (items != 1)
 		Perl_croak(aTHX_ "Usage: Mytest::round(arg)");
-        PERL_UNUSED_VAR(cv); /* -W */
+	    PERL_UNUSED_VAR(cv); /* -W */
 	    {
 		double  arg = (double)SvNV(ST(0));	/* XXXXX */
 		if (arg > 0.0) {
@@ -470,20 +466,20 @@ The file name is Mytest.c:
 			arg = 0.0;
 		}
 		sv_setnv(ST(0), (double)arg);	/* XXXXX */
-        SvSETMAGIC(ST(0));
+		SvSETMAGIC(ST(0));
 	    }
 	    XSRETURN_EMPTY;
 	}
 
-Notice the two lines commented with "XXXXX".  If you check the first section
-of the typemap file, you'll see that doubles are of type T_DOUBLE.  In the
-INPUT section, an argument that is T_DOUBLE is assigned to the variable
-arg by calling the routine SvNV on something, then casting it to double,
-then assigned to the variable arg.  Similarly, in the OUTPUT section,
-once arg has its final value, it is passed to the sv_setnv function to
-be passed back to the calling subroutine.  These two functions are explained
-in L<perlguts>; we'll talk more later about what that "ST(0)" means in the
-section on the argument stack.
+Notice the two lines commented with "XXXXX".  If you check the first part
+of the typemap file (or section), you'll see that doubles are of type
+T_DOUBLE.  In the INPUT part of the typemap, an argument that is T_DOUBLE
+is assigned to the variable arg by calling the routine SvNV on something,
+then casting it to double, then assigned to the variable arg.  Similarly,
+in the OUTPUT section, once arg has its final value, it is passed to the
+sv_setnv function to be passed back to the calling subroutine.  These two
+functions are explained in L<perlguts>; we'll talk more later about what
+that "ST(0)" means in the section on the argument stack.
 
 =head2 Warning about Output Arguments
 
@@ -614,11 +610,13 @@ And also add the following function definition to the end of the .xs file:
 	    OUTPUT:
 		RETVAL
 
-Now we also need to create a typemap file because the default Perl doesn't
-currently support the const char * type.  Create a file called typemap in
-the Mytest2 directory and place the following in it:
+Now we also need to create a typemap because the default Perl doesn't
+currently support the C<const char *> type.  Include a new TYPEMAP
+section in your XS code before the above function:
 
+        TYPEMAP: <<END;
 	const char *	T_PV
+        END
 
 Now run perl on the top-level Makefile.PL.  Notice that it also created a
 Makefile in the mylib directory.  Run make and watch that it does cd into
@@ -732,7 +730,7 @@ description of an XSUB:
 
 Note that in contrast with L<"EXAMPLE 1">, L<"EXAMPLE 2"> and L<"EXAMPLE 3">,
 this description does not contain the actual I<code> for what is done
-is done during a call to Perl function foo().  To understand what is going
+during a call to Perl function foo().  To understand what is going
 on here, one can add a CODE section to this XSUB:
 
 	double
@@ -1023,8 +1021,8 @@ put these declarations on top.)
 This routine also returns a different number of arguments depending on the
 success or failure of the call to statfs.  If there is an error, the error
 number is returned as a single-element array.  If the call is successful,
-then a 9-element array is returned.  Since only one argument is passed into
-this function, we need room on the stack to hold the 9 values which may be
+then a 7-element array is returned.  Since only one argument is passed into
+this function, we need room on the stack to hold the 7 values which may be
 returned.
 
 We do this by using the PPCODE: directive, rather than the CODE: directive.
@@ -1094,6 +1092,7 @@ Mytest.xs:
 	    int i, n;
 	    struct statfs buf;
 
+	    SvGETMAGIC(paths);
 	    if ((!SvROK(paths))
 		|| (SvTYPE(SvRV(paths)) != SVt_PVAV)
 		|| ((numpaths = av_len((AV *)SvRV(paths))) < 0))
@@ -1133,7 +1132,7 @@ And add the following code to Mytest.t, while incrementing the "11"
 tests to "13":
 
 	$results = Mytest::multi_statfs([ '/', '/blech' ]);
-	ok( ref $results->[0]) );
+	ok( ref $results->[0] );
 	ok( ! ref $results->[1] );
 
 =head2 New Things in this Example
@@ -1153,8 +1152,10 @@ and C<OUTPUT:> directives.
 =item *
 
 When dealing with references, it is important to handle them with caution.
-The C<INIT:> block first checks that
-C<SvROK> returns true, which indicates that paths is a valid reference.  It
+The C<INIT:> block first calls SvGETMAGIC(paths), in case
+paths is a tied variable.  Then it checks that C<SvROK> returns
+true, which indicates that paths is a valid reference.  (Simply
+checking C<SvROK> won't trigger FETCH on a tied variable.)  It
 then verifies that the object referenced by paths is an array, using C<SvRV>
 to dereference paths, and C<SvTYPE> to discover its type.  As an added test,
 it checks that the array referenced by paths is non-empty, using the C<av_len>
@@ -1312,7 +1313,7 @@ layer. If it can't find one, it will call C<PerlIO_exportFILE()> to
 generate a new stdio C<FILE>. Please only call C<PerlIO_exportFILE()> if
 you want a I<new> C<FILE>. It will generate one on each call and push a
 new stdio layer. So don't call it repeatedly on the same
-file. C<PerlIO()>_findFILE will retrieve the stdio layer once it has been
+file. C<PerlIO_findFILE()> will retrieve the stdio layer once it has been
 generated by C<PerlIO_exportFILE()>.
 
 This applies to the perlio system only. For versions before 5.7,
@@ -1375,4 +1376,4 @@ Changes for h2xs as of Perl 5.8.x by Renee Baecker
 
 =head2 Last Changed
 
-2007/10/11
+2012-01-20

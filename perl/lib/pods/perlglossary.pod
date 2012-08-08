@@ -6,7 +6,7 @@ perlglossary - Perl Glossary
 
 A glossary of terms (technical and otherwise) used in the Perl documentation.
 Other useful sources include the Free On-Line Dictionary of Computing
-L<http://foldoc.doc.ic.ac.uk/foldoc/index.html>, the Jargon File
+L<http://foldoc.org/>, the Jargon File
 L<http://catb.org/~esr/jargon/>, and Wikipedia L<http://www.wikipedia.org/>.
 
 =head2 A
@@ -234,12 +234,14 @@ some of its high-level ideas.
 =item backreference
 
 A substring L<captured|/capturing> by a subpattern within
-unadorned parentheses in a L</regex>.  Backslashed decimal numbers
-(C<\1>, C<\2>, etc.)  later in the same pattern refer back to the
-corresponding subpattern in the current match.  Outside the pattern,
+unadorned parentheses in a L</regex>, also referred to as a capture group.  The
+sequences (C<\g1>, C<\g2>, etc.)  later in the same pattern refer back to
+the corresponding subpattern in the current match.  Outside the pattern,
 the numbered variables (C<$1>, C<$2>, etc.) continue to refer to these
 same values, as long as the pattern was the last successful match of
-the current dynamic scope.
+the current dynamic scope.  C<\g{-1}> can be used to refer to a group by
+relative rather than absolute position; and groups can be also be named, and
+referred to later by name rather than number.  See L<perlre/"Capture groups">.
 
 =item backtracking
 
@@ -458,10 +460,16 @@ handler when some event of interest transpires.
 
 Reduced to a standard form to facilitate comparison.
 
+=item capture buffer, capture group
+
+These two terms are synonymous:
+a L<captured substring|/capturing> by a regex subpattern.
+
 =item capturing
 
 The use of parentheses around a L</subpattern> in a L</regular
-expression> to store the matched L</substring> as a L</backreference>.
+expression> to store the matched L</substring> as a L</backreference>
+or L<capture group|/capture buffer, capture group>.
 (Captured strings are also returned as a list in L</list context>.)
 
 =item character
@@ -536,6 +544,17 @@ it to a reference to a subroutine.  See also L</CV>.
 A system that writes code for you in a low-level language, such as
 code to implement the backend of a compiler.  See L</program
 generator>.
+
+=item code point
+
+The position of a character in a character set encoding.  The character
+C<NULL> is almost certainly at the zeroth position in all character
+sets, so its code point is 0.  The code point for the C<SPACE>
+character in the ASCII character set is 0x20, or 32 decimal; in EBCDIC
+it is 0x40, or 64 decimal.  The L<ord|perlfunc/ord> function returns
+the code point of a character.
+
+"code position" and "ordinal" mean the same thing as "code point".
 
 =item code subpattern
 
@@ -680,7 +699,7 @@ kinds of fatal error.
 
 =item CPAN
 
-The Comprehensive Perl Archive Network.  (See L<perlfaq2/What modules and extensions are available for Perl?  What is CPAN?  What does CPANE<sol>srcE<sol>... mean?>).
+The Comprehensive Perl Archive Network.  (See L<perlfaq2/What modules and extensions are available for Perl?  What is CPAN?>).
 
 =item cracker
 
@@ -875,7 +894,7 @@ will be called a "binary-only" distribution.
 
 =item (to be) dropped modules
 
-When Perl 5 was first released (see L<perlhistory>), several modules were
+When Perl 5 was first released (see L<perlhist>), several modules were
 included, which have now fallen out of common use.  It has been suggested
 that these modules should be removed, since the distribution became rather
 large, and the common criterion for new module additions is now limited to
@@ -930,6 +949,10 @@ one of the items that make up the array.
 When something is contained in something else, particularly when that
 might be considered surprising: "I've embedded a complete Perl
 interpreter in my editor!"
+
+=item empty list
+
+See </null list>.
 
 =item empty subclass test
 
@@ -1048,7 +1071,8 @@ such as multithreading.
 
 In Perl, any value that would look like C<""> or C<"0"> if evaluated
 in a string context.  Since undefined values evaluate to C<"">, all
-undefined values are false, but not all false values are undefined.
+undefined values are false (including the L</null list>), but not all
+false values are undefined.
 
 =item FAQ
 
@@ -1221,6 +1245,12 @@ Someone like Larry, or one of his peculiar friends.  Also refers to
 the strange prefixes that Perl requires as noun markers on its
 variables.
 
+=back
+
+=head2 G
+
+=over 4
+
 =item garbage collection
 
 A misnamed feature--it should be called, "expecting your mother to
@@ -1231,12 +1261,6 @@ reference-counting scheme as a form of garbage collection.  (If it's
 any comfort, when your interpreter exits, a "real" garbage collector
 runs to make sure everything is cleaned up if you've been messy with
 circular references and such.)
-
-=back
-
-=head2 G
-
-=over 4
 
 =item GID
 
@@ -1338,7 +1362,8 @@ you can easily use a string L</key> to look up its associated data
 L</value>.  This glossary is like a hash, where the word to be defined
 is the key, and the definition is the value.  A hash is also sometimes
 septisyllabically called an "associative array", which is a pretty
-good reason for simply calling it a "hash" instead.
+good reason for simply calling it a "hash" instead. A hash can optionally
+be L<restricted|/restricted hash> to a fixed set of keys.
 
 =item hash table
 
@@ -1919,7 +1944,7 @@ a big language, it turns out small.  Go figure.
 
 =item mode
 
-In the context of the L<stat> syscall, refers to the field holding
+In the context of the L<stat(2)> syscall, refers to the field holding
 the L</permission bits> and the type of the L</file>.
 
 =item modifier
@@ -2004,7 +2029,9 @@ strings, but Perl allows strings to contain a null.
 
 =item null list
 
-A L</list value> with zero elements, represented in Perl by C<()>.
+A valueless value represented in Perl by C<()>.  It is not really a
+L</LIST>, but an expression that yields C<undef> in L</scalar context> and
+a L</list value> with zero elements in L</list context>.
 
 =item null string
 
@@ -2105,6 +2132,10 @@ L</pragma>.
 =item options
 
 See either L<switches|/switch> or L</regular expression modifier>.
+
+=item ordinal
+
+Another name for L</code point>
 
 =item overloading
 
@@ -2496,6 +2527,10 @@ it's illegal to use reserved words to name anything else.  (Which is
 why they're reserved, after all.)  In Perl, you just can't use them to
 name L<labels|/label> or L<filehandles|/filehandle>.  Also called
 "keywords".
+
+=item restricted hash
+
+A L</hash> with a closed set of allowed keys. See L<Hash::Util>.
 
 =item return value
 
@@ -2962,9 +2997,8 @@ L</argument> must be the last switch in a cluster.
 A program technique that lets you evaluate an L</expression> and then,
 based on the value of the expression, do a multiway branch to the
 appropriate piece of code for that value.  Also called a "case
-structure", named after the similar Pascal construct.  Most switch
-statements in Perl are spelled C<for>.  See L<perlsyn/Basic BLOCKs and
-Switch Statements>.
+structure", named after the similar Pascal construct.  See
+See L<perlsyn/Basic BLOCKs>.
 
 =item symbol
 
@@ -3132,7 +3166,7 @@ to build special tools.  Perl is sort of a machine shop.
 To turn one string representation into another by mapping each
 character of the source string to its corresponding character in the
 result string.  See
-L<perlop/trE<sol>SEARCHLISTE<sol>REPLACEMENTLISTE<sol>cds>.
+L<perlop/trE<sol>SEARCHLISTE<sol>REPLACEMENTLISTE<sol>cdsr>.
 
 =item trigger
 
@@ -3356,11 +3390,11 @@ in the three-argument form of L<open|perlfunc/open>.
 
 =item XS
 
-An extraordinarily exported, expeditiously excellent, expressly
-eXternal Subroutine, executed in existing C or C++ or in an exciting
-new extension language called (exasperatingly) XS.  Examine L<perlxs>
-for the exact explanation or L<perlxstut> for an exemplary unexacting
-one.
+A language to extend Perl with L<C> and C++. XS is an interface description
+file format used to create an extension interface between
+Perl and C code (or a C library) which one wishes to use with Perl.
+See L<perlxs> for the exact explanation or read the L<perlxstut>
+tutorial.
 
 =item XSUB
 

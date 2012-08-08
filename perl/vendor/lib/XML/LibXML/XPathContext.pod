@@ -60,7 +60,7 @@ expression:
 
 
 
-  sub grep_nodes { 
+  sub grep_nodes {
     my ($nodelist,$regexp) =  @_;
     my $result = XML::LibXML::NodeList->new;
     for my $node ($nodelist->get_nodelist()) {
@@ -90,9 +90,9 @@ This example demonstrates C<<<<<< registerVarLookup() >>>>>> method. We use XPat
 
   my $xc = XML::LibXML::XPathContext->new($empl);
 
-  my %variables = ( 
+  my %variables = (
     A => $xc->find('/employees/employee[@salary>10000]'),
-    B => $areas->find('/areas/area[district='Brooklyn']/street'), 
+    B => $areas->find('/areas/area[district='Brooklyn']/street'),
   );
 
   # get names of employees from $A working in an area listed in $B
@@ -144,7 +144,7 @@ Registers variable lookup function C<<<<<< $prefix >>>>>>. The registered functi
 variable is evaluated. It takes three arguments: C<<<<<< $data >>>>>>, variable name, and variable ns-URI and must return one value: a number or
 string or any C<<<<<< XML::LibXML:: >>>>>> object that can be a result of findnodes: Boolean, Literal, Number, Node (e.g.
 Document, Element, etc.), or NodeList. For convenience, simple (non-blessed)
-array references containing only L<<<<<< XML::LibXML::Node >>>>>> objects can be used instead of a L<<<<<< XML::LibXML::NodeList >>>>>>.
+array references containing only L<<<<<< XML::LibXML::Node >>>>>> objects can be used instead of an L<<<<<< XML::LibXML::NodeList >>>>>>.
 
 
 =item getVarLookupData
@@ -212,7 +212,7 @@ Same as C<<<<<< unregisterFunctionNS >>>>>> but without a namespace.
   $nodelist = $xpc->findnodes($xpath, $context_node )
 
 Performs the xpath statement on the current node and returns the result as an
-array. In scalar context returns a L<<<<<< XML::LibXML::NodeList >>>>>> object. Optionally, a node may be passed as a second argument to set the
+array. In scalar context, returns an L<<<<<< XML::LibXML::NodeList >>>>>> object. Optionally, a node may be passed as a second argument to set the
 context node for the query.
 
 The xpath expression can be passed either as a string or or as a L<<<<<< XML::LibXML::XPathExpression >>>>>> object. 
@@ -226,7 +226,7 @@ The xpath expression can be passed either as a string or or as a L<<<<<< XML::Li
 
 Performs the xpath expression using the current node as the context of the
 expression, and returns the result depending on what type of result the XPath
-expression had. For example, the XPath C<<<<<< 1 * 3 + 	      52 >>>>>> results in a L<<<<<< XML::LibXML::Number >>>>>> object being returned. Other expressions might return a L<<<<<< XML::LibXML::Boolean >>>>>> object, or a L<<<<<< XML::LibXML::Literal >>>>>> object (a string). Each of those objects uses Perl's overload feature to ``do
+expression had. For example, the XPath C<<<<<< 1 * 3 + 	      52 >>>>>> results in an L<<<<<< XML::LibXML::Number >>>>>> object being returned. Other expressions might return a L<<<<<< XML::LibXML::Boolean >>>>>> object, or a L<<<<<< XML::LibXML::Literal >>>>>> object (a string). Each of those objects uses Perl's overload feature to ``do
 the right thing'' in different contexts. Optionally, a node may be passed as a
 second argument to set the context node for the query.
 
@@ -359,7 +359,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

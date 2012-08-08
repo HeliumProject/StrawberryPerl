@@ -1,13 +1,13 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
 #ifndef _DDRAWGDI_H_
 #define _DDRAWGDI_H_
 
-#if defined(MINGW_HAS_DDRAW_H) && defined(MINGW_DDRAW_VERSION) && MINGW_DDRAW_VERSION > 7
+#if defined(MINGW_HAS_DDRAW_H) && defined(MINGW_DDRAW_VERSION) && (MINGW_DDRAW_VERSION + 0) >= 7
 #include <ddraw.h>
 
 #define DdCreateDirectDrawObject GdiEntry1
@@ -27,8 +27,14 @@
 #define DdSetGammaRamp GdiEntry15
 #define DdSwapTextureHandles GdiEntry16
 
+#ifndef D3DHAL_CALLBACKS_DEFINED
 typedef struct _D3DHAL_CALLBACKS *LPD3DHAL_CALLBACKS;
+#define D3DHAL_CALLBACKS_DEFINED
+#endif
+#ifndef D3DHAL_GLOBALDRIVERDATA_DEFINED
 typedef struct _D3DHAL_GLOBALDRIVERDATA *LPD3DHAL_GLOBALDRIVERDATA;
+#define D3DHAL_GLOBALDRIVERDATA_DEFINED
+#endif
 
 WINBOOL WINAPI DdCreateDirectDrawObject(LPDDRAWI_DIRECTDRAW_GBL pDirectDrawGlobal,HDC hdc);
 WINBOOL WINAPI DdQueryDirectDrawObject(LPDDRAWI_DIRECTDRAW_GBL pDirectDrawGlobal,LPDDHALINFO pHalInfo,LPDDHAL_DDCALLBACKS pDDCallbacks,LPDDHAL_DDSURFACECALLBACKS pDDSurfaceCallbacks,LPDDHAL_DDPALETTECALLBACKS pDDPaletteCallbacks,LPD3DHAL_CALLBACKS pD3dCallbacks,LPD3DHAL_GLOBALDRIVERDATA pD3dDriverData,LPDDHAL_DDEXEBUFCALLBACKS pD3dBufferCallbacks,LPDDSURFACEDESC pD3dTextureFormats,LPDWORD pdwFourCC,LPVIDMEM pvmList);

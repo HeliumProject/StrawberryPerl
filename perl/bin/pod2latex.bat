@@ -1,16 +1,16 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!C:\strawberry\perl\bin\perl.exe 
+#!perl
 #line 15
     eval 'exec C:\strawberry\perl\bin\perl.exe -S $0 ${1+"$@"}'
 	if $running_under_some_shell;
@@ -121,7 +121,7 @@ if (exists $options{'out'} && defined $options{'out'}) {
 
 # If the output file is not specified it is assumed that
 # a single output file is required per input file using
-# a .tex extension rather than any exisiting extension
+# a .tex extension rather than any existing extension
 
 if ($multi_documents) {
 

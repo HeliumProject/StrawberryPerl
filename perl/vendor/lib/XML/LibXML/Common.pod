@@ -59,11 +59,11 @@ encoding functions are exported by XML::LibXML::Common.
 =head2 Encoding functions
 
 To encode or decode a string to or from UTF-8, XML::LibXML::Common exports two
-functions, which provide interfact to the encoding support in C<<<<<< libxml2 >>>>>>. Which encodings are supported by these functions depends on how C<<<<<< libxml2 >>>>>> was compiled. UTF-16 is always supported and on most installations, ISO
+functions, which provide an interface to the encoding support in C<<<<<< libxml2 >>>>>>. Which encodings are supported by these functions depends on how C<<<<<< libxml2 >>>>>> was compiled. UTF-16 is always supported and on most installations, ISO
 encodings are supported as well. 
 
 This interface was useful for older versions of Perl. Since Perl >= 5.8
-provides similar funcions via the C<<<<<< Encode >>>>>> module, it is probably a good idea to use those instead. 
+provides similar functions via the C<<<<<< Encode >>>>>> module, it is probably a good idea to use those instead. 
 
 =over 4
 
@@ -88,9 +88,9 @@ contains characters that cannot be represented in the target encoding.
 =back
 
 Both these functions report their errors on the standard error. If an error
-occours the function will croak(). To catch the error information it is
-required to call the encoding function from within an eval block in order to
-prevent the entire script from being stopped on encoding error.
+occurs the function will croak(). To catch the error information it is required
+to call the encoding function from within an eval block in order to prevent the
+entire script from being stopped on encoding error.
 
 
 =head2 A note on history
@@ -102,7 +102,7 @@ this direction, we decided to merge XML::LibXML::Common 0.13 and XML::LibXML
 1.70 to one CPAN distribution. 
 
 The merge also naturally eliminates a practical and urgent problem experienced
-by many XML::LibXML users on certain platforms, namely misterious misbehavior
+by many XML::LibXML users on certain platforms, namely mysterious misbehavior
 of XML::LibXML occurring if the installed (often pre-packaged) version of
 XML::LibXML::Common was compiled against an older version of libxml2 than
 XML::LibXML. 
@@ -116,7 +116,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

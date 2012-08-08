@@ -1,11 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _PDH_H_
 #define _PDH_H_
 
+#include <_mingw_unicode.h>
 #include <windows.h>
 #include <winperf.h>
 
@@ -72,7 +73,7 @@ extern "C" {
 
   typedef struct _PDH_FMT_COUNTERVALUE {
     DWORD CStatus;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       LONG longValue;
       double doubleValue;
       LONGLONG largeValue;
@@ -141,10 +142,10 @@ extern "C" {
     DWORD_PTR dwUserData;
     DWORD_PTR dwQueryUserData;
     LPSTR szFullPath;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       PDH_DATA_ITEM_PATH_ELEMENTS_A DataItemPath;
       PDH_COUNTER_PATH_ELEMENTS_A CounterPath;
-      __MINGW_EXTENSION struct {
+      __C89_NAMELESS struct {
 	LPSTR szMachineName;
 	LPSTR szObjectName;
 	LPSTR szInstanceName;
@@ -167,10 +168,10 @@ extern "C" {
     DWORD_PTR dwUserData;
     DWORD_PTR dwQueryUserData;
     LPWSTR szFullPath;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       PDH_DATA_ITEM_PATH_ELEMENTS_W DataItemPath;
       PDH_COUNTER_PATH_ELEMENTS_W CounterPath;
-      __MINGW_EXTENSION struct {
+      __C89_NAMELESS struct {
 	LPWSTR szMachineName;
 	LPWSTR szObjectName;
 	LPWSTR szInstanceName;
@@ -205,8 +206,8 @@ extern "C" {
     LPSTR szBaseFileName;
     DWORD dwFileType;
     DWORD dwReserved;
-    __MINGW_EXTENSION union {
-      __MINGW_EXTENSION struct {
+    __C89_NAMELESS union {
+      __C89_NAMELESS struct {
 	DWORD PdlAutoNameInterval;
 	DWORD PdlAutoNameUnits;
 	LPSTR PdlCommandFilename;
@@ -216,7 +217,7 @@ extern "C" {
 	FILETIME PdlLogStartTime;
 	FILETIME PdlLogEndTime;
       };
-      __MINGW_EXTENSION struct {
+      __C89_NAMELESS struct {
 	DWORD TlNumberOfBuffers;
 	DWORD TlMinimumBuffers;
 	DWORD TlMaximumBuffers;
@@ -240,8 +241,8 @@ extern "C" {
     LPWSTR szBaseFileName;
     DWORD dwFileType;
     DWORD dwReserved;
-    __MINGW_EXTENSION union {
-      __MINGW_EXTENSION struct {
+    __C89_NAMELESS union {
+      __C89_NAMELESS struct {
 	DWORD PdlAutoNameInterval;
 	DWORD PdlAutoNameUnits;
 	LPWSTR PdlCommandFilename;
@@ -251,7 +252,7 @@ extern "C" {
 	FILETIME PdlLogStartTime;
 	FILETIME PdlLogEndTime;
       };
-      __MINGW_EXTENSION struct {
+      __C89_NAMELESS struct {
 	DWORD TlNumberOfBuffers;
 	DWORD TlMinimumBuffers;
 	DWORD TlMaximumBuffers;
@@ -487,127 +488,107 @@ extern "C" {
   PDH_FUNCTION PdhGetLogSetGUID(PDH_HLOG hLog,GUID *pGuid,int *pRunId);
   PDH_FUNCTION PdhSetLogSetRunID(PDH_HLOG hLog,int RunId);
 
-#ifdef UNICODE
+#if defined(UNICODE)
 #ifndef _UNICODE
 #define _UNICODE
 #endif
 #endif
 
-#ifdef _UNICODE
-#ifndef UNICODE
+#if defined(_UNICODE)
+#if !defined(UNICODE)
 #define UNICODE
 #endif
 #endif
 
-#ifdef UNICODE
+#define PDH_COUNTER_INFO __MINGW_NAME_UAW(PDH_COUNTER_INFO)
+#define PPDH_COUNTER_INFO __MINGW_NAME_UAW(PPDH_COUNTER_INFO)
+#define PDH_COUNTER_PATH_ELEMENTS __MINGW_NAME_UAW(PDH_COUNTER_PATH_ELEMENTS)
+#define PPDH_COUNTER_PATH_ELEMENTS __MINGW_NAME_UAW(PPDH_COUNTER_PATH_ELEMENTS)
+#define PDH_BROWSE_DLG_CONFIG __MINGW_NAME_UAW(PDH_BROWSE_DLG_CONFIG)
+#define PPDH_BROWSE_DLG_CONFIG __MINGW_NAME_UAW(PPDH_BROWSE_DLG_CONFIG)
+#define PDH_FMT_COUNTERVALUE_ITEM __MINGW_NAME_UAW(PDH_FMT_COUNTERVALUE_ITEM)
+#define PPDH_FMT_COUNTERVALUE_ITEM __MINGW_NAME_UAW(PPDH_FMT_COUNTERVALUE_ITEM)
+#define PDH_RAW_COUNTER_ITEM __MINGW_NAME_UAW(PDH_RAW_COUNTER_ITEM)
+#define PPDH_RAW_COUNTER_ITEM __MINGW_NAME_UAW(PPDH_RAW_COUNTER_ITEM)
+#define PDH_LOG_SERVICE_QUERY_INFO __MINGW_NAME_UAW(PDH_LOG_SERVICE_QUERY_INFO)
+#define PPDH_LOG_SERVICE_QUERY_INFO __MINGW_NAME_UAW(PPDH_LOG_SERVICE_QUERY_INFO)
 
-#define PdhOpenQuery PdhOpenQueryW
-#define PdhAddCounter PdhAddCounterW
-#define PdhGetCounterInfo PdhGetCounterInfoW
-#define PDH_COUNTER_INFO PDH_COUNTER_INFO_W
-#define PPDH_COUNTER_INFO PPDH_COUNTER_INFO_W
-#define PdhConnectMachine PdhConnectMachineW
-#define PdhEnumMachines PdhEnumMachinesW
-#define PdhEnumObjects PdhEnumObjectsW
-#define PdhEnumObjectItems PdhEnumObjectItemsW
-#define PdhMakeCounterPath PdhMakeCounterPathW
-#define PDH_COUNTER_PATH_ELEMENTS PDH_COUNTER_PATH_ELEMENTS_W
-#define PPDH_COUNTER_PATH_ELEMENTS PPDH_COUNTER_PATH_ELEMENTS_W
-#define PdhParseCounterPath PdhParseCounterPathW
-#define PdhParseInstanceName PdhParseInstanceNameW
-#define PdhValidatePath PdhValidatePathW
-#define PdhGetDefaultPerfObject PdhGetDefaultPerfObjectW
-#define PdhGetDefaultPerfCounter PdhGetDefaultPerfCounterW
-#define PdhBrowseCounters PdhBrowseCountersW
-#define PdhBrowseCountersH PdhBrowseCountersHW
-#define PDH_BROWSE_DLG_CONFIG PDH_BROWSE_DLG_CONFIG_W
-#define PPDH_BROWSE_DLG_CONFIG PPDH_BROWSE_DLG_CONFIG_W
-#define PDH_BROWSE_DLG_CONFIG_H PDH_BROWSE_DLG_CONFIG_HW
-#define PPDH_BROWSE_DLG_CONFIG_H PPDH_BROWSE_DLG_CONFIG_HW
-#define PdhExpandCounterPath PdhExpandCounterPathW
+#define PDH_BROWSE_DLG_CONFIG_H __MINGW_NAME_AW(PDH_BROWSE_DLG_CONFIG_H)
+#define PPDH_BROWSE_DLG_CONFIG_H __MINGW_NAME_AW(PPDH_BROWSE_DLG_CONFIG_H)
 
-#define PDH_FMT_COUNTERVALUE_ITEM PDH_FMT_COUNTERVALUE_ITEM_W
-#define PPDH_FMT_COUNTERVALUE_ITEM PPDH_FMT_COUNTERVALUE_ITEM_W
-#define PDH_RAW_COUNTER_ITEM PDH_RAW_COUNTER_ITEM_W
-#define PPDH_RAW_COUNTER_ITEM PPDH_RAW_COUNTER_ITEM_W
-#define PdhGetFormattedCounterArray PdhGetFormattedCounterArrayW
-#define PdhGetRawCounterArray PdhGetRawCounterArrayW
-#define PdhLookupPerfNameByIndex PdhLookupPerfNameByIndexW
-#define PdhLookupPerfIndexByName PdhLookupPerfIndexByNameW
-#define PdhOpenLog PdhOpenLogW
-#define PdhUpdateLog PdhUpdateLogW
-#define PdhSelectDataSource PdhSelectDataSourceW
-#define PdhGetDataSourceTimeRange PdhGetDataSourceTimeRangeW
-#define PDH_LOG_SERVICE_QUERY_INFO PDH_LOG_SERVICE_QUERY_INFO_W
-#define PPDH_LOG_SERVICE_QUERY_INFO PPDH_LOG_SERVICE_QUERY_INFO_W
-#define PdhLogServiceControl PdhLogServiceControlW
-#define PdhLogServiceQuery PdhLogServiceQueryW
-#define PdhExpandWildCardPath PdhExpandWildCardPathW
-#define PdhBindInputDataSource PdhBindInputDataSourceW
-#define PdhEnumMachinesH PdhEnumMachinesHW
-#define PdhEnumObjectsH PdhEnumObjectsHW
-#define PdhEnumObjectItemsH PdhEnumObjectItemsHW
-#define PdhExpandWildCardPathH PdhExpandWildCardPathHW
-#define PdhGetDefaultPerfObjectH PdhGetDefaultPerfObjectHW
-#define PdhGetDefaultPerfCounterH PdhGetDefaultPerfCounterHW
-#define PdhEnumLogSetNames PdhEnumLogSetNamesW
-#define PdhCreateSQLTables PdhCreateSQLTablesW
-#define PdhVerifySQLDB PdhVerifySQLDBW
-#else
+#define PdhOpenQuery __MINGW_NAME_AW(PdhOpenQuery)
+#define PdhAddCounter __MINGW_NAME_AW(PdhAddCounter)
+#define PdhGetCounterInfo __MINGW_NAME_AW(PdhGetCounterInfo)
+#define PdhConnectMachine __MINGW_NAME_AW(PdhConnectMachine)
+#define PdhEnumMachines __MINGW_NAME_AW(PdhEnumMachines)
+#define PdhEnumObjects __MINGW_NAME_AW(PdhEnumObjects)
+#define PdhEnumObjectItems __MINGW_NAME_AW(PdhEnumObjectItems)
+#define PdhMakeCounterPath __MINGW_NAME_AW(PdhMakeCounterPath)
+#define PdhParseCounterPath __MINGW_NAME_AW(PdhParseCounterPath)
+#define PdhParseInstanceName __MINGW_NAME_AW(PdhParseInstanceName)
+#define PdhValidatePath __MINGW_NAME_AW(PdhValidatePath)
+#define PdhGetDefaultPerfObject __MINGW_NAME_AW(PdhGetDefaultPerfObject)
+#define PdhGetDefaultPerfCounter __MINGW_NAME_AW(PdhGetDefaultPerfCounter)
+#define PdhBrowseCounters __MINGW_NAME_AW(PdhBrowseCounters)
+#define PdhBrowseCountersH __MINGW_NAME_AW(PdhBrowseCountersH)
+#define PdhExpandCounterPath __MINGW_NAME_AW(PdhExpandCounterPath)
+#define PdhGetFormattedCounterArray __MINGW_NAME_AW(PdhGetFormattedCounterArray)
+#define PdhGetRawCounterArray __MINGW_NAME_AW(PdhGetRawCounterArray)
+#define PdhLookupPerfNameByIndex __MINGW_NAME_AW(PdhLookupPerfNameByIndex)
+#define PdhLookupPerfIndexByName __MINGW_NAME_AW(PdhLookupPerfIndexByName)
+#define PdhOpenLog __MINGW_NAME_AW(PdhOpenLog)
+#define PdhUpdateLog __MINGW_NAME_AW(PdhUpdateLog)
+#define PdhSelectDataSource __MINGW_NAME_AW(PdhSelectDataSource)
+#define PdhGetDataSourceTimeRange __MINGW_NAME_AW(PdhGetDataSourceTimeRange)
+#define PdhLogServiceControl __MINGW_NAME_AW(PdhLogServiceControl)
+#define PdhLogServiceQuery __MINGW_NAME_AW(PdhLogServiceQuery)
+#define PdhExpandWildCardPath __MINGW_NAME_AW(PdhExpandWildCardPath)
+#define PdhBindInputDataSource __MINGW_NAME_AW(PdhBindInputDataSource)
+#define PdhEnumMachinesH __MINGW_NAME_AW(PdhEnumMachinesH)
+#define PdhEnumObjectsH __MINGW_NAME_AW(PdhEnumObjectsH)
+#define PdhEnumObjectItemsH __MINGW_NAME_AW(PdhEnumObjectItemsH)
+#define PdhExpandWildCardPathH __MINGW_NAME_AW(PdhExpandWildCardPathH)
+#define PdhGetDefaultPerfObjectH __MINGW_NAME_AW(PdhGetDefaultPerfObjectH)
+#define PdhGetDefaultPerfCounterH __MINGW_NAME_AW(PdhGetDefaultPerfCounterH)
+#define PdhEnumLogSetNames __MINGW_NAME_AW(PdhEnumLogSetNames)
+#define PdhCreateSQLTables __MINGW_NAME_AW(PdhCreateSQLTables)
+#define PdhVerifySQLDB __MINGW_NAME_AW(PdhVerifySQLDB)
 
-#define PdhOpenQuery PdhOpenQueryA
-#define PdhAddCounter PdhAddCounterA
-#define PdhGetCounterInfo PdhGetCounterInfoA
-#define PDH_COUNTER_INFO PDH_COUNTER_INFO_A
-#define PPDH_COUNTER_INFO PPDH_COUNTER_INFO_A
-#define PdhConnectMachine PdhConnectMachineA
-#define PdhEnumMachines PdhEnumMachinesA
-#define PdhEnumObjects PdhEnumObjectsA
-#define PdhEnumObjectItems PdhEnumObjectItemsA
-#define PdhMakeCounterPath PdhMakeCounterPathA
-#define PDH_COUNTER_PATH_ELEMENTS PDH_COUNTER_PATH_ELEMENTS_A
-#define PPDH_COUNTER_PATH_ELEMENTS PPDH_COUNTER_PATH_ELEMENTS_A
-#define PdhParseCounterPath PdhParseCounterPathA
-#define PdhParseInstanceName PdhParseInstanceNameA
-#define PdhValidatePath PdhValidatePathA
-#define PdhGetDefaultPerfObject PdhGetDefaultPerfObjectA
-#define PdhGetDefaultPerfCounter PdhGetDefaultPerfCounterA
-#define PdhBrowseCounters PdhBrowseCountersA
-#define PdhBrowseCountersH PdhBrowseCountersHA
-#define PDH_BROWSE_DLG_CONFIG PDH_BROWSE_DLG_CONFIG_A
-#define PPDH_BROWSE_DLG_CONFIG PPDH_BROWSE_DLG_CONFIG_A
-#define PDH_BROWSE_DLG_CONFIG_H PDH_BROWSE_DLG_CONFIG_HA
-#define PPDH_BROWSE_DLG_CONFIG_H PPDH_BROWSE_DLG_CONFIG_HA
-#define PdhExpandCounterPath PdhExpandCounterPathA
+#if (_WIN32_WINNT >= 0x0600)
+PDH_STATUS PdhAddEnglishCounterA(
+  PDH_HQUERY hQuery,
+  LPCSTR szFullCounterPath,
+  DWORD_PTR dwUserData,
+  PDH_HCOUNTER *phCounter
+);
 
-#define PDH_FMT_COUNTERVALUE_ITEM PDH_FMT_COUNTERVALUE_ITEM_A
-#define PPDH_FMT_COUNTERVALUE_ITEM PPDH_FMT_COUNTERVALUE_ITEM_A
-#define PDH_RAW_COUNTER_ITEM PDH_RAW_COUNTER_ITEM_A
-#define PPDH_RAW_COUNTER_ITEM PPDH_RAW_COUNTER_ITEM_A
-#define PdhGetFormattedCounterArray PdhGetFormattedCounterArrayA
-#define PdhGetRawCounterArray PdhGetRawCounterArrayA
-#define PdhLookupPerfNameByIndex PdhLookupPerfNameByIndexA
-#define PdhLookupPerfIndexByName PdhLookupPerfIndexByNameA
-#define PdhOpenLog PdhOpenLogA
-#define PdhUpdateLog PdhUpdateLogA
-#define PdhSelectDataSource PdhSelectDataSourceA
-#define PdhGetDataSourceTimeRange PdhGetDataSourceTimeRangeA
-#define PDH_LOG_SERVICE_QUERY_INFO PDH_LOG_SERVICE_QUERY_INFO_A
-#define PPDH_LOG_SERVICE_QUERY_INFO PPDH_LOG_SERVICE_QUERY_INFO_A
-#define PdhLogServiceControl PdhLogServiceControlA
-#define PdhLogServiceQuery PdhLogServiceQueryA
-#define PdhExpandWildCardPath PdhExpandWildCardPathA
-#define PdhBindInputDataSource PdhBindInputDataSourceA
-#define PdhEnumMachinesH PdhEnumMachinesHA
-#define PdhEnumObjectsH PdhEnumObjectsHA
-#define PdhEnumObjectItemsH PdhEnumObjectItemsHA
-#define PdhExpandWildCardPathH PdhExpandWildCardPathHA
-#define PdhGetDefaultPerfObjectH PdhGetDefaultPerfObjectHA
-#define PdhGetDefaultPerfCounterH PdhGetDefaultPerfCounterHA
-#define PdhEnumLogSetNames PdhEnumLogSetNamesA
-#define PdhCreateSQLTables PdhCreateSQLTablesA
-#define PdhVerifySQLDB PdhVerifySQLDBA
-#endif
+PDH_STATUS PdhAddEnglishCounterW(
+  PDH_HQUERY hQuery,
+  LPCWSTR szFullCounterPath,
+  DWORD_PTR dwUserData,
+  PDH_HCOUNTER *phCounter
+);
+
+#define PdhAddEnglishCounter __MINGW_NAME_AW(PdhAddEnglishCounter)
+
+PDH_STATUS PdhCollectQueryDataWithTime(
+  PDH_HQUERY hQuery,
+  LONGLONG *pllTimeStamp
+);
+
+PDH_STATUS PdhValidatePathExA(
+  PDH_HLOG hDataSource,
+  LPCSTR szFullPathBuffer
+);
+
+PDH_STATUS PdhValidatePathExA(
+  PDH_HLOG hDataSource,
+  LPCWSTR szFullPathBuffer
+);
+
+#define PdhValidatePathEx __MINGW_NAME_AW(PdhValidatePathEx)
+
+#endif /*(_WIN32_WINNT >= 0x0600)*/
 
 #ifdef __cplusplus
 }

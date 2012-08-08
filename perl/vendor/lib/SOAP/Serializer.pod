@@ -4,7 +4,7 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Serializer.pod 348 2010-03-16 19:56:31Z kutterma $
+# $Id: Serializer.pod 381 2011-08-15 19:28:43Z kutterma $
 #
 # ======================================================================
 
@@ -56,8 +56,8 @@ For this specifier, the envelope being created is to transmit a fault.
 
 =item freeform
 
-This identifier is used as a general-case encoding style for messages that 
-don't fit into any of the previous cases. The arguments are encoded into the 
+This identifier is used as a general-case encoding style for messages that
+don't fit into any of the previous cases. The arguments are encoded into the
 envelope's Body tag without any sort of context sensitivity.
 
 =back
@@ -106,7 +106,7 @@ helpful in determining the proper prefix when assigning a type to a
 SOAP::Data element. A good example of how this might be used is as follows:
 
     SOAP::Data->name("foo" => $inputParams{'foo'})
-	      ->type($client->serializer->find_prefix('urn:Foo').':Foo');
+       ->type($client->serializer->find_prefix('urn:Foo').':Foo');
 
 =back
 
@@ -166,15 +166,15 @@ The following table contains the set of data types detectable by C<SOAP::Lite> b
   ----------------------------
   base64      10
   int         20
-  long        25 
+  long        25
   float       30
   gMonth      35
   gDay        40
   gYear       45
   gMonthDay   50
   gYearMonth  55
-  date 	      60
-  time 	      70
+  date        60
+  time        70
   dateTime    75
   duration    80
   boolean     90
@@ -212,7 +212,7 @@ If, for example, you wish to create a new datatype called C<uriReference> for wh
 
 B<Step 1: Write a Test Subroutine>
 
-The test subroutine will have passed to it by C<SOAP::Serializer> a value to be tested. The test subroutine must return 1 if the value passed to it is of the corresponding type, or else it must return 0. 
+The test subroutine will have passed to it by C<SOAP::Serializer> a value to be tested. The test subroutine must return 1 if the value passed to it is of the corresponding type, or else it must return 0.
 
     sub SOAP::Serializer::uriReferenceTest {
       my ($value) = @_;
@@ -234,14 +234,14 @@ The encoding subroutine will have passed to it by C<SOAP::Serializer> four param
 
 B<Step 3: Register the New Data Type>
 
-To register the new data type, simply add the type to the C<SOAP::Serializer::typelookup> hash using the type name as the key, and an array containing the precedence value, the test subroutine, and the encoding subroutine. 
+To register the new data type, simply add the type to the C<SOAP::Serializer::typelookup> hash using the type name as the key, and an array containing the precedence value, the test subroutine, and the encoding subroutine.
 
-  $s->typelookup->{uriReference} 
+  $s->typelookup->{uriReference}
       = [11, \&uriReferenceTest, 'as_uriReference'];
 
 I<Tip: As a short hand, you could just as easily use an anonymous test subroutine when registering the new datatype in place of the C<urlReferenceTest> subroutine above. For example:>
 
-  $s->typelookup->{uriReference} 
+  $s->typelookup->{uriReference}
       = [11, sub { $_[0] =~ m!^http://! }, 'as_uriReference'];
 
 Once complete, C<SOAP::Serializer> will be able to serialize the following C<SOAP::Data> object into XML:

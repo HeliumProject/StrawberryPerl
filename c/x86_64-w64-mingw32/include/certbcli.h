@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifdef _CERTBCLI_TYPECHECK
 #undef __CERTBCLI_H__
@@ -14,11 +14,24 @@
 extern "C" {
 #endif
 
-#define RPC_STRING
+#ifndef _NO_W32_PSEUDO_MODIFIERS
+#ifndef IN
 #define IN
+#endif
+#ifndef OUT
 #define OUT
+#endif
+#ifndef OPTIONAL
 #define OPTIONAL
+#endif
+#endif
+
+#ifndef RPC_STRING
+#define RPC_STRING
+#endif
+#ifndef VOID
 #define VOID void
+#endif
 
 #define CERTBCLI_CALL WINAPI
 #define CERTBCLI_API __declspec(dllimport) WINAPI

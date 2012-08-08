@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _LZEXPAND_
 #define _LZEXPAND_
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,13 +21,8 @@ extern "C" {
 #define LZERROR_BADVALUE (-7)
 #define LZERROR_UNKNOWNALG (-8)
 
-#ifdef UNICODE
-#define GetExpandedName GetExpandedNameW
-#define LZOpenFile LZOpenFileW
-#else
-#define GetExpandedName GetExpandedNameA
-#define LZOpenFile LZOpenFileA
-#endif
+#define GetExpandedName __MINGW_NAME_AW(GetExpandedName)
+#define LZOpenFile __MINGW_NAME_AW(LZOpenFile)
 
   INT WINAPI LZStart(VOID);
   VOID WINAPI LZDone(VOID);

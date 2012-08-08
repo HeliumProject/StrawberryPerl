@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef VER_H
 #define VER_H
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -124,21 +126,12 @@ extern "C" {
     DWORD dwFileDateLS;
   } VS_FIXEDFILEINFO;
 
-#ifdef UNICODE
-#define VerFindFile VerFindFileW
-#define VerInstallFile VerInstallFileW
-#define GetFileVersionInfoSize GetFileVersionInfoSizeW
-#define GetFileVersionInfo GetFileVersionInfoW
-#define VerLanguageName VerLanguageNameW
-#define VerQueryValue VerQueryValueW
-#else
-#define VerFindFile VerFindFileA
-#define VerInstallFile VerInstallFileA
-#define GetFileVersionInfoSize GetFileVersionInfoSizeA
-#define GetFileVersionInfo GetFileVersionInfoA
-#define VerLanguageName VerLanguageNameA
-#define VerQueryValue VerQueryValueA
-#endif
+#define VerFindFile __MINGW_NAME_AW(VerFindFile)
+#define VerInstallFile __MINGW_NAME_AW(VerInstallFile)
+#define GetFileVersionInfoSize __MINGW_NAME_AW(GetFileVersionInfoSize)
+#define GetFileVersionInfo __MINGW_NAME_AW(GetFileVersionInfo)
+#define VerLanguageName __MINGW_NAME_AW(VerLanguageName)
+#define VerQueryValue __MINGW_NAME_AW(VerQueryValue)
 
   DWORD WINAPI VerFindFileA(DWORD uFlags,LPSTR szFileName,LPSTR szWinDir,LPSTR szAppDir,LPSTR szCurDir,PUINT lpuCurDirLen,LPSTR szDestDir,PUINT lpuDestDirLen);
   DWORD WINAPI VerFindFileW(DWORD uFlags,LPWSTR szFileName,LPWSTR szWinDir,LPWSTR szAppDir,LPWSTR szCurDir,PUINT lpuCurDirLen,LPWSTR szDestDir,PUINT lpuDestDirLen);
@@ -150,8 +143,8 @@ extern "C" {
   WINBOOL WINAPI GetFileVersionInfoW(LPCWSTR lptstrFilename,DWORD dwHandle,DWORD dwLen,LPVOID lpData);
   DWORD WINAPI VerLanguageNameA(DWORD wLang,LPSTR szLang,DWORD nSize);
   DWORD WINAPI VerLanguageNameW(DWORD wLang,LPWSTR szLang,DWORD nSize);
-  WINBOOL WINAPI VerQueryValueA(const LPVOID pBlock,LPSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
-  WINBOOL WINAPI VerQueryValueW(const LPVOID pBlock,LPWSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
+  WINBOOL WINAPI VerQueryValueA(const LPVOID pBlock,LPCSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
+  WINBOOL WINAPI VerQueryValueW(const LPVOID pBlock,LPCWSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
 #endif
 
 #ifdef __cplusplus

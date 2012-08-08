@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -12,11 +12,13 @@ goto endofperl
 @rem ';
 #!/usr/local/bin/perl
 #line 15
+
+use 5.006;
 use strict;
 use vars qw($VERSION);
 
 use App::Cpan;
-$VERSION = '1.57';
+$VERSION = '1.5902';
 
 my $rc = App::Cpan->run( @ARGV );
 
@@ -33,7 +35,7 @@ cpan - easily interact with CPAN from the command line
 	cpan module_name [ module_name ... ]
 
 	# with switches, installs modules with extra behavior
-	cpan [-cfgimt] module_name [ module_name ... ]
+	cpan [-cfgimtTw] module_name [ module_name ... ]
 
 	# with just the dot, install from the distribution in the
 	# current directory
@@ -123,6 +125,10 @@ of the other options and arguments.
 
 Install the specified modules.
 
+=item -I
+
+Load C<local::lib> (think like C<-I> for loading lib paths).
+
 =item -j Config.pm
 
 Load the file that has the CPAN configuration data. This should have the
@@ -134,6 +140,10 @@ C<$CPAN::Config> as an anonymous hash.
 Dump the configuration in the same format that CPAN.pm uses. This is useful
 for checking the configuration as well as using the dump as a starting point
 for a new, custom configuration.
+
+=item -l
+
+List all installed modules wth their versions
 
 =item -L author [ author ... ]
 
@@ -147,17 +157,45 @@ Make the specified modules.
 
 Show the out-of-date modules.
 
-=item -t
+=item -p
 
-Run a `make test` on the specified modules.
+Ping the configured mirrors
+
+=item -P
+
+Find the best mirrors you could be using (but doesn't configure them just yet)
 
 =item -r
 
 Recompiles dynamically loaded modules with CPAN::Shell->recompile.
 
+=item -t
+
+Run a `make test` on the specified modules.
+
+=item -T
+
+Do not test modules. Simply install them.
+
+=item -u
+
+Upgrade all installed modules. Blindly doing this can really break things,
+so keep a backup.
+
 =item -v
 
 Print the script version and CPAN.pm version then exit.
+
+=item -V
+
+Print detailed information about the cpan client.
+
+=item -w 
+
+UNIMPLEMENTED
+
+Turn on cpan warnings. This checks various things, like directory permissions,
+and tells you about problems you might have.
 
 =back
 
@@ -175,11 +213,26 @@ Print the script version and CPAN.pm version then exit.
 	# recompile modules
 	cpan -r
 
+	# upgrade all installed modules
+	cpan -u
+
 	# install modules ( sole -i is optional )
 	cpan -i Netscape::Booksmarks Business::ISBN
 
 	# force install modules ( must use -i )
 	cpan -fi CGI::Minimal URI
+
+=head1 ENVIRONMENT VARIABLES
+
+=over 4
+
+=item CPAN_OPTS
+
+C<cpan> splits this variable on whitespace and prepends that list to C<@ARGV>
+before it processes the command-line arguments. For instance, if you always
+want to use C<local:lib>, you can set C<CPAN_OPTS> to C<-I>.
+
+=back
 
 =head1 EXIT VALUES
 
@@ -199,8 +252,6 @@ not control. For now, the exit codes are vague:
 =head1 TO DO
 
 * one shot configuration values from the command line
-
-
 
 =head1 BUGS
 
@@ -233,7 +284,7 @@ brian d foy, C<< <bdfoy@cpan.org> >>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2009, brian d foy, All Rights Reserved.
+Copyright (c) 2001-2010, brian d foy, All Rights Reserved.
 
 You may redistribute this under the same terms as Perl itself.
 

@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -198,7 +198,7 @@ sub get_hostname
    print <<"EDQ";
 
 *** ERROR:
-    Hostname `$host' does not seem to exist, please enter again
+    Hostname '$host' does not seem to exist, please enter again
     or a single space to clear any default
 
 EDQ
@@ -664,9 +664,9 @@ $cfg{'inet_domain'} = ($ans =~ /(\S+)/)[0];
 $msg = <<EDQ;
 
 If you specified some default hosts above, it is possible for me to
-do some basic tests when you run `make test'
+do some basic tests when you run 'make test'
 
-This will cause `make test' to be quite a bit slower and, if your
+This will cause 'make test' to be quite a bit slower and, if your
 internet connection is via dialup, will require you to be on-line
 unless the hosts are local.
 
@@ -694,7 +694,7 @@ print "\n";
 #---------------------------------------------------------------------------
 
 my $fh = IO::File->new($libnet_cfg_out, "w") or
-	die "Cannot create `$libnet_cfg_out': $!";
+	die "Cannot create '$libnet_cfg_out': $!";
 
 print "Writing $libnet_cfg_out\n";
 

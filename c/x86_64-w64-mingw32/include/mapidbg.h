@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __MAPIDBG_H_
 #define __MAPIDBG_H_
@@ -141,7 +141,7 @@ SCODE EXPORTDBG __cdecl ScodeFromSzFn(char *psz);
 void *EXPORTDBG __cdecl DBGMEM_EncapsulateFn(void *pmalloc,char *pszSubsys,int fCheckOften);
 void EXPORTDBG __cdecl DBGMEM_ShutdownFn(void *pmalloc);
 void EXPORTDBG __cdecl DBGMEM_CheckMemFn(void *pmalloc,int fReportOrphans);
-#ifdef I_X86_
+#ifdef _X86_
 void EXPORTDBG __cdecl DBGMEM_LeakHook(FARPROC pfn);
 void EXPORTDBG __cdecl GetCallStack(DWORD *,int,int);
 #endif

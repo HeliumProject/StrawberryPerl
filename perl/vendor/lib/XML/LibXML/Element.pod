@@ -14,7 +14,7 @@ XML::LibXML::Element - XML::LibXML Class for Element Nodes
   $node->setAttribute( $aname, $avalue );
   $node->setAttributeNS( $nsURI, $aname, $avalue );
   $avalue = $node->getAttribute( $aname );
-  $avalue = $node->setAttributeNS( $nsURI, $aname );
+  $avalue = $node->getAttributeNS( $nsURI, $aname );
   $attrnode = $node->getAttributeNode( $aname );
   $attrnode = $node->getAttributeNodeNS( $namespaceURI, $aname );
   $node->removeAttribute( $aname );
@@ -94,7 +94,7 @@ If C<<<<<< $node >>>>>> has an attribute with the name C<<<<<< $aname >>>>>>, th
 
 =item getAttributeNS
 
-  $avalue = $node->setAttributeNS( $nsURI, $aname );
+  $avalue = $node->getAttributeNS( $nsURI, $aname );
 
 Retrieves an attribute value by local name and namespace URI.
 
@@ -189,7 +189,7 @@ This function is part of the spec. It fetches all descendants of a node with a
 given tagname, where C<<<<<< tagname >>>>>> is a qualified name, that is, in case of namespace usage it may consist of a
 prefix and local name. A special C<<<<<< tagname >>>>>> '*' can be used to match any tag name. 
 
-In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 
 =item getElementsByTagNameNS
@@ -198,7 +198,7 @@ In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> o
 
 Namespace version of C<<<<<< getElementsByTagName >>>>>> as found in the DOM spec. A special C<<<<<< localname >>>>>> '*' can be used to match any local name and C<<<<<< nsURI >>>>>> '*' can be used to match any namespace URI.
 
-In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 
 =item getElementsByLocalName
@@ -210,7 +210,7 @@ getElementsByTagName and getElementsByTagNameNS. It will fetch all tags
 matching the given local-name. This allows one to select tags with the same
 local name across namespace borders.
 
-In SCALAR context this function returns a L<<<<<< XML::LibXML::NodeList >>>>>> object.
+In SCALAR context this function returns an L<<<<<< XML::LibXML::NodeList >>>>>> object.
 
 
 =item appendWellBalancedChunk
@@ -223,7 +223,7 @@ I<<<<<< Note that appendWellBalancedChunk() is only left for compatibility reaso
 
 
 
-  my $fragment = $parser->parse_xml_chunk( $chunk );
+  my $fragment = $parser->parse_balanced_chunk( $chunk );
    $node->appendChild( $fragment );
 
 This form is more explicit and makes it easier to control the flow of a script.
@@ -362,6 +362,17 @@ This function is NOT part of any DOM API.
 
 =back
 
+
+=head1 OVERLOADING
+
+XML::LibXML::Element overloads hash dereferencing to provide access to the
+element's attributes. For non-namespaced attributes, the attribute name is the
+hash key, and the attribute value is the hash value. For namespaced attributes,
+the hash key is qualified with the namespace URI, using Clark notation.
+
+Perl's "tied hash" feature is used, which means that the hash gives you
+read-write access to the element's attributes. For more information, see L<<<<<< XML::LibXML::AttributeHash >>>>>>
+
 =head1 AUTHORS
 
 Matt Sergeant, 
@@ -371,7 +382,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

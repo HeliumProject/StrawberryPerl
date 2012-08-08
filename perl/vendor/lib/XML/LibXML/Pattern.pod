@@ -7,12 +7,12 @@ XML::LibXML::Pattern - XML::LibXML::Pattern - interface to libxml2 XPath pattern
 
 
   use XML::LibXML;
-  my $pattern = new XML::LibXML::Pattern('/x:html/x:body//x:div', { 'x' => 'http://www.w3.org/1999/xhtml' });
-  # test a match on a XML::LibXML::Node $node
+  my $pattern = XML::LibXML::Pattern->new('/x:html/x:body//x:div', { 'x' => 'http://www.w3.org/1999/xhtml' });
+  # test a match on an XML::LibXML::Node $node
 
   if ($pattern->matchesNode($node)) { ... }
 
-  # or on a XML::LibXML::Reader
+  # or on an XML::LibXML::Reader
 
   if ($reader->matchesPattern($pattern)) { ... }
 
@@ -27,7 +27,7 @@ XML::LibXML::Pattern - XML::LibXML::Pattern - interface to libxml2 XPath pattern
 
 This is a perl interface to libxml2's pattern matching support I<<<<<< http://xmlsoft.org/html/libxml-pattern.html >>>>>>. This feature requires recent versions of libxml2.
 
-Patterns are a small subset of XPath language, which is limitted to
+Patterns are a small subset of XPath language, which is limited to
 (disjunctions of) location paths involving the child and descendant axes in
 abbreviated form as described by the extended BNF given below: 
 
@@ -73,7 +73,7 @@ example, to match an element C<<<<<< <a xmlns="http://foo.bar"</a> >>>>>>, one s
 
   $bool = $pattern->matchesNode($node);
 
-Given a XML::LibXML::Node object, returns a true value if the node is matched
+Given an XML::LibXML::Node object, returns a true value if the node is matched
 by the compiled pattern expression.
 
 
@@ -94,7 +94,7 @@ Petr Pajas
 
 =head1 VERSION
 
-1.70
+1.98
 
 =head1 COPYRIGHT
 

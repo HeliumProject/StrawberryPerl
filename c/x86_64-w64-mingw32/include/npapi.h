@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _NPAPI_INCLUDED
 #define _NPAPI_INCLUDED
+
+#include <_mingw_unicode.h>
 
 typedef DWORD (WINAPI *PF_NPAddConnection)(LPNETRESOURCEW lpNetResource,LPWSTR lpPassword,LPWSTR lpUserName);
 typedef DWORD (WINAPI *PF_NPAddConnection3)(HWND hwndOwner,LPNETRESOURCEW lpNetResource,LPWSTR lpPassword,LPWSTR lpUserName,DWORD dwFlags);
@@ -104,11 +106,7 @@ DWORD WINAPI NPDirectoryNotify(HWND hwnd,LPWSTR lpDir,DWORD dwOper);
 VOID WNetSetLastErrorA(DWORD err,LPSTR lpError,LPSTR lpProviders);
 VOID WNetSetLastErrorW(DWORD err,LPWSTR lpError,LPWSTR lpProviders);
 
-#ifdef UNICODE
-#define WNetSetLastError WNetSetLastErrorW
-#else
-#define WNetSetLastError WNetSetLastErrorA
-#endif
+#define WNetSetLastError __MINGW_NAME_AW(WNetSetLastError)
 
 #define WN_NETWORK_CLASS 0x00000001
 #define WN_CREDENTIAL_CLASS 0x00000002

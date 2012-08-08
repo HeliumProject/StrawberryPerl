@@ -1,3 +1,5 @@
+# $Id: Populate.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::Populate;
 use strict;
 use warnings;
@@ -12,7 +14,7 @@ use File::Path;
 
 our $dbh = $CPAN::SQLite::DBI::dbh;
 my ($setup);
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 
 my %tbl2obj;
 $tbl2obj{$_} = __PACKAGE__ . '::' . $_ 
@@ -42,9 +44,9 @@ sub new {
               state => $state,
               obj => {},
               cdbi => $cdbi,
-	      db_name => $args{db_name},
+              db_name => $args{db_name},
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub populate {
@@ -79,7 +81,7 @@ sub create_objs {
       my $info = $index->{info};
       return unless has_hash_data($info);
       $obj = $pack->new(info => $info,
-			cdbi => $self->{cdbi}->{objs}->{$table});
+                        cdbi => $self->{cdbi}->{objs}->{$table});
     }
     else {
       $obj = $pack->new(cdbi => $self->{cdbi}->{objs}->{$table});
@@ -116,14 +118,14 @@ sub populate_tables {
     for my $table (@tables) {
       my $obj = $self->{obj}->{$table};
       unless ($obj->$method()) {
-	if (my $error = $obj->{error_msg}) {
-	  print_debug("Fatal error from ", ref($obj), ": ", $error, $/);
-	  return;
-	}
-	else {
-	  my $info = $obj->{info_msg};
-	  print_debug("Info from ", ref($obj), ": ", $info, $/);
-	}
+        if (my $error = $obj->{error_msg}) {
+          print_debug("Fatal error from ", ref($obj), ": ", $error, $/);
+          return;
+        }
+        else {
+          my $info = $obj->{info_msg};
+          print_debug("Info from ", ref($obj), ": ", $info, $/);
+        }
       }
     }
   }
@@ -152,7 +154,7 @@ sub new {
               error_msg => '',
               info_msg => '',
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub insert {
@@ -267,7 +269,7 @@ sub new {
               error_msg => '',
               info_msg => '',
   };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub insert {
@@ -302,12 +304,12 @@ sub insert {
     next unless ($values and $cpanid and $auth_ids->{$cpanid});
     print_debug("Inserting $distname of $cpanid\n");
     $sth->execute($auth_ids->{$values->{cpanid}}, $distname,
-		    $values->{dist_file}, $values->{dist_vers},
-		    $values->{dist_abs}, $values->{dslip}) or do {
-		      $cdbi->db_error($sth);
-		      $self->{error_msg} = $cdbi->{error_msg};
-		      return;
-		    };
+                    $values->{dist_file}, $values->{dist_vers},
+                    $values->{dist_abs}, $values->{dslip}) or do {
+                      $cdbi->db_error($sth);
+                      $self->{error_msg} = $cdbi->{error_msg};
+                      return;
+                    };
     $dist_ids->{$distname} = $dbh->func('last_insert_rowid') or do {
       $cdbi->db_error($sth);
       $self->{error_msg} = $cdbi->{error_msg};
@@ -353,12 +355,12 @@ sub update {
     next unless ($values and $cpanid and $auth_ids->{$cpanid});
     print_debug("Updating $distname of $cpanid\n");
     $sth->execute($auth_ids->{$values->{cpanid}}, $distname, 
-		  $values->{dist_file}, $values->{dist_vers}, 
-		  $values->{dist_abs}, $values->{dslip}) or do {
-		    $cdbi->db_error($sth);
-		    $self->{error_msg} = $cdbi->{error_msg};
-		    return;
-		  };
+                  $values->{dist_file}, $values->{dist_vers}, 
+                  $values->{dist_abs}, $values->{dslip}) or do {
+                    $cdbi->db_error($sth);
+                    $self->{error_msg} = $cdbi->{error_msg};
+                    return;
+                  };
     $sth->finish();
     undef $sth;
   }
@@ -424,7 +426,7 @@ sub new {
               error_msg => '',
               info_msg => '',
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub insert {
@@ -449,7 +451,7 @@ sub insert {
 
   my $mod_ids = $self->{ids};
   my @fields = qw(dist_id mod_name mod_abs
-		  mod_vers dslip chapterid);
+                  mod_vers dslip chapterid);
 
   my $sth = $cdbi->sth_insert(\@fields) or do {
     $self->{error_msg} = $cdbi->{error_msg};
@@ -459,13 +461,13 @@ sub insert {
     my $values = $mods->{$modname};
     next unless ($values and $dist_ids->{$values->{dist_name}});
     $sth->execute($dist_ids->{$values->{dist_name}}, $modname,
-		  $values->{mod_abs}, $values->{mod_vers},
-		  $values->{dslip}, $values->{chapterid})
+                  $values->{mod_abs}, $values->{mod_vers},
+                  $values->{dslip}, $values->{chapterid})
       or do {
-	  $cdbi->db_error($sth);
-	  $self->{error_msg} = $cdbi->{error_msg};
-	  return;
-	};
+          $cdbi->db_error($sth);
+          $self->{error_msg} = $cdbi->{error_msg};
+          return;
+        };
     $mod_ids->{$modname} = $dbh->func('last_insert_rowid') or do {
       $cdbi->db_error($sth);
       $self->{error_msg} = $cdbi->{error_msg};
@@ -503,7 +505,7 @@ sub update {
   }
 
   my @fields = qw(dist_id mod_name mod_abs
-		  mod_vers dslip chapterid);
+                  mod_vers dslip chapterid);
 
   foreach my $modname (keys %$data) {
     next unless $data->{$modname};
@@ -512,12 +514,12 @@ sub update {
     my $values = $mods->{$modname};
     next unless ($values and $dist_ids->{$values->{dist_name}});
     $sth->execute($dist_ids->{$values->{dist_name}}, $modname,
-		  $values->{mod_abs}, $values->{mod_vers},
-		  $values->{dslip}, $values->{chapterid})
+                  $values->{mod_abs}, $values->{mod_vers},
+                  $values->{dslip}, $values->{chapterid})
       or do {
-	$cdbi->db_error($sth);
-	$self->{error_msg} = $cdbi->{error_msg};
-	return;
+        $cdbi->db_error($sth);
+        $self->{error_msg} = $cdbi->{error_msg};
+        return;
       };
     $sth->finish();
     undef $sth;
@@ -589,7 +591,7 @@ sub new {
               error_msg => '',
               info_msg => '',
              };
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub insert {
@@ -743,7 +745,7 @@ sub db_error {
     $sth->finish;
     undef $sth;
   }
-  $obj->{error_msg} = q{Database error: } . $dbh->errstr;
+  return $obj->{error_msg} = q{Database error: } . $dbh->errstr;
 }
 
 1;

@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_CTYPE
 #define _INC_CTYPE
@@ -189,9 +189,10 @@ int __cdecl iswblank(wint_t _C);
 #ifndef __mb_cur_max
 #ifdef _MSVCRT_
   extern int __mb_cur_max;
+#define __mb_cur_max	__mb_cur_max
 #else
   extern int * __MINGW_IMP_SYMBOL(__mb_cur_max);
-#define __mb_cur_max (* __MINGW_IMP_SYMBOL(__mb_cur_max))
+#define __mb_cur_max	(* __MINGW_IMP_SYMBOL(__mb_cur_max))
 #endif
 #endif
 #define ___mb_cur_max_func() (__mb_cur_max)
@@ -259,10 +260,10 @@ int __cdecl iswblank(wint_t _C);
 
 #ifndef	NO_OLDNAMES
 #ifndef _CTYPE_DEFINED
-  int __cdecl isascii(int _C);
-  int __cdecl toascii(int _C);
-  int __cdecl iscsymf(int _C);
-  int __cdecl iscsym(int _C);
+  int __cdecl isascii(int _C) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+  int __cdecl toascii(int _C) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+  int __cdecl iscsymf(int _C) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
+  int __cdecl iscsym(int _C) __MINGW_ATTRIB_DEPRECATED_MSVC2005;
 #else
 #define isascii __isascii
 #define toascii __toascii

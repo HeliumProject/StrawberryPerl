@@ -1,3 +1,5 @@
+# $Id: Search.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::Search;
 use strict;
 use warnings;
@@ -7,7 +9,7 @@ use CPAN::SQLite::Util qw($mode_info);
 use CPAN::SQLite::DBI::Search;
 
 our $max_results = 0;
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 my $cdbi_query;
 
 my %mode2obj;
@@ -19,7 +21,7 @@ sub new {
   $cdbi_query = CPAN::SQLite::DBI::Search->new(%args);
   $max_results = $args{max_results} if $args{max_results};
   my $self = {results => undef, error => '', %args};
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub query {
@@ -49,9 +51,9 @@ sub query {
   }
   my $value;
   my $search = {name => $info->{name},
-	       text => $info->{text},
-	       id => $info->{id},
-	       };
+               text => $info->{text},
+               id => $info->{id},
+               };
  TYPE: {
     ($value = $args{query}) and do {
       $search->{value} = $value;
@@ -91,7 +93,7 @@ sub make {
   }
   my $self = {results => undef, error => '',
               table => $args{table}, cdbi => $args{cdbi}};
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 package CPAN::SQLite::Search::author;
@@ -110,12 +112,12 @@ sub search {
   $args{order_by} = 'cpanid';
   my $results;
   return unless $results = ($meta_obj ?
-			    $cdbi->fetch_and_set(%args) :
-			    $cdbi->fetch(%args));
+                            $cdbi->fetch_and_set(%args) :
+                            $cdbi->fetch(%args));
   unless ($meta_obj) {
     $self->{results} =
       (ref($results) eq 'ARRAY' and scalar @$results == 1) ?
-	$results->[0] : $results;
+        $results->[0] : $results;
   }
   return 1 if $meta_obj;
 
@@ -127,10 +129,10 @@ sub search {
   my @items = (ref($results) eq 'ARRAY') ? @$results : ($results);
   foreach my $item (@items) {
     my $search = {id => 'auth_id',
-		  value => $item->{auth_id},
-		  type => 'id',
-		  wantarray => 1,
-		 };
+                  value => $item->{auth_id},
+                  type => 'id',
+                  wantarray => 1,
+                 };
     my $dists;
     next unless ($dists = $cdbi->fetch(%args, search => $search));
     $item->{dists} = (ref($dists) eq 'ARRAY') ? $dists : [$dists];
@@ -151,20 +153,20 @@ sub search {
   my $meta_obj = $args{meta_obj};
 
   $args{fields} = [ qw(mod_id mod_name mod_abs mod_vers chapterid
-		       dslip dist_id dist_name dist_file dist_vers dist_abs
-		       auth_id cpanid fullname email) ];
+                       dslip dist_id dist_name dist_file dist_vers dist_abs
+                       auth_id cpanid fullname email) ];
   $args{table} = 'dists';
   $args{join} = { mods => 'dist_id',
-		  auths => 'auth_id',
-		};
+                  auths => 'auth_id',
+                };
   $args{order_by} = 'mod_name';
   if ($max_results) {
     $args{limit} = $max_results;
   }
   my $results;
   return unless $results = ($meta_obj ? 
-			    $cdbi->fetch_and_set(%args, want_ids => 1) :
-			    $cdbi->fetch(%args));
+                            $cdbi->fetch_and_set(%args, want_ids => 1) :
+                            $cdbi->fetch(%args));
 # if running under CPAN.pm, need to build a list of modules
 # contained in the distribution
   if ($meta_obj) {
@@ -179,22 +181,22 @@ sub search {
       $args{order_by} = 'mod_name';
       $args{join} = undef;
       my $search = {id => 'dist_id',
-		    value => $item->{dist_id},
-		    type => 'id',
-		    wantarray => 1,
-		   };
+                    value => $item->{dist_id},
+                    type => 'id',
+                    wantarray => 1,
+                   };
       $seen{$dist_id}++;
       my $mods;
       next unless $mods = $cdbi->fetch_and_set(%args, 
-					       search => $search,
-					       set_list => 1,
-					       download => $item->{download});
+                                               search => $search,
+                                               set_list => 1,
+                                               download => $item->{download});
     }
   }
   unless ($meta_obj) {
     $self->{results} =
       (ref($results) eq 'ARRAY' and scalar @$results == 1) ?
-	$results->[0] : $results;
+        $results->[0] : $results;
   }
   return 1;
 }
@@ -209,7 +211,7 @@ sub search {
   my $meta_obj = $args{meta_obj};
 
   $args{fields} = [ qw(dist_id dist_name dist_abs dist_vers dist_dslip
-		       dist_file auth_id cpanid fullname email) ];
+                       dist_file auth_id cpanid fullname email) ];
   $args{table} = 'dists';
   $args{join} = {auths => 'auth_id'};
   $args{order_by} = 'dist_name';
@@ -218,8 +220,8 @@ sub search {
   }
   my $results;
   return unless $results = ($meta_obj ?
-			    $cdbi->fetch_and_set(%args, want_ids => 1) :
-			    $cdbi->fetch(%args));
+                            $cdbi->fetch_and_set(%args, want_ids => 1) :
+                            $cdbi->fetch(%args));
 
   $args{join} = undef;
   $args{table} = 'mods';
@@ -228,25 +230,25 @@ sub search {
   my @items = (ref($results) eq 'ARRAY') ? @$results : ($results);
   foreach my $item(@items) {
     my $search = {id => 'dist_id',
-		  value => $item->{dist_id},
-		  type => 'id',
-		  wantarray => 1,
-		 };
+                  value => $item->{dist_id},
+                  type => 'id',
+                  wantarray => 1,
+                 };
     my $mods;
     next unless $mods = ($meta_obj ?
-			 $cdbi->fetch_and_set(%args, 
-					      search => $search,
-					      set_list => 1,
-					      download => $item->{download}) :
-			 $cdbi->fetch(%args,
-				      search => $search) );
+                         $cdbi->fetch_and_set(%args, 
+                                              search => $search,
+                                              set_list => 1,
+                                              download => $item->{download}) :
+                         $cdbi->fetch(%args,
+                                      search => $search) );
     next if $meta_obj;
     $item->{mods} = (ref($mods) eq 'ARRAY') ? $mods : [$mods];
   }
   unless ($meta_obj) {
     $self->{results} =
       (ref($results) eq 'ARRAY' and scalar @$results == 1) ?
-	$results->[0] : $results;
+        $results->[0] : $results;
   }
   return 1;
 }
@@ -510,11 +512,19 @@ matched C<dist_name> is performed.
 
 L<CPAN::SQLite::Populate>.
 
+=head1 AUTHORS
+
+Randy Kobes (passed away on September 18, 2010)
+
+Serguei Trouchelle E<lt>stro@cpan.orgE<gt>
+
 =head1 COPYRIGHT
 
-This software is copyright 2006 by Randy Kobes
-E<lt>r.kobes@uwinnipeg.caE<gt>. Use and
-redistribution are under the same terms as Perl itself.
+Copyright 2006,2008 by Randy Kobes E<lt>r.kobes@uwinnipeg.caE<gt>. 
+
+Copyright 2011 by Serguei Trouchelle E<lt>stro@cpan.orgE<gt>.
+
+Use and redistribution are under the same terms as Perl itself.
 
 =cut
 

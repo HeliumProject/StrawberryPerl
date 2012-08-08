@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef TSPI_H
 #define TSPI_H
@@ -75,7 +75,7 @@ extern "C" {
     DWORD dwKey;
     DWORD dwTotalSize;
     DWORD dwQOSRequestType;
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       struct {
 	DWORD dwNumServiceLevelEntries;
 	LINEQOSSERVICELEVEL LineQOSServiceLevel[1];

@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __IPIFCONS_H__
 #define __IPIFCONS_H__
@@ -9,6 +9,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef ULONG IFTYPE;
 
 #define MIN_IF_TYPE 1
 

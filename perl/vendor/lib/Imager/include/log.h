@@ -4,16 +4,17 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
+#include "imdatatypes.h"
 /* 
    input:  name of file to log too
    input:  onoff, 0 means no logging
    global: creates a global variable FILE* lg_file
 */
 
-void i_lhead ( const char *file, int line  );
-void i_init_log( const char *name, int onoff );
-void i_loog(int level,const char *msg, ... );
+int i_init_log( const char *name, int onoff );
 void i_fatal ( int exitcode,const char *fmt, ... );
+void i_lhead ( const char *file, int line  );
+void i_loog(int level,const char *msg, ... ) I_FORMAT_ATTR(2,3);
 
 /*
 =item mm_log((level, format, ...))

@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #include <_mingw.h>
 
@@ -9,14 +9,15 @@
 #define _INC_LIMITS
 
 /*
-* File system limits
-*
-* TODO: NAME_MAX and OPEN_MAX are file system limits or not? Are they the
-*       same as FILENAME_MAX and FOPEN_MAX from stdio.h?
-* NOTE: Apparently the actual size of PATH_MAX is 260, but a space is
-*       required for the NUL. TODO: Test?
-*/
-#define PATH_MAX	(259)
+ * File system limits
+ *
+ * NOTE: Apparently the actual size of PATH_MAX is 260, but a space is
+ *       required for the NUL. TODO: Test?
+ * NOTE: PATH_MAX is the POSIX equivalent for Microsoft's MAX_PATH; the two
+ *       are semantically identical, with a limit of 259 characters for the
+ *       path name, plus one for a terminating NUL, for a total of 260.
+ */
+#define PATH_MAX	260
 
 #define CHAR_BIT 8
 #define SCHAR_MIN (-128)
@@ -41,11 +42,11 @@
 #define ULLONG_MAX 0xffffffffffffffffull
 
 #define _I8_MIN (-127 - 1)
-#define _I8_MAX 127i8
+#define _I8_MAX 127
 #define _UI8_MAX 0xffu
 
 #define _I16_MIN (-32767 - 1)
-#define _I16_MAX 32767i16
+#define _I16_MAX 32767
 #define _UI16_MAX 0xffffu
 
 #define _I32_MIN (-2147483647 - 1)
@@ -73,6 +74,14 @@
 #endif
 #endif
 
+#ifndef SSIZE_MAX
+#ifdef _WIN64
+#define SSIZE_MAX _I64_MAX
+#else
+#define SSIZE_MAX INT_MAX
+#endif
+#endif
+
 #ifdef _POSIX_
 #define _POSIX_ARG_MAX 4096
 #define _POSIX_CHILD_MAX 6
@@ -97,8 +106,9 @@
 #undef PATH_MAX
 #define PATH_MAX 512
 #define PIPE_BUF _POSIX_PIPE_BUF
-#define SSIZE_MAX _POSIX_SSIZE_MAX
+/*#define SSIZE_MAX _POSIX_SSIZE_MAX*/
 #define STREAM_MAX 20
 #define TZNAME_MAX 10
 #endif
-#endif
+
+#endif /* _INC_LIMITS */

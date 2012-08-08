@@ -3,8 +3,9 @@
 # modify it under the same terms as Perl itself.
 
 package Convert::ASN1;
-
-# $Id: ASN1.pm,v 1.29 2003/10/08 14:29:17 gbarr Exp $
+{
+  $Convert::ASN1::VERSION = '0.23';
+}
 
 use 5.004;
 use strict;
@@ -23,7 +24,6 @@ BEGIN {
   }
 
   @ISA = qw(Exporter);
-  $VERSION = "0.22";
 
   %EXPORT_TAGS = (
     io    => [qw(asn_recv asn_send asn_read asn_write asn_get asn_ready)],
@@ -44,12 +44,13 @@ BEGIN {
   $EXPORT_TAGS{all} = \@EXPORT_OK;
 
   @opParts = qw(
-    cTAG cTYPE cVAR cLOOP cOPT cCHILD cDEFINE
+    cTAG cTYPE cVAR cLOOP cOPT cEXT cCHILD cDEFINE
   );
 
   @opName = qw(
     opUNKNOWN opBOOLEAN opINTEGER opBITSTR opSTRING opNULL opOBJID opREAL
     opSEQUENCE opSET opUTIME opGTIME opUTF8 opANY opCHOICE opROID opBCD
+    opEXTENSIONS
   );
 
   foreach my $l (\@opParts, \@opName) {

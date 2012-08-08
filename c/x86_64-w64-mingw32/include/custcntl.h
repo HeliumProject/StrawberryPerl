@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_CUSTCNTL
 #define _INC_CUSTCNTL
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,27 +32,15 @@ extern "C" {
     WORD wReserved1;
   } CCSTYLEW,*LPCCSTYLEW;
 
-#ifdef UNICODE
-#define CCSTYLE CCSTYLEW
-#define LPCCSTYLE LPCCSTYLEW
-#define LPFNCCSTYLE LPFNCCSTYLEW
-#define LPFNCCSIZETOTEXT LPFNCCSIZETOTEXTW
-#define CCSTYLEFLAG CCSTYLEFLAGW
-#define LPCCSTYLEFLAG LPCCSTYLEFLAGW
-#define CCINFO CCINFOW
-#define LPCCINFO LPCCINFOW
-#define LPFNCCINFO LPFNCCINFOW
-#else
-#define CCSTYLE CCSTYLEA
-#define LPCCSTYLE LPCCSTYLEA
-#define LPFNCCSTYLE LPFNCCSTYLEA
-#define LPFNCCSIZETOTEXT LPFNCCSIZETOTEXTA
-#define CCSTYLEFLAG CCSTYLEFLAGA
-#define LPCCSTYLEFLAG LPCCSTYLEFLAGA
-#define CCINFO CCINFOA
-#define LPCCINFO LPCCINFOA
-#define LPFNCCINFO LPFNCCINFOA
-#endif
+#define CCSTYLE __MINGW_NAME_AW(CCSTYLE)
+#define LPCCSTYLE __MINGW_NAME_AW(LPCCSTYLE)
+#define LPFNCCSTYLE __MINGW_NAME_AW(LPFNCCSTYLE)
+#define LPFNCCSIZETOTEXT __MINGW_NAME_AW(LPFNCCSIZETOTEXT)
+#define CCSTYLEFLAG __MINGW_NAME_AW(CCSTYLEFLAG)
+#define LPCCSTYLEFLAG __MINGW_NAME_AW(LPCCSTYLEFLAG)
+#define CCINFO __MINGW_NAME_AW(CCINFO)
+#define LPCCINFO __MINGW_NAME_AW(LPCCINFO)
+#define LPFNCCINFO __MINGW_NAME_AW(LPFNCCINFO)
 
   typedef WINBOOL (CALLBACK *LPFNCCSTYLEA)(HWND hwndParent,LPCCSTYLEA pccs);
   typedef WINBOOL (CALLBACK *LPFNCCSTYLEW)(HWND hwndParent,LPCCSTYLEW pccs);

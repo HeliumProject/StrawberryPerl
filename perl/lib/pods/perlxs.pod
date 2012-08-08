@@ -61,20 +61,21 @@ uses B<typemaps> to determine how to map C function parameters
 and output values to Perl values and back.  The default typemap
 (which comes with Perl) handles many common C types.  A supplementary
 typemap may also be needed to handle any special structures and types
-for the library being linked.
+for the library being linked. For more information on typemaps,
+see L<perlxstypemap>.
 
 A file in XS format starts with a C language section which goes until the
 first C<MODULE =Z<>> directive.  Other XS directives and XSUB definitions
 may follow this line.  The "language" used in this part of the file
 is usually referred to as the XS language.  B<xsubpp> recognizes and
 skips POD (see L<perlpod>) in both the C and XS language sections, which
-allows the XS file to contain embedded documentation. 
+allows the XS file to contain embedded documentation.
 
 See L<perlxstut> for a tutorial on the whole extension creation process.
 
 Note: For some extensions, Dave Beazley's SWIG system may provide a
 significantly more convenient mechanism for creating the extension
-glue code.  See http://www.swig.org/ for more information.
+glue code.  See L<http://www.swig.org/> for more information.
 
 =head2 On The Road
 
@@ -197,7 +198,7 @@ different semantics, see L<"The & Unary Operator">.
 
 It is convenient to think that the indirection operator
 C<*> should be considered as a part of the type and the address operator C<&>
-should be considered part of the variable.  See L<"The Typemap">
+should be considered part of the variable.  See L<perlxstypemap>
 for more info about handling qualifiers and unary operators in C types.
 
 The function name and the return type must be placed on
@@ -317,10 +318,19 @@ able to write:
 But due to an unfixable bug (fixing it would break lots of existing
 CPAN modules) in the typemap file, the reference count of the C<AV *>
 is not properly decremented. Thus, the above XSUB would leak memory
-whenever it is being called. The same problem exists for C<HV *>.
+whenever it is being called. The same problem exists for C<HV *>,
+C<CV *>, and C<SVREF> (which indicates a scalar reference, not
+a general C<SV *>).
+In XS code on perls starting with perl 5.16, you can override the
+typemaps for any of these types with a version that has proper
+handling of refcounts. In your C<TYPEMAP> section, do
 
-When you're returning an C<AV *> or a C<HV *>, you have to make sure
-their reference count is decremented by making the AV or HV mortal:
+  AV*	T_AVREF_REFCOUNT_FIXED
+
+to get the repaired variant. For backward compatibility with older
+versions of perl, you can instead decrement the reference count
+manually when you're returning one of the aforementioned
+types using C<sv_2mortal>:
 
   AV *
   array()
@@ -331,7 +341,8 @@ their reference count is decremented by making the AV or HV mortal:
       OUTPUT:
           RETVAL
 
-And also remember that you don't have to do this for an C<SV *>.
+Remember that you don't have to do this for an C<SV *>. The reference
+documentation for all core typemaps can be found in L<perlxstypemap>.
 
 =head2 The MODULE Keyword
 
@@ -540,6 +551,25 @@ not care about its initial contents.
         OUTPUT:
           timep
 
+=head2 The TYPEMAP: Keyword
+
+Starting with Perl 5.16, you can embed typemaps into your XS code
+instead of or in addition to typemaps in a separate file.  Multiple
+such embedded typemaps will be processed in order of appearance in
+the XS code and like local typemap files take precendence over the
+default typemap, the embedded typemaps may overwrite previous
+definitions of TYPEMAP, INPUT, and OUTPUT stanzas.  The syntax for
+embedded typemaps is
+
+      TYPEMAP: <<HERE
+      ... your typemap code here ...
+      HERE
+
+where the C<TYPEMAP> keyword must appear in the first column of a
+new line.
+
+Refer to L<perlxstypemap> for details on writing typemaps.
+
 =head2 Initializing Function Parameters
 
 C function parameters are normally initialized with their values from
@@ -557,8 +587,8 @@ The following code demonstrates how to supply initialization code for
 function parameters.  The initialization code is eval'ed within double
 quotes by the compiler before it is added to the output so anything
 which should be interpreted literally [mainly C<$>, C<@>, or C<\\>]
-must be protected with backslashes.  The variables $var, $arg,
-and $type can be used as in typemaps.
+must be protected with backslashes.  The variables C<$var>, C<$arg>,
+and C<$type> can be used as in typemaps.
 
      bool_t
      rpcb_gettime(host,timep)
@@ -598,7 +628,7 @@ example has a two-fold purpose: first, when this line is processed by
 B<xsubpp>, the Perl snippet C<$v{timep}=$arg> is evaluated.  Second,
 the text of the evaluated snippet is output into the generated C file
 (inside a C comment)!  During the processing of C<char *host> line,
-$arg will evaluate to C<ST(0)>, and C<$v{timep}> will evaluate to
+C<$arg> will evaluate to C<ST(0)>, and C<$v{timep}> will evaluate to
 C<ST(1)>.
 
 =head2 Default Parameter Values
@@ -1295,12 +1325,12 @@ for your functions (like the ALIAS: keyword above).  However, the
 overloaded functions must be defined with three parameters (except
 for the nomethod() function which needs four parameters).  If any
 function has the OVERLOAD: keyword, several additional lines
-will be defined in the c file generated by xsubpp in order to 
+will be defined in the c file generated by xsubpp in order to
 register with the overload magic.
 
 Since blessed objects are actually stored as RV's, it is useful
 to use the typemap features to preprocess parameters and extract
-the actual SV stored within the blessed RV. See the sample for
+the actual SV stored within the blessed RV.  See the sample for
 T_PTROBJ_SPECIAL below.
 
 To use the OVERLOAD: keyword, create an XS function which takes
@@ -1318,7 +1348,7 @@ this:
 In this case, the function will overload both of the three way
 comparison operators.  For all overload operations using non-alpha
 characters, you must type the parameter without quoting, separating
-multiple overloads with whitespace.  Note that "" (the stringify 
+multiple overloads with whitespace.  Note that "" (the stringify
 overload) should be entered as \"\" (i.e. escaped).
 
 =head2 The FALLBACK: Keyword
@@ -1334,9 +1364,9 @@ FALLBACK keyword in the module header section, like this:
 
 where FALLBACK can take any of the three values TRUE, FALSE, or
 UNDEF.  If you do not set any FALLBACK value when using OVERLOAD,
-it defaults to UNDEF.  FALLBACK is not used except when one or 
+it defaults to UNDEF.  FALLBACK is not used except when one or
 more functions using OVERLOAD have been defined.  Please see
-L<overload/Fallback> for more details.
+L<overload/fallback> for more details.
 
 =head2 The INTERFACE: Keyword
 
@@ -1353,11 +1383,11 @@ subtract() all having the signature:
 you can make them all to use the same XSUB using this:
 
     symbolic
-    interface_s_ss(arg1, arg2)  
+    interface_s_ss(arg1, arg2)
 	symbolic	arg1
 	symbolic	arg2
     INTERFACE:
-	multiply divide 
+	multiply divide
 	add subtract
 
 (This is the complete XSUB code for 4 Perl functions!)  Four generated
@@ -1368,7 +1398,7 @@ is no need to code a switch statement, each Perl function (which shares
 the same XSUB) knows which C function it should call.  Additionally, one
 can attach an extra function remainder() at runtime by using
 
-    CV *mycv = newXSproto("Symbolic::remainder", 
+    CV *mycv = newXSproto("Symbolic::remainder",
 			  XS_Symbolic_interface_s_ss, __FILE__, "$$");
     XSINTERFACE_FUNC_SET(mycv, remainder);
 
@@ -1389,10 +1419,10 @@ The default value is C<XSINTERFACE_FUNC> and C<XSINTERFACE_FUNC_SET>.
 An INTERFACE keyword with an empty list of functions can be omitted if
 INTERFACE_MACRO keyword is used.
 
-Suppose that in the previous example functions pointers for 
+Suppose that in the previous example functions pointers for
 multiply(), divide(), add(), subtract() are kept in a global C array
 C<fp[]> with offsets being C<multiply_off>, C<divide_off>, C<add_off>,
-C<subtract_off>.  Then one can use 
+C<subtract_off>.  Then one can use
 
     #define XSINTERFACE_FUNC_BYOFFSET(ret,cv,f) \
 	((XSINTERFACE_CVT_ANON(ret))fp[CvXSUBANY(cv).any_i32])
@@ -1402,14 +1432,14 @@ C<subtract_off>.  Then one can use
 in C section,
 
     symbolic
-    interface_s_ss(arg1, arg2)  
+    interface_s_ss(arg1, arg2)
 	symbolic	arg1
 	symbolic	arg2
-      INTERFACE_MACRO: 
+      INTERFACE_MACRO:
 	XSINTERFACE_FUNC_BYOFFSET
 	XSINTERFACE_FUNC_BYOFFSET_set
       INTERFACE:
-	multiply divide 
+	multiply divide
 	add subtract
 
 in XSUB section.
@@ -1434,9 +1464,25 @@ The XS module can use INCLUDE: to pull that file into it.
     INCLUDE: Rpcb1.xsh
 
 If the parameters to the INCLUDE: keyword are followed by a pipe (C<|>) then
-the compiler will interpret the parameters as a command.
+the compiler will interpret the parameters as a command. This feature is
+mildly deprecated in favour of the C<INCLUDE_COMMAND:> directive, as documented
+below.
 
     INCLUDE: cat Rpcb1.xsh |
+
+Do not use this to run perl: C<INCLUDE: perl |> will run the perl that
+happens to be the first in your path and not necessarily the same perl that is
+used to run C<xsubpp>. See L<"The INCLUDE_COMMAND: Keyword">.
+
+=head2 The INCLUDE_COMMAND: Keyword
+
+Runs the supplied command and includes its output into the current XS
+document. C<INCLUDE_COMMAND> assigns special meaning to the C<$^X> token
+in that it runs the same perl interpreter that is running C<xsubpp>:
+
+    INCLUDE_COMMAND: cat Rpcb1.xsh
+
+    INCLUDE_COMMAND: $^X -e ...
 
 =head2 The CASE: Keyword
 
@@ -1484,6 +1530,24 @@ the different argument lists.
 	$status = rpcb_gettime( $host, $timep );
 
 	$status = x_gettime( $timep, $host );
+
+=head2 The EXPORT_XSUB_SYMBOLS: Keyword
+
+The EXPORT_XSUB_SYMBOLS: keyword is likely something you will never need.
+In perl versions earlier than 5.16.0, this keyword does nothing. Starting
+with 5.16, XSUB symbols are no longer exported by default. That is, they
+are C<static> functions. If you include
+
+  EXPORT_XSUB_SYMBOLS: ENABLE
+
+in your XS code, the XSUBs following this line will not be declared C<static>.
+You can later disable this with
+
+  EXPORT_XSUB_SYMBOLS: DISABLE
+
+which, again, is the default that you should probably never change.
+You cannot use this keyword on versions of perl before 5.16 to make
+XSUBs C<static>.
 
 =head2 The & Unary Operator
 
@@ -1597,7 +1661,7 @@ not listed.
      color::set_blue( val )
           int val
 
-Both Perl functions will expect an object as the first parameter.  In the 
+Both Perl functions will expect an object as the first parameter.  In the
 generated C++ code the object is called C<THIS>, and the method call will
 be performed on this object.  So in the C++ code the blue() and set_blue()
 methods will be called as this:
@@ -1653,16 +1717,16 @@ example.
     # The Perl object is blessed into 'CLASS', which should be a
     # char* having the name of the package for the blessing.
     O_OBJECT
-    	sv_setref_pv( $arg, CLASS, (void*)$var );
+	sv_setref_pv( $arg, CLASS, (void*)$var );
 
     INPUT
     O_OBJECT
-    	if( sv_isobject($arg) && (SvTYPE(SvRV($arg)) == SVt_PVMG) )
-    		$var = ($type)SvIV((SV*)SvRV( $arg ));
-    	else{
-    		warn( \"${Package}::$func_name() -- $var is not a blessed SV reference\" );
-    		XSRETURN_UNDEF;
-    	}
+	if( sv_isobject($arg) && (SvTYPE(SvRV($arg)) == SVt_PVMG) )
+		$var = ($type)SvIV((SV*)SvRV( $arg ));
+	else{
+		warn( \"${Package}::$func_name() -- $var is not a blessed SV reference\" );
+		XSRETURN_UNDEF;
+	}
 
 =head2 Interface Strategy
 
@@ -1770,8 +1834,9 @@ trim the name to the word DESTROY as Perl will expect.
           printf("Now in NetconfigPtr::DESTROY\n");
           free( netconf );
 
-This example requires the following typemap entry.  Consult the typemap
-section for more information about adding new typemaps for an extension.
+This example requires the following typemap entry.  Consult
+L<perlxstypemap> for more information about adding new typemaps
+for an extension.
 
      TYPEMAP
      Netconfig *  T_PTROBJ
@@ -1786,75 +1851,6 @@ object to the supplied XSUB DESTROY function.  Perl cannot determine, and
 does not care, that this object is a C struct and not a Perl object.  In
 this sense, there is no difference between the object created by the
 getnetconfigent() XSUB and an object created by a normal Perl subroutine.
-
-=head2 The Typemap
-
-The typemap is a collection of code fragments which are used by the B<xsubpp>
-compiler to map C function parameters and values to Perl values.  The
-typemap file may consist of three sections labelled C<TYPEMAP>, C<INPUT>, and
-C<OUTPUT>.  An unlabelled initial section is assumed to be a C<TYPEMAP>
-section.  The INPUT section tells
-the compiler how to translate Perl values
-into variables of certain C types.  The OUTPUT section tells the compiler
-how to translate the values from certain C types into values Perl can
-understand.  The TYPEMAP section tells the compiler which of the INPUT and
-OUTPUT code fragments should be used to map a given C type to a Perl value.
-The section labels C<TYPEMAP>, C<INPUT>, or C<OUTPUT> must begin
-in the first column on a line by themselves, and must be in uppercase.
-
-The default typemap in the C<lib/ExtUtils> directory of the Perl source
-contains many useful types which can be used by Perl extensions.  Some
-extensions define additional typemaps which they keep in their own directory.
-These additional typemaps may reference INPUT and OUTPUT maps in the main
-typemap.  The B<xsubpp> compiler will allow the extension's own typemap to
-override any mappings which are in the default typemap.
-
-Most extensions which require a custom typemap will need only the TYPEMAP
-section of the typemap file.  The custom typemap used in the
-getnetconfigent() example shown earlier demonstrates what may be the typical
-use of extension typemaps.  That typemap is used to equate a C structure
-with the T_PTROBJ typemap.  The typemap used by getnetconfigent() is shown
-here.  Note that the C type is separated from the XS type with a tab and
-that the C unary operator C<*> is considered to be a part of the C type name.
-
-	TYPEMAP
-	Netconfig *<tab>T_PTROBJ
-
-Here's a more complicated example: suppose that you wanted C<struct
-netconfig> to be blessed into the class C<Net::Config>.  One way to do
-this is to use underscores (_) to separate package names, as follows:
-
-        typedef struct netconfig * Net_Config;
-
-And then provide a typemap entry C<T_PTROBJ_SPECIAL> that maps underscores to
-double-colons (::), and declare C<Net_Config> to be of that type:
-
-
-        TYPEMAP
-        Net_Config      T_PTROBJ_SPECIAL
-
-        INPUT
-        T_PTROBJ_SPECIAL
-                if (sv_derived_from($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\")) {
-                        IV tmp = SvIV((SV*)SvRV($arg));
-                        $var = INT2PTR($type, tmp);
-                }
-                else
-                        croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\")
-
-        OUTPUT
-        T_PTROBJ_SPECIAL
-                sv_setref_pv($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\",
-                (void*)$var);
-
-The INPUT and OUTPUT sections substitute underscores for double-colons
-on the fly, giving the desired effect.  This example demonstrates some
-of the power and versatility of the typemap facility.
-
-The INT2PTR macro (defined in perl.h) casts an integer to a pointer, 
-of a given type, taking care of the possible different size of integers
-and pointers.  There are also PTR2IV, PTR2UV, PTR2NV macros,
-to map the other way, which may be useful in OUTPUT sections.
 
 =head2 Safely Storing Static Data in XS
 
@@ -1897,7 +1893,7 @@ Below is an example module that makes use of the macros.
         strcpy(MY_CXT.name[0], "None");
         strcpy(MY_CXT.name[1], "None");
         strcpy(MY_CXT.name[2], "None");
-    }                              
+    }
 
     int
     newMouse(char * name)
@@ -1967,7 +1963,7 @@ The MY_CXT_INIT macro initialises storage for the C<my_cxt_t> struct.
 It I<must> be called exactly once, typically in a BOOT: section. If you
 are maintaining multiple interpreters, it should be called once in each
 interpreter instance, except for interpreters cloned from existing ones.
-(But see C<MY_CXT_CLONE> below.)
+(But see L</MY_CXT_CLONE> below.)
 
 =item dMY_CXT
 
@@ -1977,7 +1973,7 @@ MY_CXT.
 =item MY_CXT
 
 Use the MY_CXT macro to access members of the C<my_cxt_t> struct. For
-example, if C<my_cxt_t> is 
+example, if C<my_cxt_t> is
 
     typedef struct {
         int index;
@@ -2083,7 +2079,7 @@ File C<RPC.xs>: Interface to some ONC+ RPC bind library functions.
           printf("NetconfigPtr::DESTROY\n");
           free( netconf );
 
-File C<typemap>: Custom typemap for RPC.xs.
+File C<typemap>: Custom typemap for RPC.xs. (cf. L<perlxstypemap>)
 
      TYPEMAP
      Netconfig *  T_PTROBJ
@@ -2117,7 +2113,8 @@ File C<rpctest.pl>: Perl test program for the RPC extension.
 
 =head1 XS VERSION
 
-This document covers features supported by C<xsubpp> 1.935.
+This document covers features supported by C<ExtUtils::ParseXS>
+(also known as C<xsubpp>) 3.13_01.
 
 =head1 AUTHOR
 

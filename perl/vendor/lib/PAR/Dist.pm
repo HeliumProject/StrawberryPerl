@@ -4,9 +4,9 @@ use strict;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.47'; # Change version in POD, too!
-@ISA	    = 'Exporter';
-@EXPORT	    = qw/
+$VERSION    = '0.48'; # Change version in POD, too!
+@ISA        = 'Exporter';
+@EXPORT     = qw/
   blib_to_par
   install_par
   uninstall_par
@@ -46,11 +46,11 @@ In programs:
 
     use PAR::Dist;
 
-    my $dist = blib_to_par();	# make a PAR file using ./blib/
-    install_par($dist);		# install it into the system
-    uninstall_par($dist);	# uninstall it from the system
-    sign_par($dist);		# sign it using Module::Signature
-    verify_par($dist);		# verify it using Module::Signature
+    my $dist = blib_to_par(); # make a PAR file using ./blib/
+    install_par($dist);       # install it into the system
+    uninstall_par($dist);     # uninstall it from the system
+    sign_par($dist);          # sign it using Module::Signature
+    verify_par($dist);        # verify it using Module::Signature
 
     install_par("http://foo.com/DBI-1.37-MSWin32-5.8.0.par"); # works too
     install_par("http://foo.com/DBI-1.37"); # auto-appends archname + perlver
@@ -150,11 +150,11 @@ sub blib_to_par {
     # don't use 'my $foo ... if ...' it creates a static variable!
     my $quiet = $args{quiet} || 0;
     my $dist;
-    my $path	= $args{path};
-    $dist	= File::Spec->rel2abs($args{dist}) if $args{dist};
-    my $name	= $args{name};
-    my $version	= $args{version};
-    my $suffix	= $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par";
+    my $path    = $args{path};
+    $dist       = File::Spec->rel2abs($args{dist}) if $args{dist};
+    my $name    = $args{name};
+    my $version = $args{version};
+    my $suffix  = $args{suffix} || "$Config::Config{archname}-$Config::Config{version}.par";
     my $cwd;
 
     if (defined $path) {
@@ -176,14 +176,18 @@ sub blib_to_par {
     } , 'blib' );
 
     print MANIFEST join(
-	"\n",
-	'    <!-- accessible as jar:file:///NAME.par!/MANIFEST in compliant browsers -->',
-	(sort @files),
-	q(    # <html><body onload="var X=document.body.innerHTML.split(/\n/);var Y='<iframe src=&quot;META.yml&quot; style=&quot;float:right;height:40%;width:40%&quot;></iframe><ul>';for(var x in X){if(!X[x].match(/^\s*#/)&&X[x].length)Y+='<li><a href=&quot;'+X[x]+'&quot;>'+X[x]+'</a>'}document.body.innerHTML=Y">)
+        "\n",
+        '    <!-- accessible as jar:file:///NAME.par!/MANIFEST in compliant browsers -->',
+        (sort @files),
+        q(    # <html><body onload="var X=document.body.innerHTML.split(/\n/);var Y='<iframe src=&quot;META.yml&quot; style=&quot;float:right;height:40%;width:40%&quot;></iframe><ul>';for(var x in X){if(!X[x].match(/^\s*#/)&&X[x].length)Y+='<li><a href=&quot;'+X[x]+'&quot;>'+X[x]+'</a>'}document.body.innerHTML=Y">)
     );
     close MANIFEST;
 
-    if (open(OLD_META, "META.yml")) {
+    # if MYMETA.yml exists, that takes precedence over META.yml
+    my $meta_file_name = "META.yml";
+    my $mymeta_file_name = "MYMETA.yml";
+    $meta_file_name = -s $mymeta_file_name ? $mymeta_file_name : $meta_file_name;
+    if (open(OLD_META, $meta_file_name)) {
         while (<OLD_META>) {
             if (/^distribution_type:/) {
                 print META "distribution_type: par\n";
@@ -567,7 +571,7 @@ sub _directory_not_empty {
     my($dir) = @_;
     my $files = 0;
     File::Find::find(sub {
-	    return if $_ eq ".exists";
+        return if $_ eq ".exists";
         if (-f) {
             $File::Find::prune++;
             $files = 1;
@@ -609,7 +613,7 @@ sub verify_par {
 I<Note:> Since version 0.32 of PAR::Dist, this function requires a YAML
 reader. The order of precedence is:
 
-  YAML YAML::Syck YAML::Tiny YAML::XS
+  YAML:XS YAML YAML::Syck YAML::Tiny
 
 Merges two or more PAR distributions into one. First argument must
 be the name of the distribution you want to merge all others into.
@@ -1033,7 +1037,7 @@ sub _fetch {
     %escapes = map { chr($_) => sprintf("%%%02X", $_) } 0..255 unless %escapes;
 
     $args{dist} =~ s{^cpan://((([a-zA-Z])[a-zA-Z])[-_a-zA-Z]+)/}
-		    {http://www.cpan.org/modules/by-authors/id/\U$3/$2/$1\E/};
+                    {http://www.cpan.org/modules/by-authors/id/\U$3/$2/$1\E/};
 
     my $file = $args{dist};
     $file =~ s/([^\w\.])/$escapes{$1}/g;
@@ -1131,51 +1135,50 @@ This function is not exported by default.
 =cut
 
 sub parse_dist_name {
-	my $file = shift;
-	return(undef, undef, undef, undef) if not defined $file;
+    my $file = shift;
+    return(undef, undef, undef, undef) if not defined $file;
 
-	(undef, undef, $file) = File::Spec->splitpath($file);
-	
-	my $version = qr/v?(?:\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+)/;
-	$file =~ s/\.(?:par|tar\.gz|tar)$//i;
-	my @elem = split /-/, $file;
-	my (@dn, $dv, @arch, $pv);
-	while (@elem) {
-		my $e = shift @elem;
-		if (
+    (undef, undef, $file) = File::Spec->splitpath($file);
+    
+    my $version = qr/v?(?:\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+)/;
+    $file =~ s/\.(?:par|tar\.gz|tar)$//i;
+    my @elem = split /-/, $file;
+    my (@dn, $dv, @arch, $pv);
+    while (@elem) {
+        my $e = shift @elem;
+        if (
             $e =~ /^$version$/o
             and not(# if not next token also a version
                     # (assumes an arch string doesnt start with a version...)
                 @elem and $elem[0] =~ /^$version$/o
             )
         ) {
-            
-			$dv = $e;
-			last;
-		}
-		push @dn, $e;
-	}
-	
-	my $dn;
-	$dn = join('-', @dn) if @dn;
+            $dv = $e;
+            last;
+        }
+        push @dn, $e;
+    }
+    
+    my $dn;
+    $dn = join('-', @dn) if @dn;
 
-	if (not @elem) {
-		return( $dn, $dv, undef, undef);
-	}
+    if (not @elem) {
+        return( $dn, $dv, undef, undef);
+    }
 
-	while (@elem) {
-		my $e = shift @elem;
-		if ($e =~ /^$version|any_version$/) {
-			$pv = $e;
-			last;
-		}
-		push @arch, $e;
-	}
+    while (@elem) {
+        my $e = shift @elem;
+        if ($e =~ /^$version|any_version$/) {
+            $pv = $e;
+            last;
+        }
+        push @arch, $e;
+    }
 
-	my $arch;
-	$arch = join('-', @arch) if @arch;
+    my $arch;
+    $arch = join('-', @arch) if @arch;
 
-	return($dn, $dv, $arch, $pv);
+    return($dn, $dv, $arch, $pv);
 }
 
 =head2 generate_blib_stub
@@ -1212,9 +1215,9 @@ sub generate_blib_stub {
     my $dist = $args{dist};
     require Config;
     
-    my $name	= $args{name};
-    my $version	= $args{version};
-    my $suffix	= $args{suffix};
+    my $name    = $args{name};
+    my $version = $args{version};
+    my $suffix  = $args{suffix};
 
     my ($parse_name, $parse_version, $archname, $perlversion)
       = parse_dist_name($dist);
@@ -1340,12 +1343,12 @@ sub _MI_can_run {
 # entries with sub references on success.
 sub _get_yaml_functions {
   # reasoning for the ranking here:
-  # - syck is fast and reasonably complete
+  # - XS is the de-facto standard nowadays.
   # - YAML.pm is slow and aging
+  # - syck is fast and reasonably complete
   # - Tiny is only a very small subset
-  # - XS is very new and I'm not sure it's ready for prime-time yet
   # - Parse... is only a reader and only deals with the same subset as ::Tiny
-  my @modules = qw(YAML::Syck YAML YAML::Tiny YAML::XS Parse::CPAN::Meta);
+  my @modules = qw(YAML::XS YAML YAML::Tiny YAML::Syck Parse::CPAN::Meta);
 
   my %yaml_functions;
   foreach my $module (@modules) {
@@ -1405,7 +1408,7 @@ L<PAR>, L<ExtUtils::Install>, L<Module::Signature>, L<LWP::Simple>
 
 Audrey Tang E<lt>cpan@audreyt.orgE<gt> 2003-2007
 
-Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2009
+Steffen Mueller E<lt>smueller@cpan.orgE<gt> 2005-2011
 
 PAR has a mailing list, E<lt>par@perl.orgE<gt>, that you can write to;
 send an empty mail to E<lt>par-subscribe@perl.orgE<gt> to join the list
@@ -1415,7 +1418,7 @@ Please send bug reports to E<lt>bug-par@rt.cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright 2003-2009 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
+Copyright 2003-2011 by Audrey Tang E<lt>autrijus@autrijus.orgE<gt>.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

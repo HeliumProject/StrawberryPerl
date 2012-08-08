@@ -7,7 +7,7 @@ use warnings;
 
 use Scalar::Util qw(reftype refaddr blessed);
 
-our $VERSION = '1.37';
+our $VERSION = '1.40';
 my $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
@@ -187,7 +187,7 @@ threads::shared - Perl extension for sharing data structures between threads
 
 =head1 VERSION
 
-This document describes threads::shared version 1.37
+This document describes threads::shared version 1.40
 
 =head1 SYNOPSIS
 
@@ -527,6 +527,11 @@ that the contents of hash-based objects will be lost due to the above
 mentioned limitation.  See F<examples/class.pl> (in the CPAN distribution of
 this module) for how to create a class that supports object sharing.
 
+Destructors may not be called on objects if those objects still exist at
+global destruction time.  If the destructors must be called, make sure
+there are no circular references and that nothing is referencing the
+objects, before the program ends.
+
 Does not support C<splice> on arrays.  Does not support explicitly changing
 array lengths via $#array -- use C<push> and C<pop> instead.
 
@@ -543,7 +548,7 @@ thread.
 
 Using L<refaddr()|Scalar::Util/"refaddr EXPR">) is unreliable for testing
 whether or not two shared references are equivalent (e.g., when testing for
-circular references).  Use L<is_shared()/"is_shared VARIABLE">, instead:
+circular references).  Use L<is_shared()|/"is_shared VARIABLE">, instead:
 
     use threads;
     use threads::shared;
@@ -594,7 +599,7 @@ L<http://www.perl.com/pub/a/2002/06/11/threads.html> and
 L<http://www.perl.com/pub/a/2002/09/04/threads.html>
 
 Perl threads mailing list:
-L<http://lists.cpan.org/showlist.cgi?name=iThreads>
+L<http://lists.perl.org/list/ithreads.html>
 
 =head1 AUTHOR
 

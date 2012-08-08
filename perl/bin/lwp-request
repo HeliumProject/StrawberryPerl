@@ -116,6 +116,10 @@ requests that are handled by the library.
 
 Print response headers.  This option is always on for HEAD requests.
 
+=item -E
+
+Print response status chain with full response headers.
+
 =item -d
 
 Do B<not> print the content of the response.
@@ -180,13 +184,15 @@ $progname = $0;
 $progname =~ s,.*[\\/],,;  # use basename only
 $progname =~ s/\.\w*$//;   # strip extension, if any
 
-$VERSION = "5.834";
+$VERSION = "6.03";
 
 
 require LWP;
 
 use URI;
 use URI::Heuristic qw(uf_uri);
+use Encode;
+use Encode::Locale;
 
 use HTTP::Status qw(status_message);
 use HTTP::Date qw(time2str str2time);
@@ -265,11 +271,12 @@ my @getopt_args = (
     'C=s', # credentials for basic authorization
     'H=s@', # extra headers, form "Header: value string"
     #
-    'u', # display method, URL and headers of request
+    'u', # display method and URL of request
     'U', # display request headers also
     's', # display status code
     'S', # display whole chain of status codes
     'e', # display response headers (default for HEAD)
+    'E', # display whole chain of headers
     'd', # don't display content
     #
     'h', # print usage
@@ -320,11 +327,22 @@ elsif (!defined $allowed_methods{$method}) {
     die "$progname: $method is not an allowed method\n";
 }
 
+if ($options{'S'} || $options{'E'}) {
+    $options{'U'} = 1 if $options{'E'};
+    $options{'E'} = 1 if $options{'e'};
+    $options{'S'} = 1;
+    $options{'s'} = 1;
+    $options{'u'} = 1;
+}
+
 if ($method eq "HEAD") {
     $options{'s'} = 1;
     $options{'e'} = 1 unless $options{'d'};
     $options{'d'} = 1;
 }
+
+$options{'u'} = 1 if $options{'U'};
+$options{'s'} = 1 if $options{'e'};
 
 if (defined $options{'t'}) {
     $options{'t'} =~ /^(\d+)([smh])?/;
@@ -350,6 +368,7 @@ if (defined $options{'i'}) {
 }
 
 $content = undef;
+$user_ct = undef;
 if ($allowed_methods{$method} eq "C") {
     # This request needs some content
     unless (defined $options{'c'}) {
@@ -360,7 +379,8 @@ if ($allowed_methods{$method} eq "C") {
     }
     else {
         die "$progname: Illegal Content-type format\n"
-            unless $options{'c'} =~ m,^[\w\-]+/[\w\-.+]+(?:\s*;.*)?$,
+            unless $options{'c'} =~ m,^[\w\-]+/[\w\-.+]+(?:\s*;.*)?$,;
+	$user_ct++;
     }
     print STDERR "Please enter content ($options{'c'}) to be ${method}ed:\n"
         if -t;
@@ -376,26 +396,42 @@ else {
 $request = HTTP::Request->new($method);
 $request->header('If-Modified-Since', $options{'i'}) if defined $options{'i'};
 for my $user_header (@{ $options{'H'} || [] }) {
-    my ($header_name, $header_value) = split /:\s*/, $user_header, 2;
-    $request->header($header_name, $header_value);
-    $ua->agent($header_value) if lc($header_name) eq "user-agent"; # Ugh!
+    my ($header_name, $header_value) = split /\s*:\s*/, $user_header, 2;
+    $header_name =~ s/^\s+//;
+    if (lc($header_name) eq "user-agent") {
+	$header_value .= $ua->agent if $header_value =~ /\s\z/;
+	$ua->agent($header_value);
+    }
+    else {
+	$request->push_header($header_name, $header_value);
+    }
 }
 #$request->header('Accept', '*/*');
 if ($options{'c'}) { # will always be set for request that wants content
-    $request->header('Content-Type', $options{'c'});
+    my $header = ($user_ct ? 'header' : 'init_header');
+    $request->$header('Content-Type', $options{'c'});
     $request->header('Content-Length', length $content);  # Not really needed
     $request->content($content);
 }
 
 $errors = 0;
 
+sub show {
+    my $r = shift;
+    my $last = shift;
+    print $method, " ", $r->request->uri->as_string, "\n" if $options{'u'};
+    print $r->request->headers_as_string, "\n" if $options{'U'};
+    print $r->status_line, "\n" if $options{'s'};
+    print $r->headers_as_string, "\n" if $options{'E'} or $last;
+}
+
 # Ok, now we perform the requests, one URL at a time
 while ($url = shift) {
     # Create the URL object, but protect us against bad URLs
     eval {
 	if ($url =~ /^\w+:/ || $options{'b'}) {  # is there any scheme specification
-	    $url = URI->new($url, $options{'b'});
-	    $url = $url->abs($options{'b'}) if $options{'b'};
+	    $url = URI->new(decode(locale => $url), decode(locale => $options{'b'}));
+	    $url = $url->abs(decode(locale => $options{'b'})) if $options{'b'};
 	}
 	else {
 	    $url = uf_uri($url);
@@ -408,34 +444,18 @@ while ($url = shift) {
 	next;
     }
 
-    $ua->proxy($url->scheme, $options{'p'}) if $options{'p'};
+    $ua->proxy($url->scheme, decode(locale => $options{'p'})) if $options{'p'};
 
     # Send the request and get a response back from the server
     $request->uri($url);
     $response = $ua->request($request);
 
-    if ($options{'u'} || $options{'U'}) {
-        my $url = $response->request->uri->as_string;
-        print "$method $url\n";
-        print $response->request->headers_as_string, "\n" if $options{'U'};
-    }
-
     if ($options{'S'}) {
-        for my $r ($response->redirects, $response) {
-            my $method = $r->request->method;
-            my $url = $r->request->uri->as_string;
-            print "$method $url --> ", $r->status_line, "\n";
+        for my $r ($response->redirects) {
+	    show($r);
         }
     }
-    elsif ($options{'s'}) {
-        print $response->status_line, "\n";
-    }
-
-    if ($options{'e'}) {
-        # Display headers
-        print $response->headers_as_string;
-        print "\n";  # separate headers and content
-    }
+    show($response, $options{'e'});
 
     unless ($options{'d'}) {
 	if ($options{'o'} &&
@@ -520,8 +540,9 @@ Usage: $progname [-options] <url>...
     -u            Display method and URL before any response
     -U            Display request headers (implies -u)
     -s            Display response status code
-    -S            Display response status chain
-    -e            Display response headers
+    -S            Display response status chain (implies -u)
+    -e            Display response headers (implies -s)
+    -E            Display whole chain of headers (implies -S and -U)
     -d            Do not display content
     -o <format>   Process HTML content in various ways
 

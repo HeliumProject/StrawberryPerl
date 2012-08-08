@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef MSSIP_H
 #define MSSIP_H
@@ -43,7 +43,7 @@ extern "C" {
 #define MSSIP_ADDINFO_CATMEMBER 2
 #define MSSIP_ADDINFO_BLOB 3
 #define MSSIP_ADDINFO_NONMSSIP 500
-    __MINGW_EXTENSION union {
+    __C89_NAMELESS union {
       struct MS_ADDINFO_FLAT_ *psFlat;
       struct MS_ADDINFO_CATALOGMEMBER_ *psCatMember;
       struct MS_ADDINFO_BLOB_ *psBlob;

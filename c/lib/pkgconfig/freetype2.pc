@@ -5,8 +5,8 @@ includedir=${prefix}/include
 
 Name: FreeType 2
 Description: A free, high-quality, and portable font engine.
-Version: 9.22.3
+Version: 14.1.8
 Requires:
 Libs: -L${libdir} -lfreetype
-Libs.private: -lz 
+Libs.private: -lz  
 Cflags: -I${includedir}/freetype2 -I${includedir}

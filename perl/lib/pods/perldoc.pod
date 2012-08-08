@@ -5,34 +5,36 @@ perldoc - Look up Perl documentation in Pod format.
 
 =head1 SYNOPSIS
 
-B<perldoc> [B<-h>] [B<-D>] [B<-t>] [B<-u>] [B<-m>] [B<-l>] [B<-F>]
-[B<-i>] [B<-V>] [B<-T>] [B<-r>]
-[B<-dI<destination_file>>]
-[B<-oI<formatname>>]
-[B<-MI<FormatterClassName>>]
-[B<-wI<formatteroption:value>>]
-[B<-n>I<nroff-replacement>]
-[B<-X>]
-[B<-L> I<language_code>]
-PageName|ModuleName|ProgramName
+    B<perldoc> [B<-h>] [B<-D>] [B<-t>] [B<-u>] [B<-m>] [B<-l>] [B<-F>]
+        [B<-i>] [B<-V>] [B<-T>] [B<-r>]
+        [B<-dI<destination_file>>]
+        [B<-oI<formatname>>]
+        [B<-MI<FormatterClassName>>]
+        [B<-wI<formatteroption:value>>]
+        [B<-n>I<nroff-replacement>]
+        [B<-X>]
+        [B<-L> I<language_code>]
+        PageName|ModuleName|ProgramName|URL
 
-B<perldoc> B<-f> BuiltinFunction
+Examples:
 
-B<perldoc> B<-L> it B<-f> BuiltinFunction
+    B<perldoc> B<-f> BuiltinFunction
 
-B<perldoc> B<-q> FAQ Keyword
+    B<perldoc> B<-L> it B<-f> BuiltinFunction
 
-B<perldoc> B<-L> fr B<-q> FAQ Keyword
+    B<perldoc> B<-q> FAQ Keyword
 
-B<perldoc> B<-v> PerlVariable
+    B<perldoc> B<-L> fr B<-q> FAQ Keyword
+
+    B<perldoc> B<-v> PerlVariable
 
 See below for more description of the switches.
 
 =head1 DESCRIPTION
 
-I<perldoc> looks up a piece of documentation in .pod format that is embedded
-in the perl installation tree or in a perl script, and displays it via
-C<pod2man | nroff -man | $PAGER>. (In addition, if running under HP-UX,
+B<perldoc> looks up a piece of documentation in .pod format that is
+embedded in the perl installation tree or in a perl script, and displays
+it via C<groff -man | $PAGER>. (In addition, if running under HP-UX,
 C<col -x> will be used.) This is primarily used for the documentation for
 the perl library modules.
 
@@ -80,7 +82,7 @@ Consider arguments as file names; no search in directories will be performed.
 
 =item B<-f> I<perlfunc>
 
-The B<-f> option followed by the name of a perl built in function will
+The B<-f> option followed by the name of a perl built-in function will
 extract the documentation of this function from L<perlfunc>.
 
 Example:
@@ -146,7 +148,7 @@ For example: C<perldoc -MPod::Perldoc::ToChecker>.
 You can specify several classes to try by joining them with commas
 or semicolons, as in C<-MTk::SuperPod;Tk::Pod>.
 
-=item B<-w> I<option:value> or B<-w> I<option> 
+=item B<-w> I<option:value> or B<-w> I<option>
 
 This specifies an option to call the formatter B<w>ith.  For example,
 C<-w textsize:15> will call
@@ -160,7 +162,7 @@ You can use C<-w optionname> (without a value) as shorthand for
 C<-w optionname:I<TRUE>>.  This is presumably useful in cases of on/off
 features like: C<-w page_numbering>.
 
-You can use a "=" instead of the ":", as in: C<-w textsize=15>.  This
+You can use an "=" instead of the ":", as in: C<-w textsize=15>.  This
 might be more (or less) convenient, depending on what shell you use.
 
 =item B<-X>
@@ -172,19 +174,20 @@ qualified filenames, one per line.
 
 =item B<-L> I<language_code>
 
-This allows to specify the I<language code> for desired language translation.
-If C<POD2::E<lt>language_codeE<gt>> package doesn't exist (or isn't installed
-in your system), the switch will be ignored. 
-All available translation packages should be found under the C<POD2::>
-namespace. See L<POD2::IT> (or L<POD2::FR>) in order to see how to create and
-integrate new localized C<POD2::*> pod documentation packages in
+This allows one to specify the I<language code> for the desired language
+translation. If the C<POD2::E<lt>language_codeE<gt>> package isn't
+installed in your system, the switch is ignored.
+All available translation packages are to be found under the C<POD2::>
+namespace. See L<POD2::IT> (or L<POD2::FR>) to see how to create new
+localized C<POD2::*> documentation packages and integrate them into
 L<Pod::Perldoc>.
 
-=item B<PageName|ModuleName|ProgramName>
+=item B<PageName|ModuleName|ProgramName|URL>
 
 The item you want to look up.  Nested modules (such as C<File::Basename>)
-are specified either as C<File::Basename> or C<File/Basename>.  You may also
-give a descriptive name of a page, such as C<perlfunc>.
+are specified either as C<File::Basename> or C<< File/Basename >>.  You may also
+give a descriptive name of a page, such as C<perlfunc>.  For URLs, HTTP and
+HTTPS are the only kind currently supported.
 
 For simple names like 'foo', when the normal search fails to find
 a matching page, a search with the "perl" prefix is tried as well.
@@ -192,7 +195,7 @@ So "perldoc intro" is enough to find/render "perlintro.pod".
 
 =item B<-n> I<some-formatter>
 
-Specify replacement for nroff
+Specify replacement for groff
 
 =item B<-r>
 
@@ -208,15 +211,13 @@ Displays the version of perldoc you're running.
 
 =back
 
-
-
 =head1 SECURITY
 
 Because B<perldoc> does not run properly tainted, and is known to
 have security issues, when run as the superuser it will attempt to
 drop privileges by setting the effective and real IDs to nobody's
 or nouser's account, or -2 if unavailable.  If it cannot relinquish
-its privileges, it will not run.  
+its privileges, it will not run.
 
 
 =head1 ENVIRONMENT
@@ -226,7 +227,7 @@ command line arguments.
 
 Useful values for C<PERLDOC> include C<-oman>, C<-otext>, C<-otk>, C<-ortf>,
 C<-oxml>, and so on, depending on what modules you have on hand; or
-exactly specify the formatter class with C<-MPod::Perldoc::ToMan>
+the formatter class may be specified exactly with C<-MPod::Perldoc::ToMan>
 or the like.
 
 C<perldoc> also searches directories
@@ -258,13 +259,14 @@ L<perlpod>, L<Pod::Perldoc>
 
 =head1 AUTHOR
 
-Current maintainer: Adriano R. Ferreira <ferreira@cpan.org>
+Current maintainer: Mark Allen C<< <mallen@cpan.org> >>
 
 Past contributors are:
-Sean M. Burke <sburke@cpan.org>,
-Kenneth Albanowski <kjahds@kjahds.com>,
-Andy Dougherty  <doughera@lafcol.lafayette.edu>,
+brian d foy C<< <bdfoy@cpan.org> >> 
+Adriano R. Ferreira C<< <ferreira@cpan.org> >>,
+Sean M. Burke C<< <sburke@cpan.org> >>,
+Kenneth Albanowski C<< <kjahds@kjahds.com> >>,
+Andy Dougherty  C<< <doughera@lafcol.lafayette.edu> >>,
 and many others.
 
 =cut
-

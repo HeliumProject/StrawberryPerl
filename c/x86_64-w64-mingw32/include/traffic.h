@@ -1,11 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __TRAFFIC_H
 #define __TRAFFIC_H
 
+#include <_mingw_unicode.h>
 #include <ntddndis.h>
 
 #ifdef __cplusplus
@@ -157,17 +158,10 @@ extern "C" {
     QOS_OBJECT_HDR ObjectHdr;
   } QOS_TCP_TRAFFIC,*LPQOS_TCP_TRAFFIC;
 
-#ifdef UNICODE
-#define TcOpenInterface TcOpenInterfaceW
-#define TcQueryFlow TcQueryFlowW
-#define TcSetFlow TcSetFlowW
-#define TcGetFlowName TcGetFlowNameW
-#else
-#define TcOpenInterface TcOpenInterfaceA
-#define TcQueryFlow TcQueryFlowA
-#define TcSetFlow TcSetFlowA
-#define TcGetFlowName TcGetFlowNameA
-#endif
+#define TcOpenInterface __MINGW_NAME_AW(TcOpenInterface)
+#define TcQueryFlow __MINGW_NAME_AW(TcQueryFlow)
+#define TcSetFlow __MINGW_NAME_AW(TcSetFlow)
+#define TcGetFlowName __MINGW_NAME_AW(TcGetFlowName)
 
   ULONG WINAPI TcRegisterClient(ULONG TciVersion,HANDLE ClRegCtx,PTCI_CLIENT_FUNC_LIST ClientHandlerList,PHANDLE pClientHandle);
   ULONG WINAPI TcEnumerateInterfaces(HANDLE ClientHandle,PULONG pBufferSize,PTC_IFC_DESCRIPTOR InterfaceBuffer);

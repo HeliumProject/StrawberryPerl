@@ -1,3 +1,5 @@
+# $Id: Info.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::Info;
 use strict;
 use warnings;
@@ -8,14 +10,14 @@ use File::Basename;
 use Safe;
 use CPAN::SQLite::Util qw(vcmp print_debug);
 
-our $VERSION = '0.199';
+our $VERSION = '0.202';
 
 my $ext = qr/\.(tar\.gz|tar\.Z|tgz|zip)$/;
 
 sub new {
   my ($class, %args) = @_;
   my $self = {dists => {}, auths => {}, mods => {}, %args};
-  bless $self, $class;
+  return bless $self, $class;
 }
 
 sub fetch_info {
@@ -60,7 +62,7 @@ sub dists_and_mods {
       next;
     }
     if (not $dists->{$dist_name} or 
-	vcmp($dist_vers, $dists->{$dist_name}->{dist_vers}) > 0) {
+        vcmp($dist_vers, $dists->{$dist_name}->{dist_vers}) > 0) {
       $dists->{$dist_name}->{dist_vers} = $dist_vers;
       $dists->{$dist_name}->{dist_file} = $dist_file;
       $dists->{$dist_name}->{cpanid} = $cpanid;
@@ -83,39 +85,39 @@ sub dists_and_mods {
     $mods->{$mod_name}->{mod_vers} = $packages->{$mod_name}->{mod_vers};
     if (my $info = $modlist->{$mod_name}) {
       if (my $mod_abs = $info->{description}) {
-	    $mods->{$mod_name}->{mod_abs} =  $mod_abs;
-	    (my $trial_dist = $mod_name) =~ s!::!-!g;
-	    if ($trial_dist eq $dist_name) {
-	      $dists->{$dist_name}->{dist_abs} = $mod_abs;
-	    }
+            $mods->{$mod_name}->{mod_abs} =  $mod_abs;
+            (my $trial_dist = $mod_name) =~ s!::!-!g;
+            if ($trial_dist eq $dist_name) {
+              $dists->{$dist_name}->{dist_abs} = $mod_abs;
+            }
       }
       if (my $chapterid = $info->{chapterid} + 0) {
-	    $mods->{$mod_name}->{chapterid} = $chapterid;
-	    (my $sub_chapter = $mod_name) =~ s!^([^:]+).*!$1!;
-	    $dists->{$dist_name}->{chapterid}->{$chapterid}->{$sub_chapter}++;
+            $mods->{$mod_name}->{chapterid} = $chapterid;
+            (my $sub_chapter = $mod_name) =~ s!^([^:]+).*!$1!;
+            $dists->{$dist_name}->{chapterid}->{$chapterid}->{$sub_chapter}++;
       }
       my %dslip = ();
       for (qw(statd stats statl stati statp) ) {
-	    next unless defined $info->{$_};
-	    $dslip{$_} = $info->{$_};
+            next unless defined $info->{$_};
+            $dslip{$_} = $info->{$_};
       }
       if (%dslip) {
-	    my $value = '';
-	    foreach (qw(d s l i p)) {
-	      my $key = 'stat' . $_;
-	      $value .= (defined $dslip{$key} ?
-		         $dslip{$key} : '?');
-	    }
-	    $mods->{$mod_name}->{dslip} = $value;
-	    (my $trial_dist = $mod_name) =~ s!::!-!g;
-	    if ($trial_dist eq $dist_name) {
-	      $dists->{$dist_name}->{dslip} = $value;
-	    }
+            my $value = '';
+            foreach (qw(d s l i p)) {
+              my $key = 'stat' . $_;
+              $value .= (defined $dslip{$key} ?
+                         $dslip{$key} : '?');
+            }
+            $mods->{$mod_name}->{dslip} = $value;
+            (my $trial_dist = $mod_name) =~ s!::!-!g;
+            if ($trial_dist eq $dist_name) {
+              $dists->{$dist_name}->{dslip} = $value;
+            }
       }
     }
   }
   $self->{dists} = $dists;
-  $self->{mods} = $mods;
+  return $self->{mods} = $mods;
 }
 
 sub modlist {
@@ -123,8 +125,8 @@ sub modlist {
   my $index = 'modules/03modlist.data.gz';
   my $mod = $self->{keep_source_where} ?
     CPAN::FTP->localize($index,
-			catfile($self->{keep_source_where}, $index) ) :
-			  catfile($self->{CPAN}, $index);
+                        catfile($self->{keep_source_where}, $index) ) :
+                          catfile($self->{CPAN}, $index);
   return unless check_file('modules/03modlist.data.gz', $mod);
   print_debug("Reading information from $mod\n");
   my $lines = zcat($mod);
@@ -145,8 +147,8 @@ sub packages {
   my $index = 'modules/02packages.details.txt.gz';
   my $packages = $self->{keep_source_where} ?
     CPAN::FTP->localize($index,
-			catfile($self->{keep_source_where}, $index) ) :
-			  catfile($self->{CPAN}, $index);
+                        catfile($self->{keep_source_where}, $index) ) :
+                          catfile($self->{CPAN}, $index);
   return unless check_file('modules/02packages.details.txt.gz', $packages);
   print_debug("Reading information from $packages\n");
   my $lines = zcat($packages);
@@ -156,7 +158,7 @@ sub packages {
   }
   my ($mods, $cpan_files);
   foreach (@$lines) {
-    my ($mod_name,$mod_vers,$dist_file,$comment) = split " ", $_, 4;
+    my ($mod_name, $mod_vers, $dist_file) = split(" ", $_, 4);
     $mod_vers = undef if $mod_vers eq 'undef';
     $mods->{$mod_name} = {mod_vers => $mod_vers, dist_file => $dist_file};
     $cpan_files->{$dist_file}++;
@@ -169,8 +171,8 @@ sub mailrc {
   my $index = 'authors/01mailrc.txt.gz';
   my $mailrc = $self->{keep_source_where} ?
     CPAN::FTP->localize($index,
-			catfile($self->{keep_source_where}, $index) ) :
-			  catfile($self->{CPAN}, $index);
+                        catfile($self->{keep_source_where}, $index) ) :
+                          catfile($self->{CPAN}, $index);
   return unless check_file('authors/01mailrc.txt.gz', $mailrc);
   print_debug("Reading information from $mailrc\n");
   my $lines = zcat($mailrc);
@@ -190,9 +192,9 @@ sub mailrc {
       $email = lc($cpanid) . '@cpan.org';
     }
     $auths->{$cpanid} = {fullname => trim($fullname),
-			 email => trim($email)};
+                         email => trim($email)};
   }
-  $self->{auths} = $auths;
+  return $self->{auths} = $auths;
 }
 
 sub check_file {

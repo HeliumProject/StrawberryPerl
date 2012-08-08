@@ -27,7 +27,7 @@ $Params::Check::VERBOSE = 1;
 
 =head1 NAME
 
-CPANPLUS::Module
+CPANPLUS::Module - CPAN module objects for CPANPLUS
 
 =head1 SYNOPSIS
 
@@ -678,6 +678,9 @@ sub get_installer_type {
         $type = INSTALLER_BUILD if  $found_build     && !$found_makefile;
         $type = INSTALLER_MM    if  $prefer_makefile &&  $found_makefile;
         $type = INSTALLER_MM    if  $found_makefile  && !$found_build;
+        # Special case Module::Build to always use INSTALLER_MM
+        $type = INSTALLER_MM    if  $self->package =~ m{^Module-Build-\d};
+
     }
 
     ### ok, so it's a 'build' installer, but you don't /have/ module build
@@ -685,7 +688,7 @@ sub get_installer_type {
     if( $type and $type eq INSTALLER_BUILD and (
         not CPANPLUS::Dist->has_dist_type( INSTALLER_BUILD )
         or not $cb->module_tree( INSTALLER_BUILD )
-                    ->is_uptodate( version => '0.24' )
+                    ->is_uptodate( version => '0.60' )
     ) ) {
 
         ### XXX this is for recording purposes only. We *have* to install
@@ -693,7 +696,7 @@ sub get_installer_type {
         ### saying 'no such dist type';
         ### XXX duplicated from CPANPLUS::Selfupdate. fix somehow?
         my $href = $self->status->configure_requires || {};
-        my $deps = { INSTALLER_BUILD, '0.24', %$href };
+        my $deps = { INSTALLER_BUILD, '0.60', %$href };
 
         $self->status->configure_requires( $deps );
 
@@ -1288,6 +1291,10 @@ Returns a boolean indicating if this module is uptodate or not.
                             @_,
                         );
 
+            ### Don't trust modules which are the result of @INC hooks
+            ### FatPacker uses this trickery and it causes WTF moments
+            return $alt_rv if defined $href->{dir} && ref $href->{dir};
+
             return $href->{$key} || $alt_rv;
         }
     }
@@ -1690,7 +1697,10 @@ sub _extutils_installed {
 Adds the current modules path to C<@INC> and C<$PERL5LIB>. This allows
 you to add the module from its build dir to your path.
 
-You can reset C<@INC> and C<$PERL5LIB> to its original state when you
+It also adds the current modules C<bin> and/or C<script> paths to
+the PATH.
+
+You can reset C<$PATH>, C<@INC> and C<$PERL5LIB> to their original state when you
 started the program, by calling:
 
     $self->parent->flush('lib');
@@ -1708,6 +1718,13 @@ sub add_to_includepath {
                         File::Spec->catdir(BLIB->($dir), LIB),
                         File::Spec->catdir(BLIB->($dir), ARCH),
                         BLIB->($dir),
+                    ]
+            ) or return;
+
+            $cb->_add_to_path(
+                    directories => [
+                        File::Spec->catdir(BLIB->($dir), SCRIPT),
+                        File::Spec->catdir(BLIB->($dir), BIN),
                     ]
             ) or return;
 

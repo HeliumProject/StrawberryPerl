@@ -1,10 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINNLS32_
 #define _WINNLS32_
+
+#include <_mingw_unicode.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,27 +39,14 @@ extern "C" {
     WCHAR szOptions[30];
   } IMEPROW,*PIMEPROW,NEAR *NPIMEPROW,*LPIMEPROW;
 
-#ifdef UNICODE
-  typedef IMEPROW IMEPRO;
-  typedef PIMEPROW PIMEPRO;
-  typedef NPIMEPROW NPIMEPRO;
-  typedef LPIMEPROW LPIMEPRO;
-#else
-  typedef IMEPROA IMEPRO;
-  typedef PIMEPROA PIMEPRO;
-  typedef NPIMEPROA NPIMEPRO;
-  typedef LPIMEPROA LPIMEPRO;
-#endif
+  __MINGW_TYPEDEF_AW(IMEPRO)
+  __MINGW_TYPEDEF_AW(PIMEPRO)
+  __MINGW_TYPEDEF_AW(NPIMEPRO)
+  __MINGW_TYPEDEF_AW(LPIMEPRO)
 
-#ifdef UNICODE
-#define IMPGetIME IMPGetIMEW
-#define IMPQueryIME IMPQueryIMEW
-#define IMPSetIME IMPSetIMEW
-#else
-#define IMPGetIME IMPGetIMEA
-#define IMPQueryIME IMPQueryIMEA
-#define IMPSetIME IMPSetIMEA
-#endif
+#define IMPGetIME __MINGW_NAME_AW(IMPGetIME)
+#define IMPQueryIME __MINGW_NAME_AW(IMPQueryIME)
+#define IMPSetIME __MINGW_NAME_AW(IMPSetIME)
 
   WINBOOL WINAPI IMPGetIMEA(HWND,LPIMEPROA);
   WINBOOL WINAPI IMPGetIMEW(HWND,LPIMEPROW);

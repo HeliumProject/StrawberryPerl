@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __ROUTING_RTMv2_H__
 #define __ROUTING_RTMv2_H__
@@ -152,8 +152,8 @@ extern "C" {
 #define RTM_NEXTHOP_FLAGS_DOWN 0x0002
 
   typedef struct _RTM_ENTITY_ID {
-    __MINGW_EXTENSION union {
-      __MINGW_EXTENSION struct {
+    __C89_NAMELESS union {
+      __C89_NAMELESS struct {
 	ULONG EntityProtocolId;
 	ULONG EntityInstanceId;
       };

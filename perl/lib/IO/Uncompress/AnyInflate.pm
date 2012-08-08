@@ -6,22 +6,22 @@ use strict;
 use warnings;
 use bytes;
 
-use IO::Compress::Base::Common  2.034 qw(createSelfTiedObject);
+use IO::Compress::Base::Common  2.052 qw(createSelfTiedObject);
 
-use IO::Uncompress::Adapter::Inflate  2.034 ();
+use IO::Uncompress::Adapter::Inflate  2.052 ();
 
 
-use IO::Uncompress::Base  2.034 ;
-use IO::Uncompress::Gunzip  2.034 ;
-use IO::Uncompress::Inflate  2.034 ;
-use IO::Uncompress::RawInflate  2.034 ;
-use IO::Uncompress::Unzip  2.034 ;
+use IO::Uncompress::Base  2.052 ;
+use IO::Uncompress::Gunzip  2.052 ;
+use IO::Uncompress::Inflate  2.052 ;
+use IO::Uncompress::RawInflate  2.052 ;
+use IO::Uncompress::Unzip  2.052 ;
 
 require Exporter ;
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $AnyInflateError);
 
-$VERSION = '2.034';
+$VERSION = '2.052';
 $AnyInflateError = '';
 
 @ISA = qw( Exporter IO::Uncompress::Base );
@@ -48,7 +48,7 @@ sub anyinflate
 
 sub getExtraParams
 {
-    use IO::Compress::Base::Common  2.034 qw(:Parse);
+    use IO::Compress::Base::Common  2.052 qw(:Parse);
     return ( 'RawInflate' => [1, 1, Parse_boolean,  0] ) ;
 }
 
@@ -507,7 +507,7 @@ The string '-' can be used as an alias for standard input.
 =item A scalar reference 
 
 If C<$input> is a scalar reference, the compressed data will be read from
-C<$$output>.
+C<$$input>.
 
 =back
 
@@ -945,13 +945,13 @@ Same as doing this
 
 =head2 Working with Net::FTP
 
-See L<IO::Uncompress::AnyInflate::FAQ|IO::Uncompress::AnyInflate::FAQ/"Compressed files and Net::FTP">
+See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
 =head1 SEE ALSO
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -980,7 +980,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2011 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

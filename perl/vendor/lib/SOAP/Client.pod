@@ -5,7 +5,7 @@
 # SOAP::Lite is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
 #
-# $Id: Client.pod 354 2010-03-18 18:29:09Z kutterma $
+# $Id: Client.pod 381 2011-08-15 19:28:43Z kutterma $
 #
 # ======================================================================
 
@@ -43,7 +43,7 @@ The success or failure of the most-recent transmission is noted here as a boolea
 
 The options attribute keeps a hash-table reference of additional  options and their values. At present, only one option is used by any of the transport modules:
 
-=over 
+=over
 
 =item compress_threshold
 
@@ -57,7 +57,7 @@ Other options may be defined using this mechanism. Note that setting the options
 
 =head1 SEE ALSO
 
-L<SOAP::Server> 
+L<SOAP::Server>
 
 =head1 ACKNOWLEDGEMENTS
 

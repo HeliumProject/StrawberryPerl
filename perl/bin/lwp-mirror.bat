@@ -1,10 +1,10 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
-perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+"%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
 goto endofperl
 :WinNT
-perl -x -S %0 %*
+"%~dp0perl.exe" -x -S %0 %*
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
@@ -53,12 +53,14 @@ Gisle Aas <gisle@aas.no>
 
 use LWP::Simple qw(mirror is_success status_message $ua);
 use Getopt::Std;
+use Encode;
+use Encode::Locale;
 
 $progname = $0;
 $progname =~ s,.*/,,;  # use basename only
 $progname =~ s/\.\w*$//; #strip extension if any
 
-$VERSION = "5.810";
+$VERSION = "6.00";
 
 $opt_h = undef;  # print usage
 $opt_v = undef;  # print version
@@ -81,8 +83,8 @@ modify it under the same terms as Perl itself.
 EOT
 }
 
-$url  = shift or usage();
-$file = shift or usage();
+$url  = decode(locale => shift) or usage();
+$file = encode(locale_fs => decode(locale => shift)) or usage();
 usage() if $opt_h or @ARGV;
 
 if (defined $opt_t) {

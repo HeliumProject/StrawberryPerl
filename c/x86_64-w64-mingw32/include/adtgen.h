@@ -1,7 +1,7 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
  * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER within this package.
+ * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _ADTGEN_H
 #define _ADTGEN_H
@@ -51,7 +51,7 @@ typedef struct _AUDIT_PARAM {
   AUDIT_PARAM_TYPE Type;
   ULONG Length;
   DWORD Flags;
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     ULONG_PTR Data0;
     PWSTR String;
     ULONG_PTR u;
@@ -60,7 +60,7 @@ typedef struct _AUDIT_PARAM {
     ULONG LogonId_LowPart;
     AUDIT_OBJECT_TYPES *pObjectTypes;
   };
-  __MINGW_EXTENSION union {
+  __C89_NAMELESS union {
     ULONG_PTR Data1;
     LONG LogonId_HighPart;
   };

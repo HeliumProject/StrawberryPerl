@@ -1,12 +1,15 @@
+# $Id: Search.pm 35 2011-06-17 01:34:42Z stro $
+
 package CPAN::SQLite::DBI::Search;
+
+use strict;
+use warnings;
+
 use base qw(CPAN::SQLite::DBI);
 use CPAN::SQLite::DBI qw($tables $dbh);
 use CPAN::SQLite::Util qw($full_id);
 
-our $VERSION = '0.199';
-
-use strict;
-use warnings;
+our $VERSION = '0.202';
 
 package CPAN::SQLite::DBI::Search::chaps;
 use base qw(CPAN::SQLite::DBI::Search);
@@ -33,7 +36,7 @@ sub fetch {
   my ($self, %args) = @_;
   my $fields = $args{fields};
   my $search = $args{search};
-  my @fields = ref($fields) eq 'ARRAY' ? 
+  my @fields = ref($fields) eq 'ARRAY' ?
     @{$fields} : ($fields);
   my $sql = $self->sql_statement(%args) or do {
     $self->{error} = 'Error constructing sql statement: ' .
@@ -50,7 +53,7 @@ sub fetch {
   };
 
   if (not $search->{wantarray}) {
-    my (%results, %meta_results, $results);
+    my (%results, $results);
     @results{@fields} = $sth->fetchrow_array;
     $results = ($sth->rows == 0) ? undef : \%results;
     $sth->finish;
@@ -110,7 +113,7 @@ sub fetch_and_set {
     if ($want_ids) {
       $meta_results{dist_id} = $results{dist_id};
       $meta_results{download} = download($results{cpanid},
-					 $results{dist_file});
+                     $results{dist_file});
       return \%meta_results;
     }
     else {
@@ -122,17 +125,17 @@ sub fetch_and_set {
     while ( @hash{@fields} = $sth->fetchrow_array) {
       my %tmp = %hash;
       if ($set_list) {
-	push @{$meta_results}, \%tmp;
+    push @{$meta_results}, \%tmp;
       }
       else {
-	$self->extra_info(\%tmp);
-	$meta_obj->set_data(\%tmp);	
-	if ($want_ids) {
-	  my $download = download($tmp{cpanid}, $tmp{dist_file});
-	  push @{$meta_results}, {dist_id => $tmp{dist_id},
-				  download => $download};
+    $self->extra_info(\%tmp);
+    $meta_obj->set_data(\%tmp); 
+    if ($want_ids) {
+      my $download = download($tmp{cpanid}, $tmp{dist_file});
+      push @{$meta_results}, {dist_id => $tmp{dist_id},
+                  download => $download};
 
-	}
+    }
       }
     }
     $meta_results = undef if ($sth->rows == 0);
@@ -157,6 +160,7 @@ sub extra_info {
     $chapterid += 0;
     $results->{chapter_desc} = $chaps{$chapterid};
   }
+  return;
 }
 
 sub sql_statement {
@@ -165,7 +169,6 @@ sub sql_statement {
   my $search = $args{search};
   my $distinct = $search->{distinct} ? 'DISTINCT' : '';
   my $table = $args{table};
-  my @tables = ($table);
 
   my $fields = $args{fields};
   my @fields = ref($fields) eq 'ARRAY' ? 
@@ -186,17 +189,18 @@ sub sql_statement {
       my $use_like = ($value =~ /^\^?[A-Za-z0-9_\\\:\-]+$/) ? 1 : 0;
       my $prepend = '%';
       if ($use_like and $value =~ /^\^/) {
-	$prepend = '';
-	$value =~ s/^\^//;
-	$value =~ s{\\}{}g;
+    $prepend = '';
+    $value =~ s/^\^//;
+    $value =~ s{\\}{}g;
       }
       $where = $use_like ?
-	qq{$name LIKE '$prepend$value%'} : 
-	  qq{RLIKE($name, '$value')};
+    qq{$name LIKE '$prepend$value%'} : 
+      qq{$name REGEXP '(?i:$value)'};
+
       if ($name eq 'cpanid') {
-	$where .= $use_like ?
-	  qq{ OR $text LIKE '$prepend$value%'} : 
-	    qq{ OR RLIKE($text, '$value')};
+    $where .= $use_like ?
+      qq{ OR $text LIKE '$prepend$value%'} : 
+        qq{ OR $text REGEXP '(?i:$value)'};
       }
       last QUERY;
     };
@@ -218,8 +222,8 @@ sub sql_statement {
   if ($left_join) {
     if (ref($left_join) eq 'HASH') {
       foreach my $key(keys %$left_join) {
-	my $id = $left_join->{$key};
-	$sql .= " LEFT JOIN $key ON $table.$id=$key.$id ";
+    my $id = $left_join->{$key};
+    $sql .= " LEFT JOIN $key ON $table.$id=$key.$id ";
       }
     }
   }
@@ -243,7 +247,7 @@ sub sql_statement {
   if (my $limit = $args{limit}) {
     my ($min, $max) = ref($limit) eq 'HASH' ?
       ( $limit->{min} || 0, $limit->{max} ) :
-	(0, $limit );
+    (0, $limit );
     $sql .= qq{ LIMIT $min,$max };
   }
   return $sql;

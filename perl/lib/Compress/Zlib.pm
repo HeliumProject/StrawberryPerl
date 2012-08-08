@@ -1,23 +1,23 @@
 
 package Compress::Zlib;
 
-require 5.004 ;
+require 5.006 ;
 require Exporter;
 use Carp ;
 use IO::Handle ;
 use Scalar::Util qw(dualvar);
 
-use IO::Compress::Base::Common 2.034 ;
-use Compress::Raw::Zlib 2.034 ;
-use IO::Compress::Gzip 2.034 ;
-use IO::Uncompress::Gunzip 2.034 ;
+use IO::Compress::Base::Common 2.052 ;
+use Compress::Raw::Zlib 2.052 ;
+use IO::Compress::Gzip 2.052 ;
+use IO::Uncompress::Gunzip 2.052 ;
 
 use strict ;
 use warnings ;
 use bytes ;
 our ($VERSION, $XS_VERSION, @ISA, @EXPORT, @EXPORT_OK, %EXPORT_TAGS);
 
-$VERSION = '2.034';
+$VERSION = '2.052';
 $XS_VERSION = $VERSION; 
 $VERSION = eval $VERSION;
 
@@ -453,7 +453,7 @@ sub inflate
 
 package Compress::Zlib ;
 
-use IO::Compress::Gzip::Constants 2.034 ;
+use IO::Compress::Gzip::Constants 2.052 ;
 
 sub memGzip($)
 {
@@ -578,7 +578,7 @@ sub memGunzip($)
         substr($$string, 0, 8) = '';
         return _set_gzerr_undef(Z_DATA_ERROR())
             unless $len == length($output) and
-                   $crc == crc32($output);
+                   $crc == Compress::Raw::Zlib::crc32($output);
     }
     else
     {
@@ -1449,7 +1449,7 @@ of I<Compress::Zlib>.
 
 L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
-L<Compress::Zlib::FAQ|Compress::Zlib::FAQ>
+L<IO::Compress::FAQ|IO::Compress::FAQ>
 
 L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
@@ -1478,7 +1478,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 1995-2011 Paul Marquess. All rights reserved.
+Copyright (c) 1995-2012 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

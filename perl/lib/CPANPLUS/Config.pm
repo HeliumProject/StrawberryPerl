@@ -18,25 +18,26 @@ use File::Basename              qw[dirname];
 use IPC::Cmd                    qw[can_run];
 use Locale::Maketext::Simple    Class => 'CPANPLUS', Style => 'gettext';
 use Module::Load::Conditional   qw[check_install];
+use version;
 
 
 =pod
 
 =head1 NAME
 
-CPANPLUS::Config
+CPANPLUS::Config - configuration defaults and heuristics for CPANPLUS
 
 =head1 SYNOPSIS
 
     ### conf object via CPANPLUS::Backend;
     $cb   = CPANPLUS::Backend->new;
     $conf = $cb->configure_object;
-    
+
     ### or as a standalone object
     $conf = CPANPLUS::Configure->new;
 
     ### values in 'conf' section
-    $verbose = $conf->get_conf( 'verbose' );    
+    $verbose = $conf->get_conf( 'verbose' );
     $conf->set_conf( verbose => 1 );
 
     ### values in 'program' section
@@ -45,7 +46,7 @@ CPANPLUS::Config
 
 =head1 DESCRIPTION
 
-This module contains defaults and heuristics for configuration 
+This module contains defaults and heuristics for configuration
 information for CPANPLUS. To change any of these values, please
 see the documentation in C<CPANPLUS::Configure>.
 
@@ -57,12 +58,12 @@ their meaning.
 =cut
 
 ### BAH! you can't have POD interleaved with a hash
-### declaration.. so declare every entry seperatedly :(
+### declaration.. so declare every entry separately :(
 my $Conf = {
     '_fetch' => {
         'blacklist' => [ 'ftp' ],
     },
-    
+
     ### _source, _build and _mirror are supposed to be static
     ### no changes should be needed unless pause/cpan changes
     '_source' => {
@@ -114,11 +115,6 @@ An example entry would like this:
     ### default host list
     $Conf->{'conf'}->{'hosts'} = [
             {
-                'scheme' => 'http',
-                'path' => '/',
-                'host' => 'cpan.strawberryperl.com'
-            },
-            {
                 'scheme' => 'ftp',
                 'path' => '/pub/CPAN/',
                 'host' => 'ftp.cpan.org'
@@ -145,59 +141,6 @@ An example entry would like this:
             }
         ];
 
-# If we are on fake Hotel/Airport wireless,
-# prefer a minicpan to the poisoned wireless.
-if ( -d 'C:\strawberry\minicpan' ) {
-	eval { 
-		require LWP::Online;
-		require URI::file;
-		1;
-	};
-	unless ( $@ ) {
-		my $path = URI::file->new('C:\strawberry\minicpan');
-	
-		if ( LWP::Online::online() ) {
-			push @{$Conf->{'conf'}->{'hosts'}}, {
-				'path' => $path->path(),
-				'scheme' => 'file',
-				'host' => ''
-			};
-		} else {
-			unshift @{$Conf->{'conf'}->{'hosts'}}, {
-				'path' => $path->path(),
-				'scheme' => 'file',
-				'host' => ''
-			};
-		}
-	}
-}
-
-if ( -d 'C:\minicpan' ) {
-	eval { 
-		require LWP::Online;
-		require URI::file;
-		1;
-	};
-	unless ( $@ ) {
-		my $path = URI::file->new('C:\minicpan');
-
-		if ( LWP::Online::online() ) {
-			push @{$Conf->{'conf'}->{'hosts'}}, {
-				'path' => $path->path(),
-				'scheme' => 'file',
-				'host' => ''
-			};
-		} else {
-			unshift @{$Conf->{'conf'}->{'hosts'}}, {
-				'path' => $path->path(),
-				'scheme' => 'file',
-				'host' => ''
-			};
-		}
-	}
-}
-
-        
 =item allow_build_interactivity
 
 Boolean flag to indicate whether 'perl Makefile.PL' and similar
@@ -207,14 +150,31 @@ are run interactively or not. Defaults to 'true'.
 
         $Conf->{'conf'}->{'allow_build_interactivity'} = 1;
 
-=item base
+=item allow_unknown_prereqs
 
-The directory CPANPLUS keeps all its build and state information in.
-Defaults to ~/.cpanplus.
+Boolean flag to indicate that unresolvable prereqs are acceptable.
+If C<true> then only warnings will be issued (the behaviour before 0.9114)
+when a module is unresolvable from any our sources (CPAN and/or
+C<custom_sources>). If C<false> then an unresolvable prereq will fail
+during the C<prepare> stage of distribution installation.
+Defaults to C<true>.
 
 =cut
 
-       $Conf->{'conf'}->{'base'} = File::Spec->catdir('C:\strawberry', 'cpanplus');
+        $Conf->{'conf'}->{'allow_unknown_prereqs'} = 1;
+
+=item base
+
+The directory CPANPLUS keeps all its build and state information in.
+Defaults to ~/.cpanplus. If L<File::HomeDir> is available, that will
+be used to work out your C<HOME> directory. This may be overriden by
+setting the C<PERL5_CPANPLUS_HOME> environment variable, see
+L<CPANPLUS::Config::HomeEnv> for more details.
+
+=cut
+
+       $Conf->{'conf'}->{'base'} = File::Spec->catdir(
+                                        __PACKAGE__->_home_dir, DOT_CPANPLUS );
 
 =item buildflags
 
@@ -223,7 +183,7 @@ for details. Defaults to an empty string.
 
 =cut
 
-        $Conf->{'conf'}->{'buildflags'} = '--uninst 1';
+        $Conf->{'conf'}->{'buildflags'} = '';
 
 =item cpantest
 
@@ -256,7 +216,7 @@ Defaults to 'false'.
 =item dist_type
 
 Default distribution type to use when building packages. See C<cpan2dist>
-or C<CPANPLUS::Dist> for details. An empty string will not use any 
+or C<CPANPLUS::Dist> for details. An empty string will not use any
 package building software. Defaults to an empty string.
 
 =cut
@@ -271,7 +231,7 @@ when sending emails. Defaults to an C<example.com> address.
 =cut
 
         $Conf->{'conf'}->{'email'} = DEFAULT_EMAIL;
-        
+
 =item enable_custom_sources
 
 Boolean flag indicating whether custom sources should be enabled or
@@ -281,15 +241,14 @@ details on how to use them.
 Defaults to C<true>
 
 =cut
-		### csjewell@cpan.org: This is very slow, so turning off.
 
-        ### this addresses #32248 which requests a possibillity to
+        ### this addresses #32248 which requests a possibility to
         ### turn off custom sources
-        $Conf->{'conf'}->{'enable_custom_sources'} = 0;
+        $Conf->{'conf'}->{'enable_custom_sources'} = 1;
 
 =item extractdir
 
-String containing the directory where fetched archives should be 
+String containing the directory where fetched archives should be
 extracted. An empty string will use a directory under your C<base>
 directory. Defaults to an empty string.
 
@@ -299,7 +258,7 @@ directory. Defaults to an empty string.
 
 =item fetchdir
 
-String containing the directory where fetched archives should be 
+String containing the directory where fetched archives should be
 stored. An empty string will use a directory under your C<base>
 directory. Defaults to an empty string.
 
@@ -326,6 +285,15 @@ etc. Defaults to 'false'.
 
         $Conf->{'conf'}->{'force'} = 0;
 
+=item histfile
+
+A string containing the history filename of the CPANPLUS readline instance.
+
+=cut
+
+        $Conf->{'conf'}->{'histfile'} = File::Spec->catdir(
+                                        __PACKAGE__->_home_dir, DOT_CPANPLUS, 'history' );
+
 =item lib
 
 An array ref holding directories to be added to C<@INC> when CPANPLUS
@@ -342,7 +310,7 @@ when invoked. Defaults to an empty string.
 
 =cut
 
-        $Conf->{'conf'}->{'makeflags'} = 'UNINST=1';
+        $Conf->{'conf'}->{'makeflags'} = '';
 
 =item makemakerflags
 
@@ -355,14 +323,14 @@ when invoked. Defaults to an empty string.
 
 =item md5
 
-A boolean indicating whether or not md5 checks should be done when
-an archive is fetched. Defaults to 'true' if you have C<Digest::MD5>
+A boolean indicating whether or not sha256 checks should be done when
+an archive is fetched. Defaults to 'true' if you have C<Digest::SHA>
 installed, 'false' otherwise.
 
 =cut
 
-        $Conf->{'conf'}->{'md5'} = ( 
-                            check_install( module => 'Digest::MD5' ) ? 1 : 0 );
+        $Conf->{'conf'}->{'md5'} = (
+                            check_install( module => 'Digest::SHA' ) ? 1 : 0 );
 
 =item no_update
 
@@ -384,25 +352,32 @@ Defaults to 'true'.
 
 =item prefer_bin
 
-A boolean indicating whether or not to prefer command line programs 
-over perl modules. Defaults to 'false' unless you do not have 
+A boolean indicating whether or not to prefer command line programs
+over perl modules. Defaults to 'false' unless you do not have
 C<Compress::Zlib> installed (as that would mean we could not extract
 C<.tar.gz> files)
 
 =cut
+
         ### if we dont have c::zlib, we'll need to use /bin/tar or we
         ### can not extract any files. Good time to change the default
-        $Conf->{'conf'}->{'prefer_bin'} = 
+        $Conf->{'conf'}->{'prefer_bin'} =
                                 (eval {require Compress::Zlib; 1} ? 0 : 1 );
 
 =item prefer_makefile
 
-A boolean indicating whether or not prefer a C<Makefile.PL> over a 
-C<Build.PL> file if both are present. Defaults to 'true'.
+A boolean indicating whether or not prefer a C<Makefile.PL> over a
+C<Build.PL> file if both are present. Defaults to 'true', unless
+the perl version is at least 5.10.1 or appropriate versions of L<Module::Build>
+and L<CPANPLUS::Dist::Build> are available.
 
 =cut
 
-        $Conf->{'conf'}->{'prefer_makefile'} = 0;
+        $Conf->{'conf'}->{'prefer_makefile'} =
+            ( $] >= 5.010001 or
+              ( check_install( module => 'Module::Build', version => '0.32' ) and
+                check_install( module => INSTALLER_BUILD, version => '0.60' ) )
+              ? 0 : 1 );
 
 =item prereqs
 
@@ -418,7 +393,7 @@ The default is to ask.
 
 =cut
 
-        $Conf->{'conf'}->{'prereqs'} = PREREQ_INSTALL;
+        $Conf->{'conf'}->{'prereqs'} = PREREQ_ASK;
 
 =item shell
 
@@ -433,7 +408,7 @@ Defaults to C<CPANPLUS::Shell::Default>, the default CPANPLUS shell.
 
 =item show_startup_tip
 
-A boolean indicating whether or not to show start up tips in the 
+A boolean indicating whether or not to show start up tips in the
 interactive shell. Defaults to 'true'.
 
 =cut
@@ -443,14 +418,14 @@ interactive shell. Defaults to 'true'.
 =item signature
 
 A boolean indicating whether or not check signatures if packages are
-signed. Defaults to 'true' if you have C<gpg> or C<Crypt::OpenPGP> 
+signed. Defaults to 'true' if you have C<gpg> or C<Crypt::OpenPGP>
 installed, 'false' otherwise.
 
 =cut
 
         $Conf->{'conf'}->{'signature'} = do {
             check_install( module => 'Module::Signature', version => '0.06' )
-            and ( can_run('gpg') || 
+            and ( can_run('gpg') ||
                   check_install(module => 'Crypt::OpenPGP')
             );
         } ? 1 : 0;
@@ -468,12 +443,12 @@ Defaults to 'false'.
 
 A boolean indicating whether or not to use C<Storable> to write compiled
 source file information to disk. This makes for faster startup and look
-up times, but takes extra diskspace. Defaults to 'true' if you have 
+up times, but takes extra diskspace. Defaults to 'true' if you have
 C<Storable> installed and 'false' if you don't.
 
 =cut
 
-       $Conf->{'conf'}->{'storable'} = 
+       $Conf->{'conf'}->{'storable'} =
                         ( check_install( module => 'Storable' ) ? 1 : 0 );
 
 =item timeout
@@ -488,7 +463,7 @@ Defaults to 300.
 =item verbose
 
 A boolean indicating whether or not C<CPANPLUS> runs in verbose mode.
-Defaults to 'true' if you have the environment variable 
+Defaults to 'true' if you have the environment variable
 C<PERL5_CPANPLUS_VERBOSE> set to true, 'false' otherwise.
 
 It is recommended you run with verbose enabled, but it is disabled
@@ -515,7 +490,7 @@ C<CPANPLUS::Internals::Source>. Default to C<CPANPLUS::Internals::Source::Memory
 
 =cut
 
-        $Conf->{'conf'}->{'source_engine'} = 'CPANPLUS::Internals::Source::SQLite'; 
+        $Conf->{'conf'}->{'source_engine'} = DEFAULT_SOURCE_ENGINE;
 
 =item cpantest_reporter_args
 
@@ -525,14 +500,14 @@ set it to:
 
   { transport       => 'Net::SMTP::TLS',
     transport_args  => [ User => 'Joe', Password => '123' ],
-  }  
+  }
 
 =cut
 
         $Conf->{'conf'}->{'cpantest_reporter_args'} = {};
 
 =back
-    
+
 =head2 Section 'program'
 
 =cut
@@ -551,7 +526,7 @@ $ENV{EDITOR}, $ENV{VISUAL}, 'vi' or 'pico' programs, in that order.
 
         $Conf->{'program'}->{'editor'} = do {
             $ENV{'EDITOR'}  || $ENV{'VISUAL'} ||
-            can_run('vi')   || can_run('pico') || can_run('notepad')
+            can_run('vi')   || can_run('pico')
         };
 
 =item make
@@ -561,7 +536,7 @@ program used to build perl or failing that, a C<make> in your path.
 
 =cut
 
-        $Conf->{'program'}->{'make'} = 
+        $Conf->{'program'}->{'make'} =
             can_run($Config{'make'}) || can_run('make');
 
 =item pager
@@ -571,7 +546,7 @@ $ENV{PAGER}, 'less' or 'more' programs, in that order.
 
 =cut
 
-        $Conf->{'program'}->{'pager'} = 
+        $Conf->{'program'}->{'pager'} =
             $ENV{'PAGER'} || can_run('less') || can_run('more');
 
         ### no one uses this feature anyway, and it's only working for EU::MM
@@ -585,15 +560,15 @@ $ENV{SHELL} setting, or $ENV{COMSPEC} on Windows.
 
 =cut
 
-        $Conf->{'program'}->{'shell'} = $^O eq 'MSWin32' 
-                                        ? $ENV{COMSPEC} 
+        $Conf->{'program'}->{'shell'} = $^O eq 'MSWin32'
+                                        ? $ENV{COMSPEC}
                                         : $ENV{SHELL};
 
 =item sudo
 
 A string holding the path to your C<sudo> binary if your install path
-requires super user permissions. Looks for C<sudo> in your path, or 
-remains empty if you do not require super user permissiosn to install.
+requires super user permissions. Looks for C<sudo> in your path, or
+remains empty if you do not require super user permissions to install.
 
 =cut
 
@@ -601,19 +576,19 @@ remains empty if you do not require super user permissiosn to install.
             ### let's assume you dont need sudo,
             ### unless one of the below criteria tells us otherwise
             my $sudo = undef;
-            
+
             ### you're a normal user, you might need sudo
             if( $> ) {
-    
+
                 ### check for all install dirs!
                 ### you have write permissions to the installdir,
                 ### you don't need sudo
-                if( -w $Config{'installsitelib'} && -w $Config{'installsitebin'} ) {                    
-                    
+                if( -w $Config{'installsitelib'} && -w $Config{'installsitebin'} ) {
+
                     ### installsiteman3dir is a 5.8'ism.. don't check
-                    ### it on 5.6.x...            
+                    ### it on 5.6.x...
                     if( defined $Config{'installsiteman3dir'} ) {
-                        $sudo = -w $Config{'installsiteman3dir'} 
+                        $sudo = -w $Config{'installsiteman3dir'}
                             ? undef
                             : can_run('sudo');
                     } else {
@@ -623,36 +598,38 @@ remains empty if you do not require super user permissiosn to install.
                 ### you have PERL_MM_OPT set to some alternate
                 ### install place. You probably have write permissions
                 ### to that
-                } elsif ( $ENV{'PERL_MM_OPT'} and 
+                } elsif ( $ENV{'PERL_MM_OPT'} and
                           $ENV{'PERL_MM_OPT'} =~ /INSTALL|LIB|PREFIX/
                 ) {
                     $sudo = undef;
 
                 ### you probably don't have write permissions
-                } else {                
+                } else {
                     $sudo = can_run('sudo');
                 }
-            }  
-            
+            }
+
             ### and return the value
             $sudo;
         };
 
 =item perlwrapper
 
+B<DEPRECATED>
+
 A string holding the path to the C<cpanp-run-perl> utility bundled
 with CPANPLUS, which is used to enable autoflushing in spawned processes.
 
 =cut
 
-        ### perlwrapper that allows us to turn on autoflushing                        
-        $Conf->{'program'}->{'perlwrapper'} = sub { 
+        ### perlwrapper that allows us to turn on autoflushing
+        $Conf->{'program'}->{'perlwrapper'} = sub {
             my $name = 'cpanp-run-perl';
 
             my @bins = do{
                 require Config;
                 my $ver  = $Config::Config{version};
-                
+
                 ### if we are running with 'versiononly' enabled,
                 ### all binaries will have the perlversion appended
                 ### ie, cpanp will become cpanp5.9.5
@@ -669,17 +646,17 @@ with CPANPLUS, which is used to enable autoflushing in spawned processes.
 
             my $path;
             BIN: for my $bin (@bins) {
-                
+
                 ### parallel to your cpanp/cpanp-boxed
                 my $maybe = File::Spec->rel2abs(
                                 File::Spec->catfile( dirname($0), $bin )
-                            );        
+                            );
                 $path = $maybe and last BIN if -f $maybe;
-        
+
                 ### parallel to your CPANPLUS.pm:
                 ### $INC{cpanplus}/../bin/cpanp-run-perl
                 $maybe = File::Spec->rel2abs(
-                            File::Spec->catfile( 
+                            File::Spec->catfile(
                                 dirname($INC{'CPANPLUS.pm'}),
                                 '..',   # lib dir
                                 'bin',  # bin dir
@@ -687,14 +664,14 @@ with CPANPLUS, which is used to enable autoflushing in spawned processes.
                             )
                          );
                 $path = $maybe and last BIN if -f $maybe;
-                         
+
                 ### you installed CPANPLUS in a custom prefix,
-                ### so go paralel to /that/. PREFIX=/tmp/cp
+                ### so go parallel to /that/. PREFIX=/tmp/cp
                 ### would put cpanp-run-perl in /tmp/cp/bin and
                 ### CPANPLUS.pm in
                 ### /tmp/cp/lib/perl5/site_perl/5.8.8
                 $maybe = File::Spec->rel2abs(
-                            File::Spec->catfile( 
+                            File::Spec->catfile(
                                 dirname( $INC{'CPANPLUS.pm'} ),
                                 '..', '..', '..', '..', # 4x updir
                                 'bin',                  # bin dir
@@ -711,8 +688,8 @@ with CPANPLUS, which is used to enable autoflushing in spawned processes.
                 ### prefer anything that's found in the path paralel to your $^X
                 for my $dir (File::Spec->rel2abs( dirname($^X) ),
                              split(/\Q$Config::Config{path_sep}\E/, $ENV{PATH}),
-                             File::Spec->curdir, 
-                ) {             
+                             File::Spec->curdir,
+                ) {
 
                     ### On VMS the path could be in UNIX format, and we
                     ### currently need it to be in VMS format
@@ -721,15 +698,21 @@ with CPANPLUS, which is used to enable autoflushing in spawned processes.
                     $maybe = File::Spec->catfile( $dir, $bin );
                     $path = $maybe and last BIN if -f $maybe;
                 }
-            }          
-                
+            }
+
             ### we should have a $path by now ideally, if so return it
             return $path if defined $path;
-            
+
+            ### CPANPLUS::Dist::MM doesn't require this anymore
+            ### but CPANPLUS::Dist::Build might if it is less than 0.60
+            my $cpdb = check_install( module => INSTALLER_BUILD );
+            return '' unless
+              $cpdb and eval { version->parse($cpdb->{version}) < version->parse('0.60') };
+
             ### if not, warn about it and give sensible default.
-            ### XXX try to be a no-op instead then.. 
+            ### XXX try to be a no-op instead then..
             ### cross your fingers...
-            ### pass '-P' to perl: "run program through C 
+            ### pass '-P' to perl: "run program through C
             ### preprocessor before compilation"
             ### XXX using -P actually changes the way some Makefile.PLs
             ### are executed, so don't do that... --kane
@@ -741,13 +724,13 @@ with CPANPLUS, which is used to enable autoflushing in spawned processes.
                 "From the default shell, you can do this by typing:\n\n".
                 "  %3\n".
                 "  %4\n",
-                $name, 'perlwrapper', 
+                $name, 'perlwrapper',
                 's program perlwrapper FULL_PATH_TO_CPANP_RUN_PERL',
                 's save'
-             ));                                        
+             ));
              return '';
         }->();
-        
+
 =back
 
 =cut
@@ -770,12 +753,12 @@ sub new {
         ### now store it in the parent object
         $obj->$acc( $subobj );
     }
-    
+
     $obj->_clean_up_paths;
-    
+
     ### shut up IPC::Cmd warning about not findin IPC::Run on win32
     $IPC::Cmd::WARN = 0;
-    
+
     return $obj;
 }
 
@@ -794,18 +777,18 @@ sub _clean_up_paths {
 
                 ### patch from Steve Hay, 13nd of June 2007
                 ### msg-id: <467012A4.6060705@uk.radan.com>
-                ### windows directories are not allowed to end with 
+                ### windows directories are not allowed to end with
                 ### a space, so any occurrence of '\w\s+/\w+' means
                 ### we're dealing with arguments, not directory
                 ### names.
                 if ($path =~ /^(.*?)(\s+\/.*$)/) {
                     ($prog, $args) = ($1, $2);
-                
+
                 ### otherwise, there are no arguments
                 } else {
                     ($prog, $args) = ($path, '');
                 }
-                
+
                 $prog = Win32::GetShortPathName( $prog );
                 $self->program->$pgm( $prog . $args );
             }
@@ -829,10 +812,10 @@ This module by Jos Boumans E<lt>kane@cpan.orgE<gt>.
 
 =head1 COPYRIGHT
 
-The CPAN++ interface (of which this module is a part of) is copyright (c) 
+The CPAN++ interface (of which this module is a part of) is copyright (c)
 2001 - 2007, Jos Boumans E<lt>kane@cpan.orgE<gt>. All rights reserved.
 
-This library is free software; you may redistribute and/or modify it 
+This library is free software; you may redistribute and/or modify it
 under the same terms as Perl itself.
 
 =head1 SEE ALSO
