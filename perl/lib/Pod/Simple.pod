@@ -12,12 +12,18 @@ Pod::Simple - framework for parsing Pod
 Pod::Simple is a Perl library for parsing text in the Pod ("plain old
 documentation") markup language that is typically used for writing
 documentation for Perl and for Perl modules. The Pod format is explained
-L<perlpod>; the most common formatter is called C<perldoc>.
+in L<perlpod>; the most common formatter is called C<perldoc>.
+
+Be sure to read L</ENCODING> if your Pod contains non-ASCII characters.
 
 Pod formatters can use Pod::Simple to parse Pod documents and render them into
 plain text, HTML, or any number of other formats. Typically, such formatters
 will be subclasses of Pod::Simple, and so they will inherit its methods, like
-C<parse_file>.
+C<parse_file>.  But note that Pod::Simple doesn't understand and
+properly parse Perl itself, so if you have a file which contains a Perl
+program that has a multi-line quoted string which has lines that look
+like pod, Pod::Simple will treat them as pod.  This can be avoided if
+the file makes these into indented here documents instead.
 
 If you're reading this document just because you have a Pod-processing
 subclass that you want to use, this document (plus the documentation for the
@@ -40,8 +46,8 @@ of Pod::Simple.
 =item C<< $parser->output_fh( *OUT ); >>
 
 This sets the filehandle that C<$parser>'s output will be written to.
-You can pass C<*STDOUT>, otherwise you should probably do something
-like this:
+You can pass C<*STDOUT> or C<*STDERR>, otherwise you should probably do
+something like this:
 
     my $outfile = "output.txt";
     open TXTOUT, ">$outfile" or die "Can't write to $outfile: $!";
@@ -121,6 +127,14 @@ most likely to use.
 
 =over
 
+=item C<< $parser->parse_characters( I<SOMEVALUE> ) >>
+
+The Pod parser normally expects to read octets and to convert those octets
+to characters based on the C<=encoding> declaration in the Pod source.  Set
+this option to a true value to indicate that the Pod source is already a Perl
+character stream.  This tells the parser to ignore any C<=encoding> command
+and to skip all the code paths involving decoding octets.
+
 =item C<< $parser->no_whining( I<SOMEVALUE> ) >>
 
 If you set this attribute to a true value, you will suppress the
@@ -173,7 +187,7 @@ verbatim blocks will be preserved in the output. This can be annoying for
 outputs such as HTML, where that whitespace will remain in front of every
 line. It's an unfortunate case where syntax is turned into semantics.
 
-If the POD your parsing adheres to a consistent indentation policy, you can
+If the POD you're parsing adheres to a consistent indentation policy, you can
 have such indentation stripped from the beginning of every line of your
 verbatim blocks. This method tells Pod::Simple what to strip. For two-space
 indents, you'd use:
@@ -208,6 +222,21 @@ that you don't want I<any> lines indented. You can do something like this:
       sub { s/^\s+// for @{ $lines },
       return undef;
   });
+
+=item C<< $parser->expand_verbatim_tabs( I<n> ) >>
+
+Default: 8
+
+If after any stripping of indentation in verbatim blocks, there remain
+tabs, this method call indicates what to do with them.  C<0>
+means leave them as tabs, any other number indicates that each tab is to
+be translated so as to have tab stops every C<n> columns.
+
+This is independent of other methods (except that it operates after any
+verbatim input stripping is done).
+
+Like the other methods, the input parameter is not checked for validity.
+C<undef> or containing non-digits has the same effect as 8.
 
 =back
 
@@ -279,6 +308,26 @@ I<Example:>
 
   die "too many errors\n" if $parser->any_errata_seen();
 
+=item C<< $parser->errata_seen() >>X<errata_seen>
+
+Returns a hash reference of all errata seen, both whines and screams. The hash reference's keys are the line number and the value is an array reference of the errors for that line.
+
+I<Example:>
+
+  if ( $parser->any_errata_seen() ) {
+     $logger->log( $parser->errata_seen() );
+  }
+
+=item C<< $parser->detected_encoding() >>X<detected_encoding>
+
+Return the encoding corresponding to C<< =encoding >>, but only if the
+encoding was recognized and handled.
+
+=item C<< $parser->encoding() >>X<encoding>
+
+Return encoding of the document, even if the encoding is not correctly
+handled.
+
 =item C<< $parser->parse_from_file( $source, $to ) >>X<parse_from_file>
 
 Parses from C<$source> file to C<$to> file. Similar to L<<
@@ -322,12 +371,21 @@ Log an error unless C<< $parser->no_whining( TRUE ); >>.
 
 =back
 
-=head1 CAVEATS
+=head1 ENCODING
 
-This is just a beta release -- there are a good number of things still
-left to do.  Notably, support for EBCDIC platforms is still half-done,
-an untested.
+The Pod::Simple parser expects to read B<octets>.  The parser will decode the
+octets into Perl's internal character string representation using the value of
+the C<=encoding> declaration in the POD source.
 
+If the POD source does not include an C<=encoding> declaration, the parser will
+attempt to guess the encoding (selecting one of UTF-8 or CP 1252) by examining
+the first non-ASCII bytes and applying the heuristic described in
+L<perlpodspec>.  (If the POD source contains only ASCII bytes, the
+encoding is assumed to be ASCII.)
+
+If you set the C<parse_characters> option to a true value the parser will
+expect characters rather than octets; will ignore any C<=encoding>; and will
+make no attempt to decode the input.
 
 =head1 SEE ALSO
 
@@ -348,11 +406,11 @@ pod-people@perl.org mail list. Send an empty email to
 pod-people-subscribe@perl.org to subscribe.
 
 This module is managed in an open GitHub repository,
-L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
-to clone L<git://github.com/theory/pod-simple.git> and send patches!
+L<https://github.com/perl-pod/pod-simple/>. Feel free to fork and contribute, or
+to clone L<git://github.com/perl-pod/pod-simple.git> and send patches!
 
-Patches against Pod::Simple are welcome. Please send bug reports to
-<bug-pod-simple@rt.cpan.org>.
+Please use L<https://github.com/perl-pod/pod-simple/issues/new> to file a bug
+report.
 
 =head1 COPYRIGHT AND DISCLAIMERS
 
@@ -379,6 +437,8 @@ Pod::Simple is maintained by:
 =item * Hans Dieter Pearcey C<hdp@cpan.org>
 
 =item * David E. Wheeler C<dwheeler@cpan.org>
+
+=item * Karl Williamson C<khw@cpan.org>
 
 =back
 

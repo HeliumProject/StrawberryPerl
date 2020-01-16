@@ -1,32 +1,18 @@
 package DateTime::TimeZone::OlsonDB::Rule;
-{
-  $DateTime::TimeZone::OlsonDB::Rule::VERSION = '1.46';
-}
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
-use DateTime;
-use DateTime::Duration;
+our $VERSION = '2.38';
+
 use DateTime::TimeZone::OlsonDB;
-
-use Params::Validate qw( validate SCALAR );
 
 sub new {
     my $class = shift;
-    my %p     = validate(
-        @_, {
-            name   => { type => SCALAR },
-            from   => { type => SCALAR },
-            to     => { type => SCALAR },
-            type   => { type => SCALAR, default => undef },
-            in     => { type => SCALAR },
-            on     => { type => SCALAR },
-            at     => { type => SCALAR },
-            save   => { type => SCALAR },
-            letter => { type => SCALAR, default => '' },
-        },
-    );
+    my %p     = @_;
+
+    $p{letter} ||= q{};
 
     my $save = $p{save};
 
@@ -73,13 +59,16 @@ sub utc_start_datetime_for_year {
     # should be the offset of the _previous_ rule
     my $offset_from_std = shift;
 
-    my $day = DateTime::TimeZone::OlsonDB::parse_day_spec( $self->on,
-        $self->month, $year );
+    my ( $month, $day ) = DateTime::TimeZone::OlsonDB::parse_day_spec(
+        $self->on,
+        $self->month,
+        $year,
+    );
 
     my $utc = DateTime::TimeZone::OlsonDB::utc_datetime_for_time_spec(
         spec            => $self->at,
         year            => $year,
-        month           => $self->month,
+        month           => $month,
         day             => $day,
         offset_from_utc => $offset_from_utc,
         offset_from_std => $offset_from_std,

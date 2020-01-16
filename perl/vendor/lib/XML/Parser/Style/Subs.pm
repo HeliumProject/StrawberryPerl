@@ -3,19 +3,19 @@
 package XML::Parser::Style::Subs;
 
 sub Start {
-  no strict 'refs';
-  my $expat = shift;
-  my $tag = shift;
-  my $sub = $expat->{Pkg} . "::$tag";
-  eval { &$sub($expat, $tag, @_) };
+    no strict 'refs';
+    my $expat = shift;
+    my $tag   = shift;
+    my $sub   = $expat->{Pkg} . "::$tag";
+    eval { &$sub( $expat, $tag, @_ ) };
 }
 
 sub End {
-  no strict 'refs';
-  my $expat = shift;
-  my $tag = shift;
-  my $sub = $expat->{Pkg} . "::${tag}_";
-  eval { &$sub($expat, $tag) };
+    no strict 'refs';
+    my $expat = shift;
+    my $tag   = shift;
+    my $sub   = $expat->{Pkg} . "::${tag}_";
+    eval { &$sub( $expat, $tag ) };
 }
 
 1;
@@ -23,7 +23,7 @@ __END__
 
 =head1 NAME
 
-XML::Parser::Style::Subs
+XML::Parser::Style::Subs - glue for handling element callbacks
 
 =head1 SYNOPSIS
 
